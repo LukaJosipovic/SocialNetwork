@@ -1,0 +1,112 @@
+﻿@page "/createactivity"
+@using Application.DTO.Request
+@using Application.Enum
+@using Microsoft.AspNetCore.SignalR.Client
+@using MobileClient.Components.Layout
+@using MobileClient.Services.Activity
+@using MobileClient.Services.Alert
+@inject IActivityService ActivityService
+@inject IAlertService AlertService
+@inject NavigationManager NavManager
+
+<h3>CreateActivity</h3>
+
+<NavLink href="/activities">
+    Activities
+    @if (hasNewActivity)
+    {
+        <span class="badge bg-danger ms-2">!</span>
+    }
+</NavLink>
+
+<div class="d-flex justify-content-center align-items-center" style="min-height: calc(100vh - 3.5rem);">
+    <div style="width: 80%;">
+        <EditForm method="post" Model="Request" OnValidSubmit="CreateUserActivity" FormName="register" Enhance>
+            <DataAnnotationsValidator />
+            <div data-mdb-input-init class="form-outline mb-4">
+                <input type="text" @bind-value="Request.Description" id="emailInput" placeholder="Activity description" class="form-control" />
+                <ValidationMessage For="() => Request.Description" class="text-danger" />
+            </div>
+
+            <select class="form-select" @bind="Request.Category">
+                @foreach (var category in Enum.GetValues<ActivityCategory>())
+                {
+                    <option value="@category.ToString()">
+                        @GetEnumDescription(category)
+                    </option>
+                }
+            </select>
+            <ValidationMessage For="() => Request.Category" class="text-danger" />
+
+            <button type="submit" class="btn btn-primary" style="background-color: #512bdf; width: 100%">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private CreateActivityRequest Request { get; set; } = new();
+    private bool hasNewActivity = false;
+    private List<string> notifications = new List<string>();
+
+    protected override void OnInitialized()
+    {
+        // hubConnection = new HubConnectionBuilder().WithUrl(NavManager.ToAbsoluteUri("https://localhost:7098/activityhub"), async options =>
+        // {
+        //     options.AccessTokenProvider = async () => await GetToken();
+        // }).WithAutomaticReconnect().Build();
+        // hubConnection.On("ReceiveActivityNotification", () => InvokeAsync(() =>
+        // {
+        //     hasNewActivity = true;
+        //     StateHasChanged();
+        // }));
+
+        // await hubConnection.StartAsync();
+        MainLayout.OnNewActivityReceived += HandleNewActivity;
+    }
+
+    private void HandleNewActivity()
+    {
+        InvokeAsync(() =>
+        {
+            hasNewActivity = true;
+            StateHasChanged();
+        });
+    }
+
+    private string GetEnumDescription(ActivityCategory category)
+    {
+        return category switch
+        {
+            ActivityCategory.FoodAndDrink => "Food & Drink",
+            ActivityCategory.SportsAndFitness => "Sports & Fitness",
+            ActivityCategory.ArtsAndCulture => "Arts & Culture",
+            ActivityCategory.EntertainmentAndNightlife => "Entertainment & Nightlife",
+            ActivityCategory.LearningAndHobbies => "Learning & Hobbies",
+            ActivityCategory.OutdoorsAndNature => "Outdoors & Nature",
+            ActivityCategory.VolunteeringAndCauses => "Volunteering & Causes",
+            ActivityCategory.GamesAndActivities => "Games & Activities",
+            ActivityCategory.TravelAndExploration => "Travel & Exploration",
+            ActivityCategory.ChillAndRelaxation => "Chill & Relaxation",
+            _ => category.ToString()
+        };
+    }
+
+    private async Task CreateUserActivity()
+    {
+        var response = await ActivityService.CreateActivity(Request);
+        if (response.IsSuccess)
+        {
+            await MainLayout.hubConnection.InvokeAsync("SendActivityNotification");
+            await AlertService.ShowAlertAsync("Ok", $"{response.Message}", "OK");
+        }
+
+        await AlertService.ShowAlertAsync("Error", $"{response.Message}", "OK");
+    }
+
+    private async Task<string> GetToken()
+    {
+        var token = await SecureStorage.GetAsync("accessToken");
+        return token;
+    }
+}

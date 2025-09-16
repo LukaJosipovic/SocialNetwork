@@ -1,0 +1,202 @@
+﻿@inject IAlertService AlertService
+@inject IAccountService AccountService
+@page "/editmyprofile"
+@using Application.DTO.Request
+@using Application.DTO.Response
+@using Application.Enum
+@using MobileClient.BackgroundTask.Location
+@using MobileClient.Services.Account
+@using MobileClient.Services.Alert
+@using MobileClient.Services.Location
+@inject ILocationTracker LocationTracker
+@inject ILocationService LocationService
+
+@if (!string.IsNullOrEmpty(ImagePreview))
+{
+    <img src="@ImagePreview" alt="Uploaded Image" style="width: 150px; height: 150px;" />
+}
+<InputFile OnChange="LoadImage" />
+<button type="button" class="btn btn-primary" @onclick="ChangeProfilePicture" style="background-color: #512bdf; width: 30%">Change Profile Picture</button>
+
+<input type="text" @bind="username" id="usernameInput" class="form-control" />
+<button type="button" class="btn btn-success" @onclick="UpdateUsername">Update Username</button>
+
+<select multiple class="form-select" @onchange="OnSelectedCategoriesChanged">
+    @foreach (var category in Enum.GetValues<ActivityCategory>())
+    {
+        <option value="@category.ToString()" selected="@SelectedCategories.Contains(category)">
+            @GetEnumDescription(category)
+        </option>
+    }
+</select>
+<button class="btn btn-primary mt-3" @onclick="SubmitCategories">Change activities</button>
+<div class="form-check form-switch">
+    <input class="form-check-input" @bind="IsGhostMode" @bind:after="OnGhostModeChanged" type="checkbox" role="switch" id="GhostMode">
+    <label class="form-check-label" for="GhostMode">Ghost mode</label>
+</div>
+<div class="form-check form-switch">
+    <input class="form-check-input" @onchange="OnDoNotDisturbModeChanged" type="checkbox" role="switch" id="DoNotDisturb">
+    <label class="form-check-label" for="DoNotDisturb">Do not disturb</label>
+</div>
+
+@code {
+    private string? ImagePreview;
+    private byte[]? buffer;
+    private string username;
+    private List<ActivityCategory> SelectedCategories { get; set; } = new();
+    private bool IsGhostMode { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await AccountService.GetUserById();
+        username = response.Name;
+
+        if (response.ProfilePicture != null)    
+            ImagePreview = $"data:image;base64,{Convert.ToBase64String(response.ProfilePicture)}";
+
+        var ghostModeValue = await SecureStorage.GetAsync("ghostMode");
+        if (!string.IsNullOrEmpty(ghostModeValue) && bool.TryParse(ghostModeValue, out var ghostMode))
+        {
+            IsGhostMode = ghostMode;
+        }
+    }
+
+    private async Task LoadImage(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            var file = e.File;
+            buffer = new byte[file.Size];
+            await file.OpenReadStream(maxAllowedSize: 8 * 1024 * 1024).ReadAsync(buffer);
+            // ImagePreview = $"data:{file.ContentType};base64,{Convert.ToBase64String(buffer)}";
+            ImagePreview = $"data:image;base64,{Convert.ToBase64String(buffer)}";
+        }
+        catch (Exception ex)
+        {
+            await AlertService.ShowAlertAsync($"Error", "Error loading image", "OK");
+        }
+    }
+
+    private async Task ChangeProfilePicture()
+    {
+        if (buffer != null)
+        {
+            var request = new ChangeProfilePictureRequest
+            {
+                ImageData = buffer
+            };
+            var response = await AccountService.ChangeProfilePicture(request);
+
+            if (response.IsSuccess && !IsGhostMode)
+            {
+                Microsoft.Maui.Devices.Sensors.Location location = new Microsoft.Maui.Devices.Sensors.Location
+                {
+                    Latitude = 45.83111,
+                    Longitude = 16.11639
+                };
+
+                if (location != null)
+                    await LocationService.AddLocation(location.Latitude, location.Longitude);
+
+                await AlertService.ShowAlertAsync($"Ok", $"{response.Message}", "OK");
+            }
+            else if (response.IsSuccess && IsGhostMode)
+            {
+                await AlertService.ShowAlertAsync($"Ok", $"{response.Message}", "OK");
+            }
+            else
+            {
+                await AlertService.ShowAlertAsync($"Error", $"{response.Message}", "OK");
+            }
+        }
+    }
+
+    private async Task UpdateUsername()
+    {
+        var response = await AccountService.UpdateUsername(username);
+
+        if (response.IsSuccess)
+            await AlertService.ShowAlertAsync($"Ok", $"{response.Message}", "OK");
+        else
+            await AlertService.ShowAlertAsync($"Error", $"{response.Message}", "OK");
+    }
+
+    private void OnSelectedCategoriesChanged(ChangeEventArgs e)
+    {
+        List<ActivityCategory> selectedCategories = new();
+
+        var selectedOptions = (e.Value as IEnumerable<string>) ?? Enumerable.Empty<string>();
+
+        foreach (var option in selectedOptions)
+        {
+            if (Enum.TryParse<ActivityCategory>(option, out var result))
+            {
+                selectedCategories.Add(result);
+            }
+        }
+        SelectedCategories = selectedCategories;
+    }
+
+    private async Task SubmitCategories()
+    {
+        var response = await AccountService.ChangeActivities(SelectedCategories);
+
+        if (response.IsSuccess)
+            await AlertService.ShowAlertAsync($"Success", response.Message, "OK");
+        else
+            await AlertService.ShowAlertAsync($"Error", response.Message, "OK");
+    }
+
+    private string GetEnumDescription(ActivityCategory category)
+    {
+        return category switch
+        {
+            ActivityCategory.FoodAndDrink => "Food & Drink",
+            ActivityCategory.SportsAndFitness => "Sports & Fitness",
+            ActivityCategory.ArtsAndCulture => "Arts & Culture",
+            ActivityCategory.EntertainmentAndNightlife => "Entertainment & Nightlife",
+            ActivityCategory.LearningAndHobbies => "Learning & Hobbies",
+            ActivityCategory.OutdoorsAndNature => "Outdoors & Nature",
+            ActivityCategory.VolunteeringAndCauses => "Volunteering & Causes",
+            ActivityCategory.GamesAndActivities => "Games & Activities",
+            ActivityCategory.TravelAndExploration => "Travel & Exploration",
+            ActivityCategory.ChillAndRelaxation => "Chill & Relaxation",
+            _ => category.ToString()
+        };
+    }
+
+    private async Task OnGhostModeChanged()//ChangeEventArgs e)
+    {
+        //bool gostMode = (bool)e.Value;
+        bool gostMode = IsGhostMode;
+
+        await SecureStorage.SetAsync("ghostMode", gostMode.ToString());
+
+        var response = await AccountService.GhostMode(gostMode);
+
+        if (response.IsSuccess && gostMode)
+        {
+            var result = await LocationTracker.Stop();
+            await AlertService.ShowAlertAsync($"Success", response.Message, "OK");
+        }
+        else if (response.IsSuccess && !gostMode)
+        {
+            await LocationTracker.StartAsync();
+            await AlertService.ShowAlertAsync($"Success", response.Message, "OK");
+        }
+        else
+        {    
+            await AlertService.ShowAlertAsync($"Error", response.Message, "OK");
+        }
+    }
+
+    private async Task OnDoNotDisturbModeChanged(ChangeEventArgs e)
+    {
+        var response = await AccountService.DoNotDisturb((bool)e.Value);
+
+        if (response.IsSuccess)
+            await AlertService.ShowAlertAsync($"Success", response.Message, "OK");
+        else
+            await AlertService.ShowAlertAsync($"Error", response.Message, "OK");
+    }
+}

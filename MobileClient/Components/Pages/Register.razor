@@ -1,0 +1,63 @@
+﻿@page "/register"
+@using Application.DTO.Request
+@using MobileClient.Services.Alert
+@using MobileClient.Services.Auth
+@inject IAuthService AuthService
+@inject NavigationManager NavManager
+@inject IAlertService AlertService
+
+@* @layout MobileClient.Components.Layout.EmptyLayout *@
+
+<div class="d-flex justify-content-center align-items-center" style="min-height: calc(100vh - 3.5rem);">
+    <div style="width: 80%;">
+        <EditForm method="post" Model="Request" OnValidSubmit="RegisterUser" FormName="register" Enhance>
+            <DataAnnotationsValidator />
+            <div data-mdb-input-init class="form-outline mb-4">
+                <input type="text" @bind-value="Request.Username" id="usernameInput" placeholder="Username" class="form-control" />
+                <ValidationMessage For="() => Request.Username " class="text-danger" />
+            </div>
+
+            <div data-mdb-input-init class="form-outline mb-4">
+                <input type="email" @bind-value="Request.Email" id="emailInput" placeholder="Email address" class="form-control" />
+                <ValidationMessage For="() => Request.Email" class="text-danger" />
+            </div>
+
+            <div data-mdb-input-init class="form-outline mb-4">
+                <input type="password" @bind-value="Request.Password" id="passwordInput" placeholder="Password" class="form-control" />
+                <ValidationMessage For="() => Request.Password" class="text-danger" />
+            </div>
+
+            <div data-mdb-input-init class="form-outline mb-4">
+                <input type="password" @bind-value="Request.ConfirmPassword" id="confirmPasswordInput" placeholder="Confirm Password" class="form-control" />
+                <ValidationMessage For="() => Request.ConfirmPassword" class="text-danger" />
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="background-color: #512bdf; width: 100%">Sign in</button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private CreateAccountRequest Request { get; set; } = new()
+    {
+        Username = "string",
+        Email = "string@string.com",
+        Password = "Pa$$w0rd",
+        ConfirmPassword = "Pa$$w0rd"
+    };
+
+    private async Task RegisterUser()
+    {
+        
+        var result = await AuthService.Register(Request);
+        if (result.IsSuccess)
+        {
+            await AlertService.ShowAlertAsync($"{result.Message}", "The verification email has been sent", "OK");
+            NavManager.NavigateTo("/login");
+        }else
+        {
+            await AlertService.ShowAlertAsync($"{result.Message}", $"{result.Errors?.First()}", "OK");
+        }
+    }
+}

@@ -1,0 +1,106 @@
+﻿@using Application.DTO
+@using Microsoft.AspNetCore.SignalR.Client
+@using MobileClient.Services.Account
+@using MobileClient.Services.Alert
+@using MobileClient.SessionService
+@inherits LayoutComponentBase
+@inject NavigationManager NavManager
+@implements IAsyncDisposable
+@inject UserSessionService UserSessionService
+@inject IAlertService AlertService
+@inject IAccountService AccountService
+
+<div class="page">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        @* <div class="top-row px-4">
+            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+        </div> *@
+
+        <article>
+            @Body
+        </article>
+    </main>
+</div>
+
+@code{
+    public static HubConnection? hubConnection;
+    public static event Action? OnNewActivityReceived;
+
+    protected override async Task OnInitializedAsync()
+    {
+        UserSessionService.OnUserBanned += HandleUserBanned;
+        string url = "http://192.168.100.4/socialnetwork/activityhub";
+        string url2 = "https://localhost:7098/socialnetwork/activityhub";
+        string url3 = "http://10.0.2.2:5209/socialnetwork/activityhub";
+        var test = await GetToken();
+        hubConnection = new HubConnectionBuilder().WithUrl(NavManager.ToAbsoluteUri(url), async options =>
+        {
+            options.AccessTokenProvider = async () => await GetToken();
+        }).WithAutomaticReconnect().Build();
+
+        hubConnection.On("ReceiveActivityNotification", () =>
+        {
+            OnNewActivityReceived?.Invoke();
+        });
+
+        // hubConnection.On("RequestLocation", async () =>
+        // {
+        //     await SendMyLocationAsync();
+        // });
+
+        await hubConnection.StartAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+        UserSessionService.OnUserBanned -= HandleUserBanned;
+    }
+
+    private async Task<string> GetToken()
+    {
+        var token = await SecureStorage.GetAsync("accessToken");
+        return token;
+    }
+
+    private async void HandleUserBanned(string message)
+    {
+        // Clear tokens
+        await SecureStorage.SetAsync("accessToken", "");
+        await SecureStorage.SetAsync("refreshToken", "");
+        await AlertService.ShowAlertAsync($"Account Banned", message, "OK");
+        NavManager.NavigateTo("/login");
+    }
+
+    // private async Task SendMyLocationAsync()
+    // {
+    //     try
+    //     {
+    //         var location = await Geolocation.Default.GetLastKnownLocationAsync()
+    //                      ?? await Geolocation.Default.GetLocationAsync();
+
+    //         if (location == null || hubConnection == null) return;
+
+    //         var dto = new LocationDTO
+    //         {
+    //             UserId = hubConnection.ConnectionId, // or replace with real user ID if you have one
+    //             Latitude = location.Latitude,
+    //             Longitude = location.Longitude
+    //         };
+
+    //         await hubConnection.SendAsync("SendLocation", dto);
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         Console.WriteLine($"Error sending location: {ex.Message}");
+    //     }
+    // }
+}

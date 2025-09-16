@@ -1,0 +1,36 @@
+﻿@page "/profile/{PostId:int}"
+@using Application.DTO.Response
+@using MobileClient.Services.Post
+@inject IPostService PostService
+
+<h3>PostDetails</h3>
+
+@if (postDetails != null)
+{
+    @if (postDetails.User.ProfilePicture != null)
+    {
+        <img src="@profileImage" alt="Profile picture" style="width: 50px; height: 50px;" />
+        <p>@postDetails.User.Name</p>
+    }
+    <img src="@postDetails.Content" alt="Post picture" style="width: 100%;" />
+    <p>@postDetails.DateCreated</p>
+    <p>@postDetails.Description</p>
+}
+
+@code {
+    [Parameter]
+    public int PostId { get; set; }
+    private PostDetailsResponse? postDetails;
+    private string? profileImage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await PostService.GetPostById(PostId);
+        if (response.IsSuccess)
+            postDetails = response;
+
+        if (response.User.ProfilePicture != null)
+            profileImage = $"data:image;base64,{Convert.ToBase64String(response.User.ProfilePicture)}";
+
+    }
+}

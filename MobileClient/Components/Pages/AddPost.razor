@@ -1,0 +1,53 @@
+﻿@inject IAccountService AccountService
+@inject IAlertService AlertService
+@page "/addpost"
+@using Application.DTO.Request
+@using MobileClient.Services.Account
+@using MobileClient.Services.Alert
+
+<h3>AddPost</h3>
+
+@if (!string.IsNullOrEmpty(ImagePreview))
+{
+    <img src="@ImagePreview" alt="Uploaded Image" style="width: 100%;" />
+}
+<EditForm Model="@createPostRequest" OnValidSubmit="@CreatePost">
+    <div>
+        <label>Choose Image:</label>
+        <InputFile OnChange="LoadImage" accept="image/*" />
+    </div>
+    <div>
+        <label>Description:</label>
+        <InputText @bind-Value="createPostRequest.Description" class="form-control" />
+    </div>
+
+    <button type="submit">Upload</button>
+</EditForm>
+
+@code {
+    private string? ImagePreview;
+    private byte[]? buffer;
+    private string? description;
+    private CreatePostRequest createPostRequest { get; set; } = new();
+
+    private async Task LoadImage(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            var file = e.File;
+            buffer = new byte[file.Size];
+            await file.OpenReadStream(maxAllowedSize: 8 * 1024 * 1024).ReadAsync(buffer);
+            ImagePreview = $"data:image;base64,{Convert.ToBase64String(buffer)}";
+        }
+        catch (Exception ex)
+        {
+            await AlertService.ShowAlertAsync($"Error", "Error loafing image", "OK");
+        }
+    }
+
+    private async Task CreatePost()
+    {
+        createPostRequest.ImageData = buffer;
+        var response = AccountService.CreatePost(createPostRequest);
+    }
+}

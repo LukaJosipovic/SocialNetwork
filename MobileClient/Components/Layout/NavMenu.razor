@@ -1,0 +1,114 @@
+﻿<style>
+    .navbar-toggler {
+    position: relative;
+    }
+
+    .has-new-activity::after {
+    content: "";
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 10px;
+    height: 10px;
+    background-color: red;
+    border-radius: 50%;
+    z-index: 1001;
+    }
+
+</style>
+
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">MobileClient</a>
+    </div>
+</div>
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler @(hasNewActivity ? "has-new-activity" : "" )" />
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="register">
+                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Register
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="login">
+                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Login
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="weather">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="map">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Map
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="editmyprofile">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> EditProfile
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="addpost">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> AddPost
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="myprofile">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> MyProfile
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="chat">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Chat
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="admin">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Admin Page
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="activities">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Activities
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="chatrooms">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Chat Rooms
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <a class="nav-link position-relative @(hasNewActivity ? "has-new-activity" : "" )" href="createactivity">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Create Activity
+            </a>
+        </div>
+    </nav>
+</div>
+
+@code{
+    private bool hasNewActivity = false;
+
+    protected override void OnInitialized()
+    {
+        MainLayout.OnNewActivityReceived += HandleNewActivity;
+    }
+
+    private void HandleNewActivity()
+    {
+        InvokeAsync(() =>
+        {
+            hasNewActivity = true;
+            StateHasChanged();
+        });
+    }
+}

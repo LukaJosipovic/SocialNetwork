@@ -1,0 +1,135 @@
+﻿@page "/"
+@using Application.DTO.Response
+@using MobileClient.Services.Alert
+@using MobileClient.Services.Post
+@inject IPostService PostService
+@inject IAlertService AlertService
+@inject NavigationManager NavManager
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+<i class="bi bi-suit-heart" style="font-size: 30px; color: red;"></i>
+@if (postsDetails != null)
+{
+    foreach (var post in postsDetails)
+    {
+        <hr />
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                @if (post.User.ProfilePictureString != null)
+                {
+                    <img src="@post.User.ProfilePictureString" alt="Profile picture"
+                    style="width: 50px; height: 50px;" class="me-2 rounded-circle" @onclick="() => NavigateToUserProfile(post.User.Id)" />
+                    <p class="mb-0">@post.User.Name</p>
+                }
+            </div>
+
+            <div class="dropdown">
+                <button class="btn btn-link p-0 m-0 border-0" type="button" id="iconMenuButton"
+                data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-three-dots-vertical fs-4"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="iconMenuButton">
+                    <li><button class="dropdown-item" @onclick="() => ReportPost(post.PostId)">Report</button></li>
+                </ul>
+            </div>
+        </div>
+        <div>
+            @if (post.PostImageString != null)
+            {
+                <img src="@post.PostImageString" alt="Post picture" style="width: 100%;" />
+            }
+            <p>@post.DateCreated</p>
+            <p>@post.Description</p>
+        </div>
+        <p>Like: @post.LikeCount</p>
+        @if (post.IsLiked)
+        {
+            <i class="bi bi-suit-heart-fill" id="@post.PostId" style="font-size: 30px; color: red;" @onclick="() => DislikePost(post.PostId)"></i>
+        }
+        else
+        {
+            <i class="bi bi-suit-heart" id="@post.PostId" style="font-size: 30px; color: red;" @onclick="() => LikePost(post.PostId)"></i>
+        }
+        <hr />
+    }
+}
+else
+{
+    <p>There is no posts</p>
+}
+
+@code{
+    private List<PostDetailsResponse>? postsDetails;
+    private LikeResponse? likeResponse;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await PostService.GetAllPosts();
+        if (response.Count > 0)
+        {
+            foreach (var post in response)
+            {
+                if (post.User.ProfilePicture != null)
+                    post.User.ProfilePictureString = $"data:image;base64,{Convert.ToBase64String(post.User.ProfilePicture)}";
+            }
+            postsDetails = response;
+        }
+        else
+        {
+            postsDetails = null;
+        }
+    }
+
+    private async Task ReportPost(int postId)
+    {
+        var response = await PostService.ReportPost(postId);
+        if(response.IsSuccess)
+            await AlertService.ShowAlertAsync("Ok", $"{response.Message}", "OK");
+        else
+            await AlertService.ShowAlertAsync("Error", $"{response.Message}", "OK");
+    }
+
+    private async Task LikePost(int postId)
+    {
+        var response = await PostService.LikePost(postId);
+        if (response.IsSuccess)
+        {
+            //await AlertService.ShowAlertAsync("Ok", $"{response.Message}", "OK");
+            var post = postsDetails.FirstOrDefault(p => p.PostId == response.PostId);
+            post.LikeCount = response.LikeCount;
+            post.IsLiked = true;
+        }
+        else
+        {
+            await AlertService.ShowAlertAsync("Error", $"{response.Message}", "OK");
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task DislikePost(int postId)
+    {
+        var response = await PostService.DislikePost(postId);
+        if (response.IsSuccess)
+        {
+            //await AlertService.ShowAlertAsync("Ok", $"{response.Message}", "OK");
+            var post = postsDetails.FirstOrDefault(p => p.PostId == response.PostId);
+            post.LikeCount = response.LikeCount;
+            post.IsLiked = false;
+        }
+        else
+        {
+            await AlertService.ShowAlertAsync("Error", $"{response.Message}", "OK");
+        }
+
+        StateHasChanged();
+    }
+
+    private void NavigateToUserProfile(string userId)
+    {
+        NavManager.NavigateTo($"/profile/user/{userId}");
+    }
+}

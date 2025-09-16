@@ -1,0 +1,100 @@
+﻿@inject IJSRuntime JS
+@implements IAsyncDisposable
+@inject IAlertService AlertService
+@page "/map"
+@using Application.DTO
+@using MobileClient.Components.Layout
+@using MobileClient.Services.Alert
+@using Microsoft.AspNetCore.SignalR.Client
+@using MobileClient.Services.Location
+@using System.Text.Json
+@inject ILocationService LocationService
+
+<div id="map" style="height: calc(100vh - 3.5rem);"></div>
+
+@code {
+    private IJSObjectReference? module;
+    private string? result;
+    private Location? location;
+    private CancellationTokenSource _cancelTokenSource;
+    private bool _isCheckingLocation;
+    //private IDisposable? _updateLocationSub;
+    private readonly HashSet<string> _knownUsers = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
+
+        if (status != PermissionStatus.Granted)
+        {
+            status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+        }
+        status = PermissionStatus.Granted;
+        if (status == PermissionStatus.Granted)
+        {
+            await GetCurrentLocation();
+        }
+    }
+
+    public async Task GetCurrentLocation()
+    {
+        try
+        {
+            _isCheckingLocation = true;
+
+            GeolocationRequest request = new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromSeconds(10));
+
+            _cancelTokenSource = new CancellationTokenSource();
+
+            Location location = new Location
+            {
+                Latitude = 45.815399,
+                Longitude = 15.966568
+            };
+
+            var usersLocatoins = await LocationService.GetUsersLocations();
+
+            if (location != null)
+            {
+                module = await JS.InvokeAsync<IJSObjectReference>("import", "./leaflet.js");
+                Console.WriteLine($"Latitude: {location.Latitude}, Longitude: {location.Longitude}, Altitude: {location.Altitude}");
+            }
+
+            if (module != null && location != null)
+            {
+                result = await module.InvokeAsync<string>("load_map", location?.Latitude, location?.Longitude);
+                var userLocationsJson = JsonSerializer.Serialize(usersLocatoins);
+                await module.InvokeVoidAsync("add_user_markers", userLocationsJson);
+            }
+        }
+        catch (Exception ex)
+        {
+            // Unable to get location
+        }
+        finally
+        {
+            _isCheckingLocation = false;
+        }
+    }
+
+    public void CancelRequest()
+    {
+        if (_isCheckingLocation && _cancelTokenSource != null && _cancelTokenSource.IsCancellationRequested == false)
+            _cancelTokenSource.Cancel();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (module is not null)
+        {
+            try
+            {
+                await module.DisposeAsync();
+            }
+            catch
+            {
+                // ignore errors on cleanup
+            }
+        }
+    }
+}

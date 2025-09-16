@@ -1,0 +1,91 @@
+﻿@page "/chat/{senderId}/{recipientId}"
+@using Microsoft.AspNetCore.SignalR.Client
+@using MobileClient.Services.Chat
+@inject IChatService ChatService
+@inject NavigationManager NavManager
+@implements IAsyncDisposable
+
+<div>
+    <label>
+        Sender: <input @bind="senderId" />
+    </label>
+</div>
+<div>
+    <label>
+        Recipient ID: <input @bind="recipientId" />
+    </label>
+</div>
+<div>
+    <label>
+        Message: <input @bind="messageInput" />
+    </label>
+</div>
+<button @onclick="Send" disabled="@(IsConnected == false)">Send</button>
+
+<hr />
+
+<ul>
+    @foreach (var message in messages)
+    {
+        <li>@message</li>
+    }
+</ul>
+
+@code {
+    private HubConnection? hubConnection;
+    private List<string> messages = new();
+    private string? userInput;
+    private string? messageInput;
+    [Parameter]
+    public string? senderId { get; set; }
+    [Parameter]
+    public string? recipientId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var oldDessages = await ChatService.GetMessages();
+
+        foreach (var message in oldDessages)
+        {
+            messages.Add(message.Content);
+        }
+
+        hubConnection = new HubConnectionBuilder().WithUrl(NavManager.ToAbsoluteUri("http://192.168.100.4/socialnetwork/chathub"), async options =>
+        {
+            options.AccessTokenProvider = async() => await GetToken();
+        }).WithAutomaticReconnect().Build();
+
+        hubConnection.On<string, string>("ReceiveClientMessage", (senderId, message) =>
+        {
+            var formattedMessage = $"From {senderId}: {message}";
+            messages.Add(formattedMessage);
+            InvokeAsync(StateHasChanged);
+        });
+
+        await hubConnection.StartAsync();
+    }
+
+    private async Task Send()
+    {
+        if (hubConnection != null)
+        {
+            var formattedMessage = $"From {senderId}: {messageInput}";
+            messages.Add(formattedMessage);
+            await hubConnection.SendAsync("SendMessageToClient", senderId, recipientId, messageInput);
+        }
+    }
+
+    private bool IsConnected => hubConnection?.State == HubConnectionState.Connected;
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection != null)
+            await hubConnection.DisposeAsync();
+    }
+
+    private async Task<string> GetToken()
+    {
+        var token = await SecureStorage.GetAsync("accessToken");
+        return token;
+    }
+}

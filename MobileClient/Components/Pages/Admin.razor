@@ -1,0 +1,24 @@
+﻿@page "/admin"
+@inject NavigationManager NavManager
+
+<h3>Admin</h3>
+<div class="d-flex justify-content-center align-items-center" style="min-height: calc(100vh - 3.5rem);">
+    <div style="width: 80%;">
+            <button type="button" @onclick="AddAdminForm" class="btn btn-primary"  style="background-color: #512bdf; width: 100%">Add Admin</button>
+    </div>
+    <div style="width: 80%;">
+            <button type="button" @onclick="DeletePostAdmin" class="btn btn-primary"  style="background-color: #512bdf; width: 100%">Delete Posts</button>
+    </div>
+</div>
+
+@code {
+    private async Task AddAdminForm()
+    {
+        NavManager.NavigateTo("/addadmin");
+    }
+    
+    private async Task DeletePostAdmin()
+    {
+        NavManager.NavigateTo("/deletepostadmin");
+    }
+}

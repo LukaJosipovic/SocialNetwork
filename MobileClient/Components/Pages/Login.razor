@@ -1,0 +1,64 @@
+﻿@page "/login"
+@using Application.DTO.Request
+@using MobileClient.BackgroundTask.Location
+@using MobileClient.Services.Alert
+@using MobileClient.Services.Auth
+@inject IAuthService AuthService
+@inject NavigationManager NavManager
+@inject IAlertService AlertService
+@inject ILocationTracker LocationTracker
+@* @layout MobileClient.Components.Layout.EmptyLayout *@
+
+<div class="d-flex justify-content-center align-items-center" style="min-height: calc(100vh - 3.5rem);">
+    <div style="width: 80%;">
+        <EditForm method="post" Model="Request" OnValidSubmit="LoginUser" FormName="register" Enhance>
+            <DataAnnotationsValidator />
+            <div data-mdb-input-init class="form-outline mb-4">
+                <input type="email" @bind-value="Request.Email" id="emailInput" placeholder="Email address" class="form-control" />
+                <ValidationMessage For="() => Request.Email" class="text-danger" />
+            </div>
+
+            <div data-mdb-input-init class="form-outline mb-4">
+                <input type="password" @bind-value="Request.Password" id="passwordInput" placeholder="Password" class="form-control" />
+                <ValidationMessage For="() => Request.Password" class="text-danger" />
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="background-color: #512bdf; width: 30%">Sign in</button>
+            <button type="button" @onclick="ForgotPasswordClicked" style="float:right; background:none; border:none; color:#0000EE; cursor:pointer; padding:0; font-size:1rem;">
+                Forgot password
+            </button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private LoginUserRequest Request { get; set; } = new()
+    {
+        Email = "string@string.com",
+        Password = "Pa$$w0rd"
+    };
+
+    private async Task LoginUser()
+    {
+
+        var result = await AuthService.Login(Request);
+        if (result.IsSuccess)
+        {
+            await SecureStorage.SetAsync("accessToken", result.AccessToken);
+            await SecureStorage.SetAsync("refreshToken", result.RefreshToken);
+            var test = await AuthService.Test();
+            await LocationTracker.StartAsync();
+            NavManager.NavigateTo("/weather");
+        }
+        else
+        {
+            await AlertService.ShowAlertAsync($"Error", $"{result.Message}", "OK");
+        }
+    }
+
+    private async Task ForgotPasswordClicked()
+    {
+        NavManager.NavigateTo("/forgotpassword");
+    }
+}

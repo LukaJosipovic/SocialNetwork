@@ -1,0 +1,78 @@
+﻿@inject IAccountService AccountService
+@page "/myprofile"
+@using Application.DTO.Response
+@using MobileClient.Services.Account
+@using MobileClient.Services.Alert
+@inject NavigationManager NavManager
+@inject IAlertService AlertService
+@inject IAccountService AccountService
+
+<h3>MyProfile</h3>
+<div>
+    @if (!string.IsNullOrEmpty(profileImage))
+    {
+        <img src="@profileImage" alt="Profile picture" style="width: 150px; height: 150px;" />
+    }
+    <p>@profile.Name</p>
+    <p>@profile.Description</p>
+</div>
+<div class="dropdown">
+    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        Dropdown button
+    </button>
+    <ul class="dropdown-menu">
+        <li><a class="dropdown-item" href="#">Action</a></li>
+        <li><a class="dropdown-item" href="#">Another action</a></li>
+        <li><a class="dropdown-item" @onclick="DeleteAccount" href="#">Delete Profile</a></li>
+    </ul>
+</div>
+
+@if (profile.PostDTO != null && profile.PostDTO.Count > 0)
+{
+    foreach (var post in profile.PostDTO)
+    {
+        <img src="@post.ImageUrl" alt="Post picture" style="width: 100%; cursor: pointer;" @onclick="() => NavigateToPostDetails(post.PostID)" />
+    }
+}
+
+@code {
+    private UserProfileRespons profile { get; set; } = new();
+    private string? profileImage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await AccountService.MyProfile();
+
+        if (response.IsSuccess)
+        {
+            if (response.ProfilePicture != null)
+                profileImage = $"data:image;base64,{Convert.ToBase64String(response.ProfilePicture)}";
+
+            profile = response;
+        }
+    }
+
+    public async Task DeleteAccount()
+    {
+        var response = await AccountService.DeleteAccount();
+
+        if (response.IsSuccess)
+        {
+            await AlertService.ShowAlertAsync($"Ok", $"{response.Message}", "OK");
+            SecureStorage.Remove("accessToken");
+            SecureStorage.Remove("refreshToken");
+        }
+        else
+        {
+            await AlertService.ShowAlertAsync($"Error", $"{response.Message}", "OK");
+        }
+
+        //NavManager.NavigateTo($"/register");
+        NavManager.NavigateTo($"/login");
+    }
+
+    private void NavigateToPostDetails(int postId)
+    {
+        NavManager.NavigateTo($"/profile/{postId}");
+    }
+}
