@@ -119,15 +119,15 @@ namespace API.Controllers
 
             var result = await _accountService.GetUserProfile(userId);
 
-            if (result.PostDTO.Count > 0)
-            {
-                var request = HttpContext.Request;
-                for (int i = 0; i < result.PostDTO.Count; i++)
-                {
-                    result.PostDTO[i].ImageUrl = $"{request.Scheme}://{request.Host}/{result.PostDTO[i].ImageUrl}";
-                    //result.PostDTO[i].ImageUrl = $"http:/10.0.2.2:5209/{result.PostDTO[i].ImageUrl}";
-                }
-            }
+            //if (result.PostDTO.Count > 0)
+            //{
+            //    var request = HttpContext.Request;
+            //    for (int i = 0; i < result.PostDTO.Count; i++)
+            //    {
+            //        result.PostDTO[i].ImageUrl = $"{request.Scheme}://{request.Host}/{result.PostDTO[i].ImageUrl}";
+            //        //result.PostDTO[i].ImageUrl = $"http:/10.0.2.2:5209/{result.PostDTO[i].ImageUrl}";
+            //    }
+            //}
 
             if (result.IsSuccess)
                 return Ok(result);
@@ -143,14 +143,14 @@ namespace API.Controllers
 
             var result = await _accountService.GetUserProfile(userId);
 
-            if (result.PostDTO.Count > 0)
-            {
-                var request = HttpContext.Request;
-                for (int i = 0; i < result.PostDTO.Count; i++)
-                {
-                    result.PostDTO[i].ImageUrl = $"{request.Scheme}://{request.Host}/{result.PostDTO[i].ImageUrl}";
-                }
-            }
+            //if (result.PostDTO.Count > 0)
+            //{
+            //    var request = HttpContext.Request;
+            //    for (int i = 0; i < result.PostDTO.Count; i++)
+            //    {
+            //        result.PostDTO[i].ImageUrl = $"{request.Scheme}://{request.Host}/{result.PostDTO[i].ImageUrl}";
+            //    }
+            //}
 
             if (result.IsSuccess)
                 return Ok(result);

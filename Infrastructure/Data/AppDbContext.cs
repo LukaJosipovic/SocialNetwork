@@ -39,17 +39,6 @@ namespace Infrastructure.Data
             .HasForeignKey(m => m.AcceptorId)  // Foreign key in Match for User2
             .OnDelete(DeleteBehavior.Cascade);
 
-            builder.Entity<Report>()
-            .HasOne(r => r.Reporter)
-            .WithMany(u => u.Reports)
-            .HasForeignKey(r => r.ReporterId)
-            .OnDelete(DeleteBehavior.Restrict); // prevent cascade issues
-
-            builder.Entity<Report>()
-            .HasOne(r => r.ReportedUser)
-            .WithMany()
-            .HasForeignKey(r => r.ReportedUserId)
-            .OnDelete(DeleteBehavior.Restrict); // optional
 
             builder.Entity<ChatMessage>()
             .HasOne(m => m.Sender)
@@ -62,6 +51,28 @@ namespace Infrastructure.Data
             .WithMany()
             .HasForeignKey(m => m.ReceiverId)
             .OnDelete(DeleteBehavior.Restrict);
+            
+            builder.Entity<Report>()
+            .HasOne(r => r.Reporter)
+            .WithMany(u => u.Reports)
+            .HasForeignKey(r => r.ReporterId)
+            .OnDelete(DeleteBehavior.Restrict); // prevent cascade issues
+
+            builder.Entity<Report>()
+            .HasOne(r => r.ReportedUser)
+            .WithMany()
+            .HasForeignKey(r => r.ReportedUserId)
+            .OnDelete(DeleteBehavior.Restrict); // optional
+
+            builder.Entity<Post>()
+            .HasMany(p => p.Reports)
+            .WithOne(r => r.ReportedPost)
+            .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<Post>()
+            .HasMany(p => p.Likes)
+            .WithOne(l => l.Post)
+            .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

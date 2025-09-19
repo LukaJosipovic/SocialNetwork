@@ -144,7 +144,16 @@ namespace Infrastructure.Repository
         
         public async Task<IdentityResult> DeleteAccount(string userId, byte[] imageByte)
         {
-            var user = await _userManager.FindByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
+            var user = await _userManager.Users.Include(u => u.Posts).Include(u => u.Reports).FirstOrDefaultAsync(u => u.Id == userId) ?? throw new KeyNotFoundException("User not found");
+
+            if (user.Posts != null)
+                _context.Post.RemoveRange(user.Posts);
+
+            if (user.Reports != null)
+                _context.Report.RemoveRange(user.Reports);
+
+            await _context.SaveChangesAsync();
+
             user.IsDeleted = true;
             user.ProfilePicture = imageByte;
             user.Name = "Unknown User";

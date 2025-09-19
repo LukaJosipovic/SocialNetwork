@@ -15,7 +15,7 @@ namespace Domain.Model
         public byte[]? PostImage { get; set; }
         public string? Description { get; set; }
         public DateTime DateCreated { get; set; }
-        public ICollection<Report> Reports { get; set; }
+        public ICollection<Report>? Reports { get; set; }
         // Navigation properties
         public ApplicationUser User { get; set; } = null!;
         public ICollection<Like>? Likes { get; set; }

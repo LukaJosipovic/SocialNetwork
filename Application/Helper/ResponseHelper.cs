@@ -66,7 +66,7 @@ namespace Application.Helper
                     PostDTO = user.Posts != null ? user.Posts.Select(p => new PostDTO
                     {
                         PostID = p.Id,
-                        ImageUrl = p.Content,
+                        ImageUrl = p.PostImage != null ? $"data:image;base64,{Convert.ToBase64String(p.PostImage)}" : null,
                         PostImage = p.PostImage
                     }).ToList() : new List<PostDTO>(),
                     IsSuccess = isSuccess,

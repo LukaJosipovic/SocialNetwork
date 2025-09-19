@@ -59,8 +59,8 @@
         if (response.IsSuccess)
         {
             await AlertService.ShowAlertAsync($"Ok", $"{response.Message}", "OK");
-            SecureStorage.Remove("accessToken");
-            SecureStorage.Remove("refreshToken");
+            //SecureStorage.Remove("accessToken");
+            //SecureStorage.Remove("refreshToken");
         }
         else
         {

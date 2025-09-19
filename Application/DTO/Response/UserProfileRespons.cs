@@ -11,6 +11,6 @@ namespace Application.DTO.Response
         public string Name { get; set; }
         public string? Description { get; set; }
         public byte[]? ProfilePicture { get; set; }
-        public List<PostDTO> PostDTO { get; set; }
+        public List<PostDTO>? PostDTO { get; set; }
     }
 }
