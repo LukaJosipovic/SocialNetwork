@@ -1,0 +1,33 @@
+﻿@using Application.DTO.Response
+@inject NavigationManager NavManager
+
+@if (!string.IsNullOrEmpty(profileImage))
+{
+        <img src="@profileImage" alt="Profile picture" style="width: 150px; height: 150px;" class="me-2 rounded-circle" />
+}
+<p>@profile.Description</p>
+
+@if (profile.PostDTO != null && profile.PostDTO.Count > 0)
+{
+    foreach (var post in profile.PostDTO)
+    {
+        <img src="@post.ImageUrl" alt="Post picture" style="width: 100%; cursor: pointer;" @onclick="() => NavigateToPostDetails(post.PostID)" />
+    }
+}
+
+@code {
+    [Parameter]
+    public UserProfileRespons profile { get; set; }
+    private string? profileImage;
+
+    protected override void OnInitialized()
+    {
+        if (profile.ProfilePicture != null)
+            profileImage = $"data:image;base64,{Convert.ToBase64String(profile.ProfilePicture)}";
+    }
+
+    private void NavigateToPostDetails(int postId)
+    {
+        NavManager.NavigateTo($"/profile/{postId}");
+    }
+}

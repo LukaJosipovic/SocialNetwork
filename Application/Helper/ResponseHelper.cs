@@ -124,5 +124,15 @@ namespace Application.Helper
                 };
             }
         }
+
+        public static BannedAccountResponse CreateBannedUserResponse(bool IsSuccess, ApplicationUser user)
+        {
+            return new BannedAccountResponse
+            {
+                UserId = user.Id,
+                Email = user.Email,
+                IsSuccess = IsSuccess
+            };
+        }
     }
 }

@@ -1,0 +1,41 @@
+﻿@page "/bannedaccounts"
+@using Application.DTO.Response
+@using MobileClient.Services.Account
+@inject IAccountService AccountService
+@inject NavigationManager NavManager
+
+<h3>BannedAccounts</h3>
+
+<div class="input-group mb-3">
+    <input type="text" @bind="email" class="form-control" placeholder="email">
+    <button class="btn" type="button" @onclick="SearchBannedAccounts" style="background-color: #512bdf; color: white;">Button</button>
+</div>
+
+<div>
+    @if (account != null)
+    {
+        <div>
+            <p class="mb-0" @onclick="() => NavigateToProfile(account.UserId)">@account.Email</p>
+        </div>
+    }
+</div>
+
+@code {
+    private string email;
+    private BannedAccountResponse? account = null;
+
+    private async Task SearchBannedAccounts()
+    {
+        var user = await AccountService.GetBannedUser(email);
+
+        if (user.IsSuccess)
+            account = user;
+        else
+            account = null;
+    }
+
+    private void NavigateToProfile(string userId)
+    {
+        NavManager.NavigateTo($"/bannedprofile/user/{userId}");
+    }
+}

@@ -24,5 +24,7 @@ namespace Application.Service.Account
         Task<GeneralResponse> GhostMode(bool ghostMode, string userId);
         Task<GeneralResponse> DoNotDisturb(bool doNotDisturb, string userId);
         Task<GeneralResponse> ReportUser(string userId, string reporterId);
+        Task<BannedAccountResponse> GetBannedUser(string email);
+        Task<GeneralResponse> UnbanUser(string userId);
     }
 }

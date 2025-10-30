@@ -218,5 +218,17 @@ namespace Infrastructure.Repository
         {
             return await _context.Report.CountAsync(r => r.ReportedUserId == userId);
         }
+
+        public async Task<ApplicationUser> GetBannedUser(string email)
+        {
+            return await _context.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Email == email) ?? throw new KeyNotFoundException("User not found");
+        }
+
+        public async Task<IdentityResult> UnbanUser(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
+            user.IsBanned = false;
+            return await _userManager.UpdateAsync(user);
+        }
     }
 }

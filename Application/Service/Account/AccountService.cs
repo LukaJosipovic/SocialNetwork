@@ -294,5 +294,51 @@ namespace Application.Service.Account
                 return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
         }
+
+        public async Task<BannedAccountResponse> GetBannedUser(string email)
+        {
+            try
+            {
+                var user = await _accountRepository.GetBannedUser(email);
+                return ResponseHelper.CreateBannedUserResponse(true, user);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return new BannedAccountResponse
+                {
+                    IsSuccess = false,
+                    Message = ex.Message
+                };
+            }
+            catch(Exception ex)
+            {
+                return new BannedAccountResponse
+                {
+                    IsSuccess = false,
+                    Message = "Something went wrong"
+                };
+            }
+        }
+
+        public async Task<GeneralResponse> UnbanUser(string userId)
+        {
+            try
+            {
+                var result = await _accountRepository.UnbanUser(userId);
+
+                if (result.Succeeded)
+                    return ResponseHelper.CreateGeneralResponse(true, "Account successfully unblocked");
+                
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return ResponseHelper.CreateGeneralResponse(false, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
+            }
+        }
     }
 }

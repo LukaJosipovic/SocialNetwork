@@ -1,4 +1,4 @@
-﻿@page "/profile/user/{UserId}"
+﻿@page "/bannedprofile/user/{UserId}"
 @using Application.DTO.Response
 @using MobileClient.Services.Account
 @using MobileClient.Services.Alert
@@ -17,18 +17,19 @@
     </div>
     <div class="dropdown">
         <button class="btn btn-link p-0 m-0 border-0" type="button" id="iconMenuButton"
-        data-bs-toggle="dropdown" aria-expanded="false">
+                data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-three-dots-vertical fs-4"></i>
         </button>
         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="iconMenuButton">
-            <li><button class="dropdown-item" @onclick="() => ReportUser(UserId)">Report</button></li>
+            <li><button class="dropdown-item" @onclick="() => UnbanUser(UserId)">Unbann</button></li>
+            <li><button class="dropdown-item" @onclick="() => DeleteUser(UserId)">Delete</button></li>
         </ul>
     </div>
 </div>
 
 @if (IsSuccess)
 {
-    <_Profile profile="@profile"/>
+    <_Profile profile="@profile" />
 }
 
 @code {
@@ -49,14 +50,19 @@
         }
 
     }
-    
-    private async Task ReportUser(string userId)
+
+    private async Task UnbanUser(string userId)
     {
-        var response = await AccountService.ReportUser(userId);
+        var response = await AccountService.UnbanUser(userId);
         if (response.IsSuccess)
             await AlertService.ShowAlertAsync("Ok", $"{response.Message}", "OK");
         else
             await AlertService.ShowAlertAsync("Error", $"{response.Message}", "OK");
+    }
+
+    private async Task DeleteUser(string userId)
+    {
+        
     }
 
 }

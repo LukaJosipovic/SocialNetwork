@@ -9,6 +9,9 @@
     <div style="width: 80%;">
             <button type="button" @onclick="DeletePostAdmin" class="btn btn-primary"  style="background-color: #512bdf; width: 100%">Delete Posts</button>
     </div>
+    <div style="width: 80%;">
+            <button type="button" @onclick="ShowBannedAccounts" class="btn btn-primary"  style="background-color: #512bdf; width: 100%">Delete Posts</button>
+    </div>
 </div>
 
 @code {
@@ -20,5 +23,10 @@
     private async Task DeletePostAdmin()
     {
         NavManager.NavigateTo("/deletepostadmin");
+    }
+    
+    private async Task ShowBannedAccounts()
+    {
+        NavManager.NavigateTo("/bannedaccounts");
     }
 }

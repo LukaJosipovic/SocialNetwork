@@ -73,6 +73,9 @@ namespace Infrastructure.Data
             .HasMany(p => p.Likes)
             .WithOne(l => l.Post)
             .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<ApplicationUser>().HasQueryFilter(u => !u.IsBanned && !u.IsDeleted);
+            builder.Entity<Post>().HasQueryFilter(p => !p.User.IsBanned && !p.User.IsDeleted);
         }
     }
 }

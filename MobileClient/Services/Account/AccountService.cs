@@ -100,5 +100,21 @@ namespace MobileClient.Services.Account
             var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
             return responseObject;
         }
+
+        public async Task<BannedAccountResponse> GetBannedUser(string email)
+        {
+            var client = _httpClientFactory.CreateClient("BaseApi");
+            var response = await client.GetAsync($"api/Account/GetBannedUser?email={email}");
+            var responseObject = await response.Content.ReadFromJsonAsync<BannedAccountResponse>();
+            return responseObject;
+        }
+
+        public async Task<GeneralResponse> UnbanUser(string userId)
+        {
+            var client = _httpClientFactory.CreateClient("BaseApi");
+            var response = await client.PostAsync($"api/Account/UnbanUser?userId={userId}", null);
+            var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
+            return responseObject;
+        }
     }
 }

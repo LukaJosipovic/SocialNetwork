@@ -22,5 +22,7 @@ namespace MobileClient.Services.Account
         Task<GeneralResponse> GhostMode(bool ghostMode);
         Task<GeneralResponse> DoNotDisturb(bool doNotDisturb);
         Task<GeneralResponse> ReportUser(string userId);
+        Task<GeneralResponse> UnbanUser(string userId);
+        Task<BannedAccountResponse> GetBannedUser(string email);
     }
 }

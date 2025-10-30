@@ -224,5 +224,29 @@ namespace API.Controllers
 
             return BadRequest(result);
         }
+
+        [HttpPost("UnbanUser")]
+        public async Task<IActionResult> UnbanUser(string userId)
+        {
+            var reporterId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var result = await _accountService.UnbanUser(userId);
+
+            if (result.IsSuccess)
+                return Ok(result);
+
+            return BadRequest(result);
+        }
+
+        [HttpGet("GetBannedUser")]
+        public async Task<IActionResult> GetBannedUser(string email)
+        {
+            var result = await _accountService.GetBannedUser(email);
+
+            if (result.IsSuccess)
+                return Ok(result);
+
+            return BadRequest(result);
+        }
     }
 }

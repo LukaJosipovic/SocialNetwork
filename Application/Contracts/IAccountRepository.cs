@@ -26,8 +26,10 @@ namespace Application.Contracts
         Task<bool> ReportUser(Report report);
         Task<bool> CheckIfReportExist(string reporterId, int postId);
         Task<ApplicationUser> GetUserByEmail(string email);
+        Task<ApplicationUser> GetBannedUser(string email);
         Task<bool> CheckIfUserIsReported(string reporterId, string userId);
         Task<IdentityResult> BanAccount(string userId);
         Task<int> GetReportCount(string userId);
+        Task<IdentityResult> UnbanUser(string userId);
     }
 }

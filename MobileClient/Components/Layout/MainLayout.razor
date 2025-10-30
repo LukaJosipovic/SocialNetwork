@@ -34,11 +34,11 @@
     protected override async Task OnInitializedAsync()
     {
         UserSessionService.OnUserBanned += HandleUserBanned;
-        string url = "http://192.168.100.4/socialnetwork/activityhub";
-        string url2 = "https://localhost:7098/socialnetwork/activityhub";
+        string url = "http://192.168.100.19/socialnetwork/activityhub";
+        string url2 = "https://localhost:7098/activityhub";
         string url3 = "http://10.0.2.2:5209/socialnetwork/activityhub";
         var test = await GetToken();
-        hubConnection = new HubConnectionBuilder().WithUrl(NavManager.ToAbsoluteUri(url), async options =>
+        hubConnection = new HubConnectionBuilder().WithUrl(NavManager.ToAbsoluteUri(url2), async options =>
         {
             options.AccessTokenProvider = async () => await GetToken();
         }).WithAutomaticReconnect().Build();
