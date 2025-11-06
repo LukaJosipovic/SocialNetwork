@@ -1,4 +1,5 @@
-﻿using Application.DTO.Request;
+﻿using Application.DTO;
+using Application.DTO.Request;
 using Application.DTO.Response;
 using Application.Enum;
 using System;
@@ -23,6 +24,9 @@ namespace MobileClient.Services.Account
         Task<GeneralResponse> DoNotDisturb(bool doNotDisturb);
         Task<GeneralResponse> ReportUser(string userId);
         Task<GeneralResponse> UnbanUser(string userId);
+        Task<GeneralResponse> BlockUser(string userId);
+        Task<GeneralResponse> UnblockUser(string blockedUserId);
         Task<BannedAccountResponse> GetBannedUser(string email);
+        Task<List<UserBriefDetailsDTO>> GetBlockedUsers(PageSettingsRequest model);
     }
 }

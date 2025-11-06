@@ -26,5 +26,7 @@ namespace Domain.Model
         public ICollection<Match>? Matches { get; set; }
         public ICollection<Like>? Likes { get; set; }
         public ICollection<Activity>? Activity { get; set; }
+        public ICollection<UserBlocks>? BlockedUsers { get; set; }    //I block them
+        public ICollection<UserBlocks>? BlockedByUsers { get; set; } //They block me
     }
 }

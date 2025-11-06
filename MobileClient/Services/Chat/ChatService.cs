@@ -23,8 +23,7 @@ namespace MobileClient.Services.Chat
         public async Task<ChatRoomResponse> GetChatRooms(PageSettingsRequest model)
         {   
             var client = _httpClientFactory.CreateClient("BaseApi");
-            //var response = await client.GetAsync($"api/Chat/GetChatRooms?PageNumber={model.PageNumber}&PageSize={model.PageSize}");
-            var response = await client.GetAsync($"api/Chat/GetFakeChatRooms?PageNumber={model.PageNumber}&PageSize={model.PageSize}");
+            var response = await client.GetAsync($"api/Chat/GetChatRooms?PageNumber={model.PageNumber}&PageSize={model.PageSize}");
             var responseObject = await response.Content.ReadFromJsonAsync<ChatRoomResponse>();
             return responseObject;
         }

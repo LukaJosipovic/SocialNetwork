@@ -1,4 +1,5 @@
-﻿using Application.DTO.Request;
+﻿using Application.DTO;
+using Application.DTO.Request;
 using Application.DTO.Response;
 using Application.Enum;
 using System.Net.Http.Json;
@@ -113,6 +114,30 @@ namespace MobileClient.Services.Account
         {
             var client = _httpClientFactory.CreateClient("BaseApi");
             var response = await client.PostAsync($"api/Account/UnbanUser?userId={userId}", null);
+            var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
+            return responseObject;
+        }
+
+        public async Task<GeneralResponse> BlockUser(string userId)
+        {
+            var client = _httpClientFactory.CreateClient("BaseApi");
+            var response = await client.PostAsync($"api/Account/BlockUser?userIdToBlock={userId}", null);
+            var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
+            return responseObject;
+        }
+
+        public async Task<List<UserBriefDetailsDTO>> GetBlockedUsers(PageSettingsRequest model)
+        {
+            var client = _httpClientFactory.CreateClient("BaseApi");
+            var response = await client.GetAsync($"api/Account/GetBlockedUsers?PageNumber={model.PageNumber}&PageSize={model.PageSize}");
+            var responseObject = await response.Content.ReadFromJsonAsync<List<UserBriefDetailsDTO>>();
+            return responseObject;
+        }
+
+        public async Task<GeneralResponse> UnblockUser(string blockedUserId)
+        {
+            var client = _httpClientFactory.CreateClient("BaseApi");
+            var response = await client.PostAsync($"api/Account/UnblockUser?blockedUserId={blockedUserId}", null);
             var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
             return responseObject;
         }

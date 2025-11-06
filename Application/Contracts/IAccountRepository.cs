@@ -31,5 +31,9 @@ namespace Application.Contracts
         Task<IdentityResult> BanAccount(string userId);
         Task<int> GetReportCount(string userId);
         Task<IdentityResult> UnbanUser(string userId);
+        Task<bool> BlockUser(UserBlocks block);
+        Task<bool> UnblockUser(UserBlocks block);
+        Task<UserBlocks> GetBlockedUser(string blockerId, string blockedUserId);
+        Task<List<UserBlocks>> GetAllBlockedUsers(string userId, PageSettingsRequest model);
     }
 }

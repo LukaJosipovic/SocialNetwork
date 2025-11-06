@@ -22,6 +22,7 @@ namespace Infrastructure.Data
         public DbSet<Match> Match { get; set; }
         public DbSet<Report> Report { get; set; }
         public DbSet<Activity> Activity { get; set; }
+        public DbSet<UserBlocks> UserBlocks { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -73,6 +74,22 @@ namespace Infrastructure.Data
             .HasMany(p => p.Likes)
             .WithOne(l => l.Post)
             .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<UserBlocks>()
+            .HasOne(b => b.BlockerUser)
+            .WithMany(u => u.BlockedUsers)
+            .HasForeignKey(b => b.BlockerUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<UserBlocks>()
+            .HasOne(b => b.BlockedUser)
+            .WithMany(u => u.BlockedByUsers)
+            .HasForeignKey(b => b.BlockedUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<UserBlocks>()
+            .HasIndex(b => new { b.BlockerUserId, b.BlockedUserId })
+            .IsUnique(); // Prevent duplicate blocks
 
             builder.Entity<ApplicationUser>().HasQueryFilter(u => !u.IsBanned && !u.IsDeleted);
             builder.Entity<Post>().HasQueryFilter(p => !p.User.IsBanned && !p.User.IsDeleted);

@@ -26,5 +26,8 @@ namespace Application.Service.Account
         Task<GeneralResponse> ReportUser(string userId, string reporterId);
         Task<BannedAccountResponse> GetBannedUser(string email);
         Task<GeneralResponse> UnbanUser(string userId);
+        Task<GeneralResponse> BlockUser(string blockerId, string userIdToBlock);
+        Task<GeneralResponse> UnblockUser(string blockerId, string blockedUserId);
+        Task<List<UserBriefDetailsDTO>> GetBlockedUsers(string userId, PageSettingsRequest model);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Application.Contracts;
+using Application.DTO;
 using Application.DTO.Request;
 using Application.DTO.Response;
 using Application.Enum;
@@ -229,6 +230,39 @@ namespace Infrastructure.Repository
             var user = await _userManager.FindByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
             user.IsBanned = false;
             return await _userManager.UpdateAsync(user);
+        }
+
+        public async Task<bool> BlockUser(UserBlocks block)
+        {
+            await _context.UserBlocks.AddAsync(block);
+            var result = await _context.SaveChangesAsync();
+
+            if (result > 0)
+                return true;
+
+            return false;
+        }
+        public async Task<bool> UnblockUser(UserBlocks block)
+        {
+            _context.UserBlocks.Remove(block);
+            var result = await _context.SaveChangesAsync();
+
+            if (result > 0)
+                return true;
+
+            return false;
+        }
+
+        public async Task<UserBlocks?> GetBlockedUser(string blockerId, string blockedUserId)
+        {
+            return await _context.UserBlocks.FirstOrDefaultAsync(u => u.BlockerUserId == blockerId && u.BlockedUserId == blockedUserId);
+        }
+
+        public async Task<List<UserBlocks>> GetAllBlockedUsers(string userId, PageSettingsRequest model)
+        {
+            //var skip = (model.PageNumber - 1) * model.PageSize;
+            return await _context.UserBlocks.Where(u => u.BlockerUserId == userId).ToListAsync(); //add paggination here
+
         }
     }
 }
