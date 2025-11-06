@@ -1,0 +1,111 @@
+﻿@page "/blockedusers"
+@using Application.DTO
+@using Application.DTO.Request
+@using MobileClient.Services.Account
+@using MobileClient.Services.Alert
+@using MobileClient.Services.Chat
+@inject IChatService ChatService
+@inject IAccountService AccountService
+@inject NavigationManager NavManager
+@inject IJSRuntime JS
+@inject IAlertService AlertService
+
+<h3>ChatRooms</h3>
+
+<div id="blockedUsersContainer" style="height: 500px; overflow-y: auto; border: 1px solid">
+    @if (users.Count > 0)
+    {
+        @foreach (var user in users)
+        {
+            <hr />
+            <div>
+                @if (user.ProfilePictureString != null)
+                {
+                    <div>
+                        <img src="@user.ProfilePictureString" alt="Profile picture" style="width: 50px; height: 50px;" class="me-2 rounded-circle" />
+                        <p class="mb-0">@user.Name</p>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-outline-success" @onclick="() => UnblockUser(user.Id)">
+                            <i class="bi bi-check"></i> Unblock
+                        </button>
+                    </div>
+                }
+            </div>
+        }
+        @if (isLoading)
+        {
+            <p>Loading more...</p>
+        }
+    }
+    else
+    {
+        <p>There is no people to chat</p>
+    }
+</div>
+
+@code {
+    private List<UserBriefDetailsDTO>? users = new();
+    private PageSettingsRequest pageSettings = new();
+    private bool isLoading = false;
+    private bool hasMoreData = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUsers();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var module = await JS.InvokeAsync<IJSObjectReference>("import", "./infiniteScroll.js");
+            await module.InvokeVoidAsync("checkDivScrollEnd", "blockedUsersContainer", "LoadMoreUsers", DotNetObjectReference.Create(this));
+        }
+    }
+
+    private async Task LoadUsers()
+    {
+        if (isLoading || !hasMoreData)
+            return;
+
+        isLoading = true;
+
+        var response = await AccountService.GetBlockedUsers(pageSettings);
+        if (response != null && response.Any())
+        {
+            foreach (var user in response)
+            {
+                if (user.ProfilePicture != null)
+                {
+                    user.ProfilePictureString = $"data:image;base64,{Convert.ToBase64String(user.ProfilePicture)}";
+                }
+            }
+            users.AddRange(response);
+            pageSettings.PageNumber++;
+        }
+        else
+        {
+            //users = null;
+            hasMoreData = false;
+        }
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public async Task LoadMoreUsers()
+    {
+        await LoadUsers();
+    }
+
+    private async Task UnblockUser(string userId)
+    {
+        var response = await AccountService.UnblockUser(userId);
+
+        if (response.IsSuccess)
+            await AlertService.ShowAlertAsync($"Ok", $"{response.Message}", "OK");
+        else
+            await AlertService.ShowAlertAsync($"Error", $"{response.Message}", "OK");
+    }
+}
