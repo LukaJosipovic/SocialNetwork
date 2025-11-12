@@ -31,9 +31,9 @@ namespace MobileClient
 
             builder.Services.AddHttpClient("BaseApi", client =>
             {
-                client.BaseAddress = new Uri("https://localhost:7098/");
+                //client.BaseAddress = new Uri("https://localhost:7098/");
                 //client.BaseAddress = new Uri("http://10.0.2.2:5209/");
-                //client.BaseAddress = new Uri("http://192.168.100.4/socialnetwork/");
+                client.BaseAddress = new Uri("http://192.168.100.19:4321/socialnetwork/");
                 //client.BaseAddress = new Uri("http://localhost/socialnetwork/");
                 //client.BaseAddress = new Uri("https://localhost/socialnetwork/");
                 //client.BaseAddress = new Uri("https://192.168.100.4/socialnetwork/");

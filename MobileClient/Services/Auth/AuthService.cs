@@ -79,34 +79,34 @@ namespace MobileClient.Services.Auth
 
         public async Task<RegisterResponse> Register(CreateAccountRequest request)
         {
-            //try
-            //{
-            //    var client = _httpClientFactory.CreateClient("BaseApi");
-            //    var response = await client.PostAsJsonAsync("api/Auth/CreateAccount", request);
-            //    if (response.IsSuccessStatusCode)
-            //    {
-            //        return new RegisterResponse
-            //        {
-            //            IsSuccess = true,
-            //            Message = "Registration successful"
-            //        };
-            //    }
-            //    var responseObject = await response.Content.ReadFromJsonAsync<RegisterResponse>();
-            //    return responseObject;
-            //}
-            //catch (Exception ex)
-            //{
-            //    return new RegisterResponse
-            //    {
-            //        IsSuccess = false,
-            //        Message = "Something went wrong please try again later"
-            //    };
-            //}
-            return await PostAsync("api/Auth/CreateAccount", request, new RegisterResponse
+            try
             {
-                IsSuccess = false,
-                Message = "Something went wrong please try again later"
-            });
+                var client = _httpClientFactory.CreateClient("BaseApi");
+                var response = await client.PostAsJsonAsync("api/Auth/CreateAccount", request);
+                if (response.IsSuccessStatusCode)
+                {
+                    return new RegisterResponse
+                    {
+                        IsSuccess = true,
+                        Message = "Registration successful"
+                    };
+                }
+                var responseObject = await response.Content.ReadFromJsonAsync<RegisterResponse>();
+                return responseObject;
+            }
+            catch (Exception ex)
+            {
+                return new RegisterResponse
+                {
+                    IsSuccess = false,
+                    Message = "Something went wrong please try again later"
+                };
+            }
+            //return await PostAsync("api/Auth/CreateAccount", request, new RegisterResponse
+            //{
+            //    IsSuccess = false,
+            //    Message = "Something went wrong please try again later"
+            //});
         }
 
         public async Task<RegisterResponse> AddAdmin(CreateAccountRequest request)

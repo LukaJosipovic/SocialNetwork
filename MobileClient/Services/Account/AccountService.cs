@@ -137,7 +137,7 @@ namespace MobileClient.Services.Account
         public async Task<GeneralResponse> UnblockUser(string blockedUserId)
         {
             var client = _httpClientFactory.CreateClient("BaseApi");
-            var response = await client.PostAsync($"api/Account/UnblockUser?blockedUserId={blockedUserId}", null);
+            var response = await client.DeleteAsync($"api/Account/UnblockUser?blockedUserId={blockedUserId}");
             var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
             return responseObject;
         }

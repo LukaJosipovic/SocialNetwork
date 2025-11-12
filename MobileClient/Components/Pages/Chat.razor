@@ -50,7 +50,7 @@
             messages.Add(message.Content);
         }
 
-        hubConnection = new HubConnectionBuilder().WithUrl(NavManager.ToAbsoluteUri("http://192.168.100.19/socialnetwork/chathub"), async options =>
+        hubConnection = new HubConnectionBuilder().WithUrl(NavManager.ToAbsoluteUri("http://192.168.100.19:4321/socialnetwork/chathub"), async options =>
         {
             options.AccessTokenProvider = async() => await GetToken();
         }).WithAutomaticReconnect().Build();

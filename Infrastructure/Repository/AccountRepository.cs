@@ -261,7 +261,7 @@ namespace Infrastructure.Repository
         public async Task<List<UserBlocks>> GetAllBlockedUsers(string userId, PageSettingsRequest model)
         {
             //var skip = (model.PageNumber - 1) * model.PageSize;
-            return await _context.UserBlocks.Where(u => u.BlockerUserId == userId).ToListAsync(); //add paggination here
+            return await _context.UserBlocks.Include(u => u.BlockedUser).Where(u => u.BlockerUserId == userId).ToListAsync(); //add paggination here
 
         }
     }
