@@ -28,11 +28,11 @@ namespace MobileClient.Services.Chat
             return responseObject;
         }
 
-        public async Task<List<ChatMessage>> GetMessages()
+        public async Task<MessageResponse> GetMessages(string recipientId)
         {
             var client = _httpClientFactory.CreateClient("BaseApi");
-            var response = await client.GetAsync($"api/Chat/GetMessages");
-            var responseObject = await response.Content.ReadFromJsonAsync<List<ChatMessage>>();
+            var response = await client.GetAsync($"api/Chat/GetMessages?userToChatId={recipientId}");
+            var responseObject = await response.Content.ReadFromJsonAsync<MessageResponse>();
             return responseObject;
         }
     }

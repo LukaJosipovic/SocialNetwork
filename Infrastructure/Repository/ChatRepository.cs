@@ -32,5 +32,10 @@ namespace Infrastructure.Repository
         {
             return await _context.ChatMessage.Where(m => m.SenderId == userId || m.ReceiverId == userId).ToListAsync();
         }
+
+        public async Task<bool> CheckIfUserIsBlocked(string userId, string userToChatId)
+        {
+            return await _context.UserBlocks.AnyAsync(u => (u.BlockedUserId == userId && u.BlockerUserId == userToChatId) || (u.BlockedUserId == userToChatId && u.BlockerUserId == userId));
+        }
     }
 }

@@ -30,11 +30,11 @@ namespace API.Controllers
         }
 
         [HttpGet("GetMessages")]
-        public async Task<IActionResult> GetMessages()
+        public async Task<IActionResult> GetMessages(string userToChatId)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            var messages = await _chatService.GetMessages(userId);
+            var messages = await _chatService.GetMessages(userId, userToChatId);
 
             return Ok(messages);
         }

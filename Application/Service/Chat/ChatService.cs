@@ -83,11 +83,29 @@ namespace Application.Service.Chat
 			}
         }
 
-        public async Task<List<ChatMessage>> GetMessages(string userId)
+        public async Task<MessageResponse> GetMessages(string userId, string userToChatId)
         {
             try
             {
-                return await _chatRepository.GetMessages(userId);
+                var messageList = new MessageResponse();
+                messageList.MessagesDto = new List<MessageDTO>();
+                var userBlocked = await _chatRepository.CheckIfUserIsBlocked(userId, userToChatId);
+                messageList.ConversationBlocked = userBlocked;
+                var messages = await _chatRepository.GetMessages(userId);
+
+                foreach (var message in messages)
+                {
+                    var messageDto = new MessageDTO
+                    {
+                        Id = message.Id,
+                        SenderId = message.SenderId,
+                        ReceiverId = message.ReceiverId,
+                        Content = message.Content,
+                        Timestamp = message.Timestamp
+                    };
+                    messageList.MessagesDto.Add(messageDto);
+                }
+                return messageList;
             }
             catch (Exception ex)
             {

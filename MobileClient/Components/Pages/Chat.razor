@@ -16,9 +16,12 @@
     </label>
 </div>
 <div>
-    <label>
-        Message: <input @bind="messageInput" />
-    </label>
+    @if (conversationBlocked == false)
+    {
+        <label>
+            Message: <input @bind="messageInput" />
+        </label>
+    }
 </div>
 <button @onclick="Send" disabled="@(IsConnected == false)">Send</button>
 
@@ -36,6 +39,7 @@
     private List<string> messages = new();
     private string? userInput;
     private string? messageInput;
+    private bool conversationBlocked;
     [Parameter]
     public string? senderId { get; set; }
     [Parameter]
@@ -43,26 +47,36 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var oldDessages = await ChatService.GetMessages();
-
-        foreach (var message in oldDessages)
+        try
         {
-            messages.Add(message.Content);
+            var messageRespons = await ChatService.GetMessages(recipientId);
+            conversationBlocked = messageRespons.ConversationBlocked;
+            var oldDessages = messageRespons.MessagesDto;
+
+            foreach (var message in oldDessages)
+            {
+                messages.Add(message.Content);
+            }
+
+            hubConnection = new HubConnectionBuilder().WithUrl(NavManager.ToAbsoluteUri("http://192.168.100.19:4321/socialnetwork/chathub"), async options =>
+            {
+                options.AccessTokenProvider = async() => await GetToken();
+            }).WithAutomaticReconnect().Build();
+
+            hubConnection.On<string, string>("ReceiveClientMessage", (senderId, message) =>
+            {
+                var formattedMessage = $"From {senderId}: {message}";
+                messages.Add(formattedMessage);
+                InvokeAsync(StateHasChanged);
+            });
+
+            await hubConnection.StartAsync();
         }
-
-        hubConnection = new HubConnectionBuilder().WithUrl(NavManager.ToAbsoluteUri("http://192.168.100.19:4321/socialnetwork/chathub"), async options =>
+        catch (Exception ex)
         {
-            options.AccessTokenProvider = async() => await GetToken();
-        }).WithAutomaticReconnect().Build();
-
-        hubConnection.On<string, string>("ReceiveClientMessage", (senderId, message) =>
-        {
-            var formattedMessage = $"From {senderId}: {message}";
-            messages.Add(formattedMessage);
-            InvokeAsync(StateHasChanged);
-        });
-
-        await hubConnection.StartAsync();
+            
+            throw;
+        }
     }
 
     private async Task Send()

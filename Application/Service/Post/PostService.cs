@@ -269,9 +269,8 @@ namespace Application.Service.Post
                 var isSuccess = await _postRepository.ReportPost(report);
 
                 if (isSuccess)
-                {
                     return ResponseHelper.CreateGeneralResponse(true, $"You reported {post.User.Name}'s post");
-                }
+                
                 return ResponseHelper.CreateGeneralResponse(false, "Post cannot be reported");
             }
             catch (KeyNotFoundException ex)
