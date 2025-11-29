@@ -158,6 +158,7 @@ namespace Infrastructure.Repository
             user.IsDeleted = true;
             user.ProfilePicture = imageByte;
             user.Name = "Unknown User";
+            user.Email = null;
             return await _userManager.UpdateAsync(user);
         }
 

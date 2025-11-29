@@ -76,16 +76,16 @@
         if (response.IsSuccess)
         {
             await AlertService.ShowAlertAsync($"Ok", $"{response.Message}", "OK");
-            //SecureStorage.Remove("accessToken");
-            //SecureStorage.Remove("refreshToken");
+            SecureStorage.Remove("accessToken");
+            SecureStorage.Remove("refreshToken");
         }
         else
         {
             await AlertService.ShowAlertAsync($"Error", $"{response.Message}", "OK");
         }
 
-        //NavManager.NavigateTo($"/register");
-        NavManager.NavigateTo($"/login");
+        NavManager.NavigateTo($"/register");
+        //NavManager.NavigateTo($"/login");
     }
 
     private void NavigateToPostDetails(int postId)
