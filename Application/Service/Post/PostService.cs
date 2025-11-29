@@ -176,7 +176,7 @@ namespace Application.Service.Post
                     var likeResponse = new LikeResponse
                     {
                         IsSuccess = true,
-                        LikeCount = post.Likes == null ? 0 : post.Likes.Count,
+                        LikeCount = post.Likes == null ? 0 : updatedPost.Likes.Count,
                         PostId = postId
                     };
 
@@ -212,7 +212,7 @@ namespace Application.Service.Post
                     var likeResponse = new LikeResponse
                     {
                         IsSuccess = true,
-                        LikeCount = post.Likes == null ? 0 : post.Likes.Count,
+                        LikeCount = post.Likes == null ? 0 : updatedPost.Likes.Count,
                         PostId = postId
                     };
 

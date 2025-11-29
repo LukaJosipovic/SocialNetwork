@@ -48,12 +48,12 @@ namespace Infrastructure.Repository
 
         public async Task<List<Post>> GetAllPosts()
         {
-            return await _context.Post.Include(p => p.User).ToListAsync();
+            return await _context.Post.Include(p => p.User).Include(p => p.Likes).ToListAsync();
         }
 
         public async Task<Post> GetPostById(int id)
         {
-            return await _context.Post.Include(p => p.User).FirstOrDefaultAsync(p => p.Id == id) ?? throw new KeyNotFoundException("Post cannot be found");
+            return await _context.Post.Include(p => p.User).Include(p => p.Likes).FirstOrDefaultAsync(p => p.Id == id) ?? throw new KeyNotFoundException("Post cannot be found");
         }
 
         public async Task<List<Post>> GetReportedPosts()
