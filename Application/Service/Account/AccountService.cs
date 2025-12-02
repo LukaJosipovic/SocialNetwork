@@ -254,7 +254,7 @@ namespace Application.Service.Account
 
                 var report = new Report
                 {
-                    ReporterId = userId,
+                    ReporterId = reporterId,
                     Reporter = reporter,
                     ReportedUserId = userId,
                     ReportedUser = reportedUser,
@@ -266,7 +266,7 @@ namespace Application.Service.Account
                 {
                     var reportNumber = await _accountRepository.GetReportCount(userId);
                     
-                    if (reportNumber > 1)
+                    if (reportNumber > 0)
                     {
                         var isBanned = await _accountRepository.BanAccount(userId);
                         if (isBanned.Succeeded)
@@ -277,7 +277,7 @@ namespace Application.Service.Account
                                 Subject = "Your account has been banned",
                                 Body = "Your account has been banned due to too many logins to your account. If you think this ban is unjustified, contact our admin"
                             };
-                            _emailService.SendEmail(email);
+                            //_emailService.SendEmail(email);
                         }
                     }
 
@@ -435,6 +435,23 @@ namespace Application.Service.Account
             {
 
                 throw;
+            }
+        }
+
+        public async Task<UserDetailsResponse> GetAnyUserById(string userId)
+        {
+            try
+            {
+                var user = await _accountRepository.GetAnyUserById(userId);
+                return ResponseHelper.CreateUserDetailsResponse(user, true, null);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return ResponseHelper.CreateUserDetailsResponse(null, false, ex.Message);
+            }
+            catch
+            {
+                return ResponseHelper.CreateUserDetailsResponse(null, false, "Something went wrong");
             }
         }
     }

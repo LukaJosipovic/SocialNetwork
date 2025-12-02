@@ -33,7 +33,7 @@ namespace API.Controllers
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (userId == null)
-                return BadRequest("User cannot be found");
+                return Unauthorized("User cannot be found");
 
             var result = await _activityService.CreateActivity(request, userId);
 
@@ -59,7 +59,7 @@ namespace API.Controllers
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (userId == null)
-                return BadRequest("User cannot be found");
+                return Unauthorized("User cannot be found");
 
             var result = await _activityService.AcceptActivity(cacheKey, userId);
 

@@ -81,41 +81,61 @@ namespace API.Controllers
         [HttpPost("Refresh")]
         public async Task<IActionResult> Refresh(RefreshTokenRequest request)
         {
-            try
+            if (ModelState.IsValid)
             {
-                if (ModelState.IsValid)
-                {
-                    //var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                    var handler = new JwtSecurityTokenHandler();
-                    var token = handler.ReadJwtToken(request.JwtToken);
-                    var userId = token.Subject;
+                //var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var handler = new JwtSecurityTokenHandler();
+                var token = handler.ReadJwtToken(request.JwtToken);
+                var userId = token.Subject;
 
-                    if (userId == null)
-                        return BadRequest("User cannot be found");
+                if (userId == null)
+                    return BadRequest("User cannot be found");
 
-                    request.UserId = userId;
+                request.UserId = userId;
 
-                    var result = await _authService.RefreshToken(request);
-                    if (result.IsSuccess)
-                        return Ok(result);
+                var result = await _authService.RefreshToken(request);
+                
+                if (result.IsSuccess)
+                    return Ok(result);
 
-                    return NotFound();
-                }
-                return BadRequest("Some properties are not valid");
+                return BadRequest(result);
             }
-            catch (AccountBannedException ex)
-            {
-                return BadRequest(new LoginResponse
-                {
-                    IsSuccess = false,
-                    IsBanned = true,
-                    Message = ex.Message
-                });
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            return BadRequest("Some properties are not valid");
+            //try
+            //{
+            //    if (ModelState.IsValid)
+            //    {
+            //        //var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            //        var handler = new JwtSecurityTokenHandler();
+            //        var token = handler.ReadJwtToken(request.JwtToken);
+            //        var userId = token.Subject;
+
+            //        if (userId == null)
+            //            return BadRequest("User cannot be found");
+
+            //        request.UserId = userId;
+
+            //        var result = await _authService.RefreshToken(request);
+            //        if (result.IsSuccess)
+            //            return Ok(result);
+
+            //        return NotFound();
+            //    }
+            //    return BadRequest("Some properties are not valid");
+            //}
+            //catch (AccountBannedException ex)
+            //{
+            //    return BadRequest(new LoginResponse
+            //    {
+            //        IsSuccess = false,
+            //        IsBanned = true,
+            //        Message = ex.Message
+            //    });
+            //}
+            //catch (UnauthorizedAccessException ex)
+            //{
+            //    return BadRequest(ex.Message);
+            //}
         }
 
         [HttpPost("ForgotPassword")]

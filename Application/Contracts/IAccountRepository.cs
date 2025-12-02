@@ -35,5 +35,6 @@ namespace Application.Contracts
         Task<bool> UnblockUser(UserBlocks block);
         Task<UserBlocks> GetBlockedUser(string blockerId, string blockedUserId);
         Task<List<UserBlocks>> GetAllBlockedUsers(string userId, PageSettingsRequest model);
+        Task<ApplicationUser> GetAnyUserById(string userId);
     }
 }

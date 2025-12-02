@@ -48,7 +48,7 @@
             await SecureStorage.SetAsync("accessToken", result.AccessToken);
             await SecureStorage.SetAsync("refreshToken", result.RefreshToken);
             var test = await AuthService.Test();
-            await LocationTracker.StartAsync();
+            //await LocationTracker.StartAsync();
             NavManager.NavigateTo("/weather");
         }
         else

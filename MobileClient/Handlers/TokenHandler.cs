@@ -25,7 +25,7 @@ namespace MobileClient.Handlers
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
+         {
             var token = await SecureStorage.GetAsync("accessToken");
 
             if (!string.IsNullOrEmpty(token))
@@ -68,19 +68,24 @@ namespace MobileClient.Handlers
 
             var response = await client.PostAsJsonAsync("/api/auth/Refresh", refreshRequest, cancellationToken);
 
-            if (!response.IsSuccessStatusCode)
-                return false;
+            //if (!response.IsSuccessStatusCode)
+            //    return false;
 
             var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+
+            if (result.IsBanned == true)
+            {
+                _userSessionService.TriggerBanned();
+            }
 
             if (result == null)
                 return false;
 
-            if (result.IsBanned)
-            {
-                _userSessionService.TriggerBanned("Your account has been banned");
-                return false;
-            }
+            //if (result.IsBanned)
+            //{
+            //    _userSessionService.TriggerBanned("Your account has been banned");
+            //    return false;
+            //}
 
             await SecureStorage.SetAsync("accessToken", result.AccessToken);
             await SecureStorage.SetAsync("refreshToken", result.RefreshToken);

@@ -45,8 +45,7 @@ namespace MobileClient.Services.Post
             }
             catch (Exception ex)
             {
-
-                throw;
+                return new List<PostDetailsResponse>();
             }
         }
 

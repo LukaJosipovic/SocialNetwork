@@ -33,7 +33,14 @@
 
     protected override async Task OnInitializedAsync()
     {
-        UserSessionService.OnUserBanned += HandleUserBanned;
+        UserSessionService.OnUserBanned += async () =>
+        {
+            await AlertService.ShowAlertAsync($"Error", $"Your account has been banned due to too many reports to your account. If you think this ban is unjustified, contact our admin", "OK");
+            SecureStorage.Remove("accessToken");
+            SecureStorage.Remove("refreshToken");
+            NavManager.NavigateTo("/register");
+        };
+
         string url = "http://192.168.100.19:4321/socialnetwork/activityhub";
         string url2 = "https://localhost:7098/activityhub";
         string url3 = "http://10.0.2.2:5209/socialnetwork/activityhub";
@@ -62,7 +69,7 @@
         {
             await hubConnection.DisposeAsync();
         }
-        UserSessionService.OnUserBanned -= HandleUserBanned;
+        //UserSessionService.OnUserBanned -= HandleUserBanned;
     }
 
     private async Task<string> GetToken()

@@ -8,11 +8,16 @@ namespace MobileClient.SessionService
 {
     public class UserSessionService
     {
-        public event Action<string>? OnUserBanned;
+        //public event Action<string>? OnUserBanned;
+        public event Action? OnUserBanned;
 
-        public void TriggerBanned(string message)
+        //public void TriggerBanned(string message)
+        //{
+        //    OnUserBanned?.Invoke(message);
+        //}
+        public void TriggerBanned()
         {
-            OnUserBanned?.Invoke(message);
+            OnUserBanned?.Invoke();
         }
     }
 }

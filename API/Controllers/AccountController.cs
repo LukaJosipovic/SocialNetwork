@@ -30,7 +30,7 @@ namespace API.Controllers
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             
             if (userId == null)
-                return BadRequest("User cannot be found");
+                return Unauthorized("User cannot be found");
 
             var userDetails = await _accountService.GetUserById(userId);
             
@@ -49,7 +49,7 @@ namespace API.Controllers
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (userId == null)
-                return BadRequest("User cannot be found");
+                return Unauthorized("User cannot be found");
 
             var result = await _accountService.ChangeProfilePicture(request, userId);
 
@@ -65,7 +65,7 @@ namespace API.Controllers
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             
             if (userId == null)
-                return BadRequest("User cannot be found");
+                return Unauthorized("User cannot be found");
 
             var result = await _accountService.UpdateUsername(username, userId);
             
@@ -81,7 +81,7 @@ namespace API.Controllers
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (userId == null)
-                return BadRequest("User cannot be found");
+                return Unauthorized("User cannot be found");
 
             var result = await _accountService.DeleteAccount(userId);
 
@@ -100,7 +100,7 @@ namespace API.Controllers
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (userId == null)
-                return BadRequest("User cannot be found");
+                return Unauthorized("User cannot be found");
 
             var result = await _accountService.CreatePost(request, userId);
 
@@ -116,7 +116,7 @@ namespace API.Controllers
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (userId == null)
-                return BadRequest("User cannot be found");
+                return Unauthorized("User cannot be found");
 
             var result = await _accountService.GetUserProfile(userId);
 
@@ -140,7 +140,7 @@ namespace API.Controllers
         public async Task<IActionResult> GetUserProfile(string userId)
         {
             if (userId == null)
-                return BadRequest("User cannot be found");
+                return Unauthorized("User cannot be found");
 
             var result = await _accountService.GetUserProfile(userId);
 
@@ -172,7 +172,7 @@ namespace API.Controllers
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (userId == null)
-                return BadRequest("User cannot be found");
+                return Unauthorized("User cannot be found");
 
             var result = await _accountService.ChangeActivities(activities, userId);
             
@@ -187,7 +187,7 @@ namespace API.Controllers
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (userId == null)
-                return BadRequest("User cannot be found");
+                return Unauthorized("User cannot be found");
 
             var result = await _accountService.GhostMode(ghostMode, userId);
 
@@ -203,7 +203,7 @@ namespace API.Controllers
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (userId == null)
-                return BadRequest("User cannot be found");
+                return Unauthorized("User cannot be found");
 
             var result = await _accountService.DoNotDisturb(doNotDisturb, userId);
 
@@ -218,6 +218,9 @@ namespace API.Controllers
         {
             var reporterId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
+            if (reporterId == null)
+                return Unauthorized("User cannot be found");
+
             var result = await _accountService.ReportUser(userId, reporterId);
 
             if (result.IsSuccess)
@@ -230,6 +233,9 @@ namespace API.Controllers
         public async Task<IActionResult> UnbanUser(string userId)
         {
             var reporterId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (reporterId == null)
+                return Unauthorized("User cannot be found");
 
             var result = await _accountService.UnbanUser(userId);
 
@@ -245,7 +251,7 @@ namespace API.Controllers
             var blockerId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             
             if (blockerId == null)
-                return BadRequest("User cannot be found");
+                return Unauthorized("User cannot be found");
 
             var result = await _accountService.BlockUser(blockerId, userIdToBlock);
 
@@ -261,7 +267,7 @@ namespace API.Controllers
             var blockerId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (blockerId == null)
-                return BadRequest("User cannot be found");
+                return Unauthorized("User cannot be found");
 
             var result = await _accountService.UnblockUser(blockerId, blockedUserId);
 
@@ -286,6 +292,9 @@ namespace API.Controllers
         public async Task<IActionResult> GetBlockedUsers([FromQuery] PageSettingsRequest model)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId == null)
+                return Unauthorized("User cannot be found");
 
             //var skip = (model.PageNumber - 1) * model.PageSize;
             var blockedUsers = await _accountService.GetBlockedUsers(userId, model);

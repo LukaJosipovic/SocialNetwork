@@ -24,7 +24,7 @@ namespace API.Controllers
                 var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
                 if (userId == null)
-                    return BadRequest("User cannot be found");
+                    return Unauthorized("User cannot be found");
 
                 var result = await _locationService.AddUserLocation(userId, latitude, longitude);
 
@@ -42,7 +42,10 @@ namespace API.Controllers
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var result = _locationService.RemoveUserLocation(userId);
-            
+
+            if (userId == null)
+                return Unauthorized("User cannot be found");
+
             if (result)
                 return Ok(result);
             else
@@ -53,9 +56,9 @@ namespace API.Controllers
         public async Task<IActionResult> GetLocations()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            
+
             //if (userId == null)
-            //    return BadRequest("User cannot be found");
+            //    return Unauthorized("User cannot be found");
 
             var locations = _locationService.GetAllLocations(userId);
 

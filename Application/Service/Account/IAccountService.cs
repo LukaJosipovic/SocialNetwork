@@ -14,6 +14,7 @@ namespace Application.Service.Account
     public interface IAccountService
     {
         Task<UserDetailsResponse> GetUserById(string userId);
+        Task<UserDetailsResponse> GetAnyUserById(string userId);
         Task<ProfilePictureResponse> ChangeProfilePicture(ChangeProfilePictureRequest request, string userId);
         Task<GeneralResponse> UpdateUsername(string username, string userId);
         Task<GeneralResponse> DeleteAccount(string userId);

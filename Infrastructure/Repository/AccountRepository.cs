@@ -265,5 +265,10 @@ namespace Infrastructure.Repository
             return await _context.UserBlocks.Include(u => u.BlockedUser).Where(u => u.BlockerUserId == userId).ToListAsync(); //add paggination here
 
         }
+
+        public async Task<ApplicationUser> GetAnyUserById(string userId)
+        {
+            return await _userManager.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Id == userId) ?? throw new KeyNotFoundException("User not found");
+        }
     }
 }

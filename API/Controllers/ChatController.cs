@@ -24,6 +24,9 @@ namespace API.Controllers
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
+            if (userId == null)
+                return Unauthorized("User cannot be found");
+
             var chatRooms = await _chatService.GetChatRooms(userId, model);
 
             return Ok(chatRooms);
@@ -33,6 +36,9 @@ namespace API.Controllers
         public async Task<IActionResult> GetMessages(string userToChatId)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            
+            if (userId == null)
+                return Unauthorized("User cannot be found");
 
             var messages = await _chatService.GetMessages(userId, userToChatId);
 

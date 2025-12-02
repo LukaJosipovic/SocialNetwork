@@ -9,6 +9,7 @@ using Domain.Model;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
+using MimeKit.Encodings;
 using Org.BouncyCastle.Asn1.Ocsp;
 using System;
 using System.Collections.Generic;
@@ -96,21 +97,39 @@ namespace Application.Service.Auth
 
         public async Task<LoginResponse> RefreshToken(RefreshTokenRequest request)
         {
-            var user = await _accountRepository.GetUserById(request.UserId);
+            try
+            {
+                var user = await _accountRepository.GetAnyUserById(request.UserId);
 
-            if (user == null || user.RefreshToken != request.RefreshToken || user.RefreshTokenExpiry < DateTime.Now)
-                throw new UnauthorizedAccessException();
+                if (user == null || user.RefreshToken != request.RefreshToken || user.RefreshTokenExpiry < DateTime.Now)
+                    return ResponseHelper.CreateLoginResponse(false, "Something went wrong", null, null, null);
 
-            if (user.IsBanned)
-                throw new AccountBannedException();
+                if (user.IsBanned)
+                    throw new AccountBannedException();
 
-            
+                string token = await _jwtTokenGenerator.GenerateToken(user.Id, user.Name, user.Email);
+                var newRefreshToken = _jwtTokenGenerator.GenerateRefreshToken();
+                var result = await _jwtTokenGenerator.StoreRefreshToken(user, newRefreshToken);
 
-            string token = await _jwtTokenGenerator.GenerateToken(user.Id, user.Name, user.Email);
-            var newRefreshToken = _jwtTokenGenerator.GenerateRefreshToken();
-            var result = await _jwtTokenGenerator.StoreRefreshToken(user, newRefreshToken);
-
-            return ResponseHelper.CreateLoginResponse(true, null, token, user.Id, newRefreshToken);
+                return ResponseHelper.CreateLoginResponse(true, null, token, user.Id, newRefreshToken);
+            }
+            catch (AccountBannedException ex)
+            {
+                return new LoginResponse
+                {
+                    IsSuccess = false,
+                    IsBanned = true,
+                    Message = ex.Message
+                };
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return ResponseHelper.CreateLoginResponse(false, ex.Message, null, null, null);
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
 
         public async Task<GeneralResponse> ForgotPassword(ForgotUserPasswordRequest request)

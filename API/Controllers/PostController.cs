@@ -34,6 +34,9 @@ namespace API.Controllers
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
+            if (userId == null)
+                return Unauthorized("User cannot be found");
+
             var result = await _postService.GetAllPosts(userId);
 
             //if (result.Count > 0)
@@ -57,6 +60,9 @@ namespace API.Controllers
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
+            if (userId == null)
+                return Unauthorized("User cannot be found");
+
             var result = await _postService.ReportPost(id, userId);
 
             if (result.IsSuccess) 
@@ -71,7 +77,7 @@ namespace API.Controllers
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (userId == null)
-                return BadRequest();
+                return Unauthorized("User cannot be found");
 
             var result = await _postService.LikePost(postId, userId);
 
@@ -88,7 +94,7 @@ namespace API.Controllers
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (userId == null)
-                return BadRequest();
+                return Unauthorized("User cannot be found");
 
             var result = await _postService.DislikePost(postId, userId);
 
