@@ -59,9 +59,8 @@ namespace Infrastructure.Repository
         public ActivityCache GetActivityByCacheKey(string cacheKey)
         {
             if (_memoryCache.TryGetValue<ActivityCache>(cacheKey, out var activity))
-            {
                 return activity;
-            }
+            
             return null;
         }
 
@@ -69,8 +68,10 @@ namespace Infrastructure.Repository
         {
             await _context.Match.AddAsync(match);
             var result = await _context.SaveChangesAsync();
+            
             if (result > 0)
                 return true;
+
             return false;
         }
 
@@ -78,8 +79,10 @@ namespace Infrastructure.Repository
         {
             await _context.Activity.AddAsync(activity);
             var result = await _context.SaveChangesAsync();
+            
             if (result > 0)
                 return true;
+
             return false;
         }
     }

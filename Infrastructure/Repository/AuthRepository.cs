@@ -1,6 +1,7 @@
 ﻿using Application.Contracts;
 using Application.DTO.Request;
 using Application.DTO.Response;
+using Application.Exceptions;
 using Domain.Model;
 using Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
@@ -34,6 +35,7 @@ namespace Infrastructure.Repository
         public async Task<IdentityResult> CreateAccount(ApplicationUser user, string password, string role)
         {
             var result = await _userManager.CreateAsync(user, password);
+            
             if (result.Succeeded)
                 await _userManager.AddToRoleAsync(user, role);
             
@@ -47,13 +49,10 @@ namespace Infrastructure.Repository
 
         public async Task<ApplicationUser> Login(LoginUserRequest model)
         {
-            var user = await _userManager.FindByEmailAsync(model.Email);
-            //premjestiti u service business logic
-            if (user == null)
-                throw new UnauthorizedAccessException("Invalid email or password");
+            var user = await _userManager.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Email == model.Email) ?? throw new UnauthorizedAccessException("Invalid email or password");
 
             if (user.IsBanned)
-                throw new UnauthorizedAccessException("Your account has been banned.");
+                throw new AccountBannedException();
 
             if (!await _userManager.CheckPasswordAsync(user, model.Password))
                 throw new UnauthorizedAccessException("Invalid email or password");

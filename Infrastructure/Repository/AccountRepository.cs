@@ -96,18 +96,7 @@ namespace Infrastructure.Repository
 
         public async Task<ApplicationUser> GetUserById(string userId)
         {
-            try
-            {
-                return await _userManager.FindByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
-            }
-            catch (KeyNotFoundException ex)
-            {
-                throw new KeyNotFoundException(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
+            return await _userManager.FindByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
         }
 
         public async Task<ApplicationUser> GetUserProfile(string userId)
@@ -185,18 +174,7 @@ namespace Infrastructure.Repository
 
         public async Task<ApplicationUser> GetUserByEmail(string email)
         {
-            try
-            {
-                return await _userManager.FindByEmailAsync(email) ?? throw new KeyNotFoundException("User not found");
-            }
-            catch (KeyNotFoundException ex)
-            {
-                throw new KeyNotFoundException(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
+            return await _userManager.FindByEmailAsync(email) ?? throw new KeyNotFoundException("User not found");
         }
 
         public async Task<bool> CheckIfUserIsReported(string reporterId, string userId)
@@ -263,7 +241,6 @@ namespace Infrastructure.Repository
         {
             //var skip = (model.PageNumber - 1) * model.PageSize;
             return await _context.UserBlocks.Include(u => u.BlockedUser).Where(u => u.BlockerUserId == userId).ToListAsync(); //add paggination here
-
         }
 
         public async Task<ApplicationUser> GetAnyUserById(string userId)

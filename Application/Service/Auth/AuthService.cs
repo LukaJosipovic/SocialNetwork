@@ -92,6 +92,10 @@ namespace Application.Service.Auth
             catch (UnauthorizedAccessException ex)
             {
                 return ResponseHelper.CreateLoginResponse(false, ex.Message, null, null, null);
+            } 
+            catch (AccountBannedException ex)
+            {
+                return ResponseHelper.CreateLoginResponse(false, ex.Message, null, null, null);
             }
         }
 
