@@ -12,8 +12,14 @@ using MobileClient.Services.Chat;
 using MobileClient.Services.Location;
 using MobileClient.Services.Post;
 using MobileClient.SessionService;
-
+using Plugin.Firebase.CloudMessaging;
 using System.Net;
+using Microsoft.Maui.LifecycleEvents;
+
+
+#if ANDROID
+using Plugin.Firebase.Core.Platforms.Android;
+#endif
 
 namespace MobileClient
 {
@@ -24,6 +30,7 @@ namespace MobileClient
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
+                .RegisterFirebaseServices()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -31,8 +38,8 @@ namespace MobileClient
 
             builder.Services.AddHttpClient("BaseApi", client =>
             {
-                client.BaseAddress = new Uri("https://localhost:7098/");
-                //client.BaseAddress = new Uri("http://10.0.2.2:5209/");
+                //client.BaseAddress = new Uri("https://localhost:7098/");
+                client.BaseAddress = new Uri("http://10.0.2.2:5209/");
                 //client.BaseAddress = new Uri("http://192.168.100.19:4321/socialnetwork/");
                 //client.BaseAddress = new Uri("http://localhost/socialnetwork/");
                 //client.BaseAddress = new Uri("https://localhost/socialnetwork/");
@@ -68,6 +75,17 @@ namespace MobileClient
 #endif
 
             return builder.Build();
+        }
+        private static MauiAppBuilder RegisterFirebaseServices(this MauiAppBuilder builder)
+        {
+            builder.ConfigureLifecycleEvents(events => {
+            #if ANDROID
+                events.AddAndroid(android => android.OnCreate((activity, _) =>
+                CrossFirebase.Initialize(activity)));
+            #endif
+            });
+
+            return builder;
         }
     }
 }

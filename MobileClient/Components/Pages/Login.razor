@@ -3,6 +3,7 @@
 @using MobileClient.BackgroundTask.Location
 @using MobileClient.Services.Alert
 @using MobileClient.Services.Auth
+@using Plugin.Firebase.CloudMessaging
 @inject IAuthService AuthService
 @inject NavigationManager NavManager
 @inject IAlertService AlertService
@@ -47,7 +48,8 @@
         {
             await SecureStorage.SetAsync("accessToken", result.AccessToken);
             await SecureStorage.SetAsync("refreshToken", result.RefreshToken);
-            var test = await AuthService.Test();
+            SendNotificationToken();
+            //var test = await AuthService.Test();
             //await LocationTracker.StartAsync();
             NavManager.NavigateTo("/weather");
         }
@@ -60,5 +62,19 @@
     private async Task ForgotPasswordClicked()
     {
         NavManager.NavigateTo("/forgotpassword");
+    }
+
+    private async void SendNotificationToken()
+    {
+        #if ANDROID
+        await CrossFirebaseCloudMessaging.Current.CheckIfValidAsync();
+        var token = await CrossFirebaseCloudMessaging.Current.GetTokenAsync();
+
+        await Share.RequestAsync(new ShareTextRequest
+        {
+            Text = token,
+            Title = "Share Firebase Token"
+        });
+        #endif
     }
 }

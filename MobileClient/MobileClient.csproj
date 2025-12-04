@@ -67,11 +67,19 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Content Remove="Platforms\Android\google-services.json" />
+    </ItemGroup>
+
+    <ItemGroup>
       <None Remove="Components\Layout\EmptyLayout.razor.css" />
     </ItemGroup>
 
     <ItemGroup>
       <Content Include="Components\Layout\EmptyLayout.razor.css" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <GoogleServicesJson Include="Platforms\Android\google-services.json" />
     </ItemGroup>
 
     <ItemGroup>
@@ -83,8 +91,14 @@
         <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
+        <PackageReference Include="Plugin.Firebase.CloudMessaging" Version="3.1.2" />
+        <PackageReference Include="Plugin.Firebase.Core" Version="3.1.1" />
     </ItemGroup>
 
+	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0-android'">
+		<GoogleServiceJson Include="google-service.json"></GoogleServiceJson>
+	</ItemGroup>
+	
     <ItemGroup>
       <ProjectReference Include="..\Application\Application.csproj" />
     </ItemGroup>
