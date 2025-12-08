@@ -11,7 +11,7 @@ namespace Application.Helper
 {
     public static class ResponseHelper
     {
-        public static GeneralResponse CreateGeneralResponse(bool isSuccess, string message)
+        public static GeneralResponse CreateGeneralResponse(bool isSuccess, string? message)
         {
             return new GeneralResponse
             {

@@ -9,7 +9,7 @@ namespace Application.Contracts
 {
     public interface IActivityRepository
     {
-        void CreateActivity(ActivityCache model);
+        bool CreateActivity(ActivityCache model);
         Task<bool> CreateMatch(Match match);
         List<ActivityCache> GetActivities();
         ActivityCache GetActivityByCacheKey(string cacheKey);

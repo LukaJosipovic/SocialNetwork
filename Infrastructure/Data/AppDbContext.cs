@@ -23,6 +23,7 @@ namespace Infrastructure.Data
         public DbSet<Report> Report { get; set; }
         public DbSet<Activity> Activity { get; set; }
         public DbSet<UserBlocks> UserBlocks { get; set; }
+        public DbSet<UserDevice> UserDevices { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -90,6 +91,11 @@ namespace Infrastructure.Data
             builder.Entity<UserBlocks>()
             .HasIndex(b => new { b.BlockerUserId, b.BlockedUserId })
             .IsUnique(); // Prevent duplicate blocks
+
+            builder.Entity<UserDevice>()
+            .HasOne(u => u.User)
+            .WithMany(u => u.Devices)
+            .HasForeignKey(u => u.UserId);
 
             builder.Entity<ApplicationUser>().HasQueryFilter(u => !u.IsBanned && !u.IsDeleted);
             builder.Entity<Post>().HasQueryFilter(p => !p.User.IsBanned && !p.User.IsDeleted);

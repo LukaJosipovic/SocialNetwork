@@ -25,12 +25,12 @@ namespace Infrastructure.Repository
             _memoryCache = memoryCache;
         }
 
-        public void CreateActivity(ActivityCache model)
+        public bool CreateActivity(ActivityCache model)
         {
             string cacheKey = Guid.NewGuid().ToString();
             model.CacheKey = cacheKey;
             _memoryCache.Set(cacheKey, model, TimeSpan.FromHours(1));
-            _activityKeys.TryAdd(cacheKey, true);
+            return _activityKeys.TryAdd(cacheKey, true);
         }
 
         public List<ActivityCache> GetActivities()

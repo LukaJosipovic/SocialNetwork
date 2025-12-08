@@ -37,5 +37,15 @@ namespace Infrastructure.Repository
         {
             return await _context.UserBlocks.AnyAsync(u => (u.BlockedUserId == userId && u.BlockerUserId == userToChatId) || (u.BlockedUserId == userToChatId && u.BlockerUserId == userId));
         }
+
+        public async Task<bool> SaveMessage(ChatMessage message)
+        {
+            await _context.ChatMessage.AddAsync(message);
+            var result = await _context.SaveChangesAsync();
+
+            if (result > 0)
+                return true;
+            return false;
+        }
     }
 }

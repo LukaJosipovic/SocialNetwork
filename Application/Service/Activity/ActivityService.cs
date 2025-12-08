@@ -4,6 +4,7 @@ using Application.DTO.Request;
 using Application.DTO.Response;
 using Application.Helper;
 using Domain.Model;
+using FirebaseAdmin.Messaging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,11 +17,13 @@ namespace Application.Service.Activity
     {
         private readonly IActivityRepository _activityRepository;
         private readonly IAccountRepository _accountRepository;
+        private readonly INotificationRepository _notificationRepository;
 
-        public ActivityService(IActivityRepository activityRepository, IAccountRepository accountRepository)
+        public ActivityService(IActivityRepository activityRepository, IAccountRepository accountRepository, INotificationRepository notificationRepository)
         {
             _activityRepository = activityRepository;
             _accountRepository = accountRepository;
+            _notificationRepository = notificationRepository;
         }
 
         public async Task<GeneralResponse> AcceptActivity(string cacheKey, string userId)
@@ -54,7 +57,13 @@ namespace Application.Service.Activity
                     var matchCreated = await _activityRepository.CreateMatch(match);
 
                     if (activitySaved == true && matchCreated == true)
+                    {
+                        var device = await _notificationRepository.GetUserDevice(activityCache.UserId);
+
+                        var notificationSent = await NotificationHelper.SendNotification(device.DeviceToken, "Activity accepted", $"{acceptor.Name} accepted your activity");
+
                         return ResponseHelper.CreateGeneralResponse(true, "You accepted activity");
+                    }
                 }
                 return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
@@ -87,7 +96,7 @@ namespace Application.Service.Activity
                 //    User = user
                 //};
 
-                _activityRepository.CreateActivity(activity);
+                var activityCreated = _activityRepository.CreateActivity(activity);
 
                 return ResponseHelper.CreateGeneralResponse(true, "Activity created succesfully");
             }

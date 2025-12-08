@@ -113,5 +113,26 @@ namespace Application.Service.Chat
                 throw;
             }
         }
+
+        public async Task<bool> SaveMessage(string senderId, string receiverId, string message)
+        {
+            try
+            {
+                var chatMessage = new ChatMessage
+                {
+                    SenderId = senderId,
+                    ReceiverId = receiverId,
+                    Content = message,
+                    Timestamp = DateTime.Now
+                };
+
+                return await _chatRepository.SaveMessage(chatMessage);
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+        }
     }
 }

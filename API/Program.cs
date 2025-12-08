@@ -4,6 +4,8 @@ using Application.DTO.Response;
 using Application.Service.Account;
 using Application.Service.Auth;
 using Domain.Model;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 using Infrastructure.Data;
 using Infrastructure.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -146,5 +148,10 @@ using (var scope = app.Services.CreateScope())
         await userManager.AddToRoleAsync(user, "Admin");
     }
 }
+
+FirebaseApp.Create(new AppOptions()
+{
+    Credential = GoogleCredential.FromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "dotnetpushnotification-fa564-firebase-adminsdk-fbsvc-b2e878e266.json"))
+});
 
 app.Run();

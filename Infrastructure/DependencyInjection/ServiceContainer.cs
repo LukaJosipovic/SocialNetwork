@@ -25,6 +25,7 @@ using Infrastructure.Email;
 using Application.Service.Activity;
 using Application.Service.Chat;
 using Application.Service.LocationService;
+using Application.Service.Notification;
 
 namespace Infrastructure.DependencyInjection
 {
@@ -64,6 +65,8 @@ namespace Infrastructure.DependencyInjection
             services.AddScoped<IChatRepository, ChatRepository>();
             services.AddScoped<ILocationService, LocationService>();
             services.AddScoped<ILocationRepository, LocationRepository>();
+            services.AddScoped<INotificationService, NotificationService>();
+            services.AddScoped<INotificationRepository, NotificationRepository>();
             services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
             services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 

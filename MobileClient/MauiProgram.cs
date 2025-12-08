@@ -15,6 +15,8 @@ using MobileClient.SessionService;
 using Plugin.Firebase.CloudMessaging;
 using System.Net;
 using Microsoft.Maui.LifecycleEvents;
+using MobileClient.Services.Notification;
+
 
 
 #if ANDROID
@@ -58,6 +60,7 @@ namespace MobileClient
             builder.Services.AddScoped<IActivityService, ActivityService>();
             builder.Services.AddScoped<IChatService, ChatService>();
             builder.Services.AddScoped<ILocationService, LocationService>();
+            builder.Services.AddScoped<INotificationService, NotificationService>();
             builder.Services.AddSingleton<ILocationTracker, LocationTracker>();
 
             //builder.Services.Configure<HostOptions>(x =>

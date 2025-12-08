@@ -12,7 +12,7 @@ namespace Application.Contracts
     {
         Task<List<Match>> GetUsersForChat(string userId, PageSettingsRequest model);
         Task<List<ChatMessage>> GetMessages(string userId);
-
         Task<bool> CheckIfUserIsBlocked(string userId, string userToChatId);
+        Task<bool> SaveMessage(ChatMessage message);
     }
 }

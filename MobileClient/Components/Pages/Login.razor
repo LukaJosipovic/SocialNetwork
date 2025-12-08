@@ -3,11 +3,14 @@
 @using MobileClient.BackgroundTask.Location
 @using MobileClient.Services.Alert
 @using MobileClient.Services.Auth
+@using MobileClient.Services.Notification
 @using Plugin.Firebase.CloudMessaging
 @inject IAuthService AuthService
 @inject NavigationManager NavManager
 @inject IAlertService AlertService
 @inject ILocationTracker LocationTracker
+@inject INotificationService NotificationService
+@inject IAlertService AlertService
 @* @layout MobileClient.Components.Layout.EmptyLayout *@
 
 <div class="d-flex justify-content-center align-items-center" style="min-height: calc(100vh - 3.5rem);">
@@ -69,6 +72,13 @@
         #if ANDROID
         await CrossFirebaseCloudMessaging.Current.CheckIfValidAsync();
         var token = await CrossFirebaseCloudMessaging.Current.GetTokenAsync();
+
+        var result = await NotificationService.RegisterDevice(token);
+
+        if(!result.IsSuccess)
+        {
+            await AlertService.ShowAlertAsync("Error", $"{result.Message}", "OK");
+        }
 
         await Share.RequestAsync(new ShareTextRequest
         {
