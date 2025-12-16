@@ -6,6 +6,38 @@
 @inject IAlertService AlertService
 @inject NavigationManager NavManager
 
+@* <style>
+    .post-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .like-section {
+        display: flex;
+        align-items: center;
+    }
+
+    .like-icon {
+        font-size: 30px;
+        color: red;
+        cursor: pointer;
+    }
+
+    .like-count {
+        margin-left: 10px;
+        font-weight: bold;
+    }
+
+    .post-date {
+        white-space: nowrap;
+    }
+
+    .post-description {
+        margin-top: 8px;
+    }
+</style> *@
+
 <h1>Hello, world!</h1>
 
 Welcome to your new app.
@@ -36,23 +68,43 @@ Welcome to your new app.
                 </ul>
             </div>
         </div>
-        <div>
-            @if (post.PostImageString != null)
+        @if (post.PostImageString != null)
+        {
+            <img src="@post.PostImageString" alt="Post picture" style="width: 100%;" />
+        }
+        <div class="post-container">
+            <div class="post-header" style="display: flex; align-items: center; justify-content: space-between;">
+                <div class="like-section" style="display: flex; align-items: center;">
+                    @if (post.IsLiked)
+                    {
+                        <i class="bi bi-suit-heart-fill like-icon" style="font-size: 30px; color: red;" @onclick="() => DislikePost(post.PostId)"></i>
+                    }
+                    else
+                    {
+                        <i class="bi bi-suit-heart like-icon" style="font-size: 30px; color: red;" @onclick="() => LikePost(post.PostId)"></i>
+                    }
+                    <span class="like-count" style="margin-left: 10px; font-weight: bold;">@post.LikeCount</span>
+                </div>
+                <span class="post-date" style="white-space: nowrap;">@post.DateCreated</span>
+            </div>
+
+            <div class="post-description" style="margin-top: 8px;">
+                @post.Description
+            </div>
+        </div>
+        @* <div>
+            @if (post.IsLiked)
             {
-                <img src="@post.PostImageString" alt="Post picture" style="width: 100%;" />
+                <i class="bi bi-suit-heart-fill" id="@post.PostId" style="font-size: 30px; color: red;" @onclick="() => DislikePost(post.PostId)"></i><b>@post.LikeCount</b>
+            }
+            else
+            {
+                <i class="bi bi-suit-heart" id="@post.PostId" style="font-size: 30px; color: red;" @onclick="() => LikePost(post.PostId)"></i><b>@post.LikeCount</b>
             }
             <p>@post.DateCreated</p>
             <p>@post.Description</p>
-        </div>
-        <p>Like: @post.LikeCount</p>
-        @if (post.IsLiked)
-        {
-            <i class="bi bi-suit-heart-fill" id="@post.PostId" style="font-size: 30px; color: red;" @onclick="() => DislikePost(post.PostId)"></i>
-        }
-        else
-        {
-            <i class="bi bi-suit-heart" id="@post.PostId" style="font-size: 30px; color: red;" @onclick="() => LikePost(post.PostId)"></i>
-        }
+            <p>Like: @post.LikeCount</p>
+        </div> *@
         <hr />
     }
 }

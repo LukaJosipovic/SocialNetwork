@@ -11,7 +11,7 @@
 @inject ILocationTracker LocationTracker
 @inject INotificationService NotificationService
 @inject IAlertService AlertService
-@* @layout MobileClient.Components.Layout.EmptyLayout *@
+@layout MobileClient.Components.Layout.EmptyLayout
 
 <div class="d-flex justify-content-center align-items-center" style="min-height: calc(100vh - 3.5rem);">
     <div style="width: 80%;">
@@ -27,10 +27,16 @@
                 <ValidationMessage For="() => Request.Password" class="text-danger" />
             </div>
 
-            <button type="submit" class="btn btn-primary" style="background-color: #512bdf; width: 30%">Sign in</button>
+            <div class="d-flex align-items-center justify-content-between">
+                <button type="submit" class="btn btn-primary" style="background-color: #512bdf; width: 30%">Sign in</button>
+                <button type="button" @onclick="ForgotPasswordClicked" class="btn btn-link p-0" style="font-size:1rem; color:#0000EE; cursor:pointer; text-decoration:none;">
+                    Forgot password
+                </button>
+            </div>
+            @* <button type="submit" class="btn btn-primary" style="background-color: #512bdf; width: 30%">Sign in</button>
             <button type="button" @onclick="ForgotPasswordClicked" style="float:right; background:none; border:none; color:#0000EE; cursor:pointer; padding:0; font-size:1rem;">
                 Forgot password
-            </button>
+            </button> *@
         </EditForm>
     </div>
 </div>
