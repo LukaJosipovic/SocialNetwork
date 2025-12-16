@@ -12,6 +12,6 @@ namespace Application.Service.Activity
     {
         Task<GeneralResponse> AcceptActivity(string cacheKey, string userId);
         Task<GeneralResponse> CreateActivity(CreateActivityRequest request, string userId);
-        Task<List<ActivityResponse>> GetActivities();
+        Task<List<ActivityResponse>> GetActivities(double latitude, double longitude);
     }
 }

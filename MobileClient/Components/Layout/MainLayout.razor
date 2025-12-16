@@ -3,6 +3,7 @@
 @using MobileClient.Services.Account
 @using MobileClient.Services.Alert
 @using MobileClient.SessionService
+@using MobileClient.Helper
 @inherits LayoutComponentBase
 @inject NavigationManager NavManager
 @implements IAsyncDisposable
@@ -33,6 +34,12 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var status = await LocationHelper.GetLocationPermission();
+        if (status == false)
+        {
+
+        }
+
         UserSessionService.OnUserBanned += async () =>
         {
             await AlertService.ShowAlertAsync($"Error", $"Your account has been banned due to too many reports to your account. If you think this ban is unjustified, contact our admin", "OK");
@@ -43,7 +50,13 @@
 
         string url = "http://192.168.100.19:4321/socialnetwork/activityhub";
         string url2 = "https://localhost:7098/activityhub";
-        string url3 = "http://10.0.2.2:5209/socialnetwork/activityhub";
+        string url3 = "http://10.0.2.2:5209/activityhub";
+
+        if (DeviceInfo.Platform == DevicePlatform.Android)
+            url = "http://10.0.2.2:5209/activityhub";
+        else
+            url = "https://localhost:7098/activityhub";
+
         var test = await GetToken();
         hubConnection = new HubConnectionBuilder().WithUrl(NavManager.ToAbsoluteUri(url), async options =>
         {

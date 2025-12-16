@@ -8,17 +8,33 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
+#if ANDROID
+using MobileClient.Platforms.Android.BackgroundService;
+#endif
 
 namespace MobileClient.Services.Auth
 {
     public class AuthService : IAuthService
     {
+#if ANDROID
         private readonly IHttpClientFactory _httpClientFactory;
-        public AuthService(IHttpClientFactory httpClientFactory)
+        private readonly IBackgroundLocationService _backgroundLocationService;
+
+        public AuthService(IHttpClientFactory httpClientFactory, IBackgroundLocationService backgroundLocationService)
         {
             _httpClientFactory = httpClientFactory;
+            _backgroundLocationService = backgroundLocationService;
         }
+#else
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly ILocationTracker _locationTracker;
 
+        public AuthService(IHttpClientFactory httpClientFactory, ILocationTracker locationTracker)
+        {
+            _httpClientFactory = httpClientFactory;
+            _locationTracker = locationTracker;
+        }
+#endif
         private HttpClient CreateClient() => _httpClientFactory.CreateClient("BaseApi");
 
         private async Task<TResponse> PostAsync<TRequest, TResponse>(string url, TRequest request, TResponse fallback)
@@ -52,29 +68,37 @@ namespace MobileClient.Services.Auth
 
         public async Task<LoginResponse> Login(LoginUserRequest request)
         {
-            //try
-            //{
-            //    var client = _httpClientFactory.CreateClient("BaseApi");
-            //    var resultJwtTest = await client.GetAsync("api/Auth/JwtTest");
-            //    var response = await client.PostAsJsonAsync("api/Auth/Login", request);
-            //    var responseObject = await response.Content.ReadFromJsonAsync<LoginResponse>();
-            //    return responseObject;
-            //}
-            //catch (Exception ex)
-            //{
-            //    return new LoginResponse
-            //    {
-            //        IsSuccess = false,
-            //        Message = "Something went wrong please try again later"
-            //    };
-            //}
-            var response = await PostAsync("api/Auth/Login", request, new LoginResponse
+            try
             {
-                IsSuccess = false,
-                Message = "Something went wrong please try again later"
-            });
+                var client = _httpClientFactory.CreateClient("BaseApi");
+                //var resultJwtTest = await client.GetAsync("api/Auth/JwtTest");
+                var response = await client.PostAsJsonAsync("api/Auth/Login", request);
+                var responseObject = await response.Content.ReadFromJsonAsync<LoginResponse>();
+                if (responseObject.IsSuccess)
+                {
+#if ANDROID
+                    await _backgroundLocationService.Start();
+#else
+                    await _locationTracker.StartAsync();
+#endif             
+                }
+                return responseObject;
+            }
+            catch (Exception ex)
+            {
+                return new LoginResponse
+                {
+                    IsSuccess = false,
+                    Message = "Something went wrong please try again later"
+                };
+            }
+            //var response = await PostAsync("api/Auth/Login", request, new LoginResponse
+            //{
+            //    IsSuccess = false,
+            //    Message = "Something went wrong please try again later"
+            //});
             
-            return response;
+            //return response;
         }
 
         public async Task<RegisterResponse> Register(CreateAccountRequest request)

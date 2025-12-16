@@ -8,6 +8,7 @@
 @using Microsoft.AspNetCore.SignalR.Client
 @using MobileClient.Services.Location
 @using System.Text.Json
+@using MobileClient.Helper;
 @inject ILocationService LocationService
 
 <div id="map" style="height: calc(100vh - 3.5rem);"></div>
@@ -23,16 +24,22 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
+        try
+        {
+            var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
 
-        if (status != PermissionStatus.Granted)
+            if (status != PermissionStatus.Granted)
+            {
+                status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+            }
+            //status = PermissionStatus.Granted;
+            if (status == PermissionStatus.Granted)
+            {
+                await GetCurrentLocation();
+            }
+        }catch (Exception ex)
         {
-            status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
-        }
-        status = PermissionStatus.Granted;
-        if (status == PermissionStatus.Granted)
-        {
-            await GetCurrentLocation();
+            
         }
     }
 

@@ -13,5 +13,8 @@ namespace Domain.Model
         public string ActivityCategory { get; set; }
         public string CacheKey { get; set; }
         public string UserId { get; set; }
+        public int Range { get; set; }
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
     }
 }

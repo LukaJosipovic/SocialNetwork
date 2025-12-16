@@ -5,6 +5,7 @@ using Application.DTO.Response;
 using Application.Helper;
 using Domain.Model;
 using FirebaseAdmin.Messaging;
+using Org.BouncyCastle.Asn1.Esf;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,12 +19,14 @@ namespace Application.Service.Activity
         private readonly IActivityRepository _activityRepository;
         private readonly IAccountRepository _accountRepository;
         private readonly INotificationRepository _notificationRepository;
+        private readonly ILocationRepository _locationRepository;
 
-        public ActivityService(IActivityRepository activityRepository, IAccountRepository accountRepository, INotificationRepository notificationRepository)
+        public ActivityService(IActivityRepository activityRepository, IAccountRepository accountRepository, INotificationRepository notificationRepository, ILocationRepository locationRepository)
         {
             _activityRepository = activityRepository;
             _accountRepository = accountRepository;
             _notificationRepository = notificationRepository;
+            _locationRepository = locationRepository;
         }
 
         public async Task<GeneralResponse> AcceptActivity(string cacheKey, string userId)
@@ -88,6 +91,9 @@ namespace Application.Service.Activity
                     Description = request.Description,
                     ActivityCategory = request.Category,
                     UserId = userId,
+                    Range = request.Range,
+                    Latitude = request.Latitude,
+                    Longitude = request.Longitude
                 };
                 //var activity = new Domain.Model.Activity
                 //{
@@ -98,7 +104,17 @@ namespace Application.Service.Activity
 
                 var activityCreated = _activityRepository.CreateActivity(activity);
 
-                return ResponseHelper.CreateGeneralResponse(true, "Activity created succesfully");
+                if (activityCreated)
+                {
+                    var IdRange = _locationRepository.GetUserIdsByLocations(request.Latitude, request.Longitude, request.Range);
+                    var deviceTokens = await _accountRepository.GetDeviceTokensByIdRange(IdRange, request.Category);
+
+                    if (deviceTokens.Count > 0)
+                        await NotificationHelper.SendNotifications(deviceTokens, "New Activity", "New activities in your area");
+
+                    return ResponseHelper.CreateGeneralResponse(true, "Activity created succesfully");
+                }
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
             catch (KeyNotFoundException ex)
             {
@@ -111,11 +127,11 @@ namespace Application.Service.Activity
             }
         }
 
-        public async Task<List<ActivityResponse>> GetActivities()
+        public async Task<List<ActivityResponse>> GetActivities(double latitude, double longitude)
         {
             try
             {
-                var result = _activityRepository.GetActivities();
+                var result = _activityRepository.GetActivities(latitude, longitude);
                 var activitiesList = new List<ActivityResponse>();
                 foreach (var activity in result)
                 {

@@ -17,10 +17,9 @@ using System.Net;
 using Microsoft.Maui.LifecycleEvents;
 using MobileClient.Services.Notification;
 
-
-
 #if ANDROID
 using Plugin.Firebase.Core.Platforms.Android;
+using MobileClient.Platforms.Android.BackgroundService;
 #endif
 
 namespace MobileClient
@@ -40,8 +39,11 @@ namespace MobileClient
 
             builder.Services.AddHttpClient("BaseApi", client =>
             {
-                //client.BaseAddress = new Uri("https://localhost:7098/");
-                client.BaseAddress = new Uri("http://10.0.2.2:5209/");
+                #if ANDROID
+                    client.BaseAddress = new Uri("http://10.0.2.2:5209/");
+                #else
+                    client.BaseAddress = new Uri("https://localhost:7098/");
+                #endif
                 //client.BaseAddress = new Uri("http://192.168.100.19:4321/socialnetwork/");
                 //client.BaseAddress = new Uri("http://localhost/socialnetwork/");
                 //client.BaseAddress = new Uri("https://localhost/socialnetwork/");
@@ -62,7 +64,9 @@ namespace MobileClient
             builder.Services.AddScoped<ILocationService, LocationService>();
             builder.Services.AddScoped<INotificationService, NotificationService>();
             builder.Services.AddSingleton<ILocationTracker, LocationTracker>();
-
+#if ANDROID
+            builder.Services.AddSingleton<IBackgroundLocationService, BackgroundLocationService>();
+#endif
             //builder.Services.Configure<HostOptions>(x =>
             //{
             //    x.ServicesStartConcurrently = true;
@@ -82,10 +86,10 @@ namespace MobileClient
         private static MauiAppBuilder RegisterFirebaseServices(this MauiAppBuilder builder)
         {
             builder.ConfigureLifecycleEvents(events => {
-            #if ANDROID
+#if ANDROID
                 events.AddAndroid(android => android.OnCreate((activity, _) =>
                 CrossFirebase.Initialize(activity)));
-            #endif
+#endif
             });
 
             return builder;

@@ -29,5 +29,20 @@ namespace Application.Helper
             else
                 return false;
         }
+        public async static Task SendNotifications(List<string> deviceTokens, string title, string body)
+        {
+            var message = new MulticastMessage()
+            {
+                Notification = new FirebaseAdmin.Messaging.Notification()
+                {
+                    Title = title,
+                    Body = body,
+                },
+                Tokens = deviceTokens
+            };
+
+            var messaging = FirebaseMessaging.DefaultInstance;
+            await messaging.SendEachForMulticastAsync(message);
+        }
     }
 }

@@ -3,6 +3,7 @@
 @using Application.Enum
 @using Microsoft.AspNetCore.SignalR.Client
 @using MobileClient.Components.Layout
+@using MobileClient.Helper
 @using MobileClient.Services.Activity
 @using MobileClient.Services.Alert
 @inject IActivityService ActivityService
@@ -37,6 +38,9 @@
                 }
             </select>
             <ValidationMessage For="() => Request.Category" class="text-danger" />
+
+            <label for="range" class="form-label">Range: <strong>@Request.Range</strong></label>
+            <input type="range" @oninput="e => Request.Range = Convert.ToInt32(e.Value)" @bind-value="Request.Range" class="form-range" min="0" max="100" step="1" id="range">
 
             <button type="submit" class="btn btn-primary" style="background-color: #512bdf; width: 100%">Create</button>
         </EditForm>
@@ -94,14 +98,33 @@
 
     private async Task CreateUserActivity()
     {
-        var response = await ActivityService.CreateActivity(Request);
-        if (response.IsSuccess)
+        var location = await LocationHelper.GetCurrentLocation();
+
+        if (location == null)
         {
-            await MainLayout.hubConnection.InvokeAsync("SendActivityNotification");
-            await AlertService.ShowAlertAsync("Ok", $"{response.Message}", "OK");
+            location = new Microsoft.Maui.Devices.Sensors.Location
+            {
+                Latitude = 45.83111,
+                Longitude = 16.11639
+            };
         }
 
-        await AlertService.ShowAlertAsync("Error", $"{response.Message}", "OK");
+        if (location != null)
+        {
+            Request.Latitude = location.Latitude;
+            Request.Longitude = location.Longitude;
+
+            var response = await ActivityService.CreateActivity(Request);
+            if (response.IsSuccess)
+            {
+                await MainLayout.hubConnection.InvokeAsync("SendActivityNotification");
+                await AlertService.ShowAlertAsync("Ok", $"{response.Message}", "OK");
+            }
+            else
+                await AlertService.ShowAlertAsync("Error", $"{response.Message}", "OK");
+        }
+        else
+            await AlertService.ShowAlertAsync("Error", "Unable to get device location", "OK");
     }
 
     private async Task<string> GetToken()

@@ -35,7 +35,7 @@ namespace Application.Service.Notification
             }
             catch (Exception ex)
             {
-                throw
+                throw;
             }
         }
 

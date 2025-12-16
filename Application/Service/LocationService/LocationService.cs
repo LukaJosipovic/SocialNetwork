@@ -32,7 +32,8 @@ namespace Application.Service.LocationService
                     Name = user.Name,
                     ProfilePicture = user.ProfilePicture,
                     Latitude = latitude,
-                    Longitude = longitude
+                    Longitude = longitude,
+                    GhostMode = user.GhostMode
                 };
 
                 var result = _locationRepository.AddUserLocation(userLocation);

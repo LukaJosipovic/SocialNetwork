@@ -1,5 +1,6 @@
 ﻿using Application.DTO.Request;
 using Application.DTO.Response;
+using MobileClient.Helper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,8 +38,19 @@ namespace MobileClient.Services.Activity
 
         public async Task<List<ActivityResponse>> GetActivities()
         {
+            var location = await LocationHelper.GetCurrentLocation();
+
+            if (location == null)
+            {
+                location = new Microsoft.Maui.Devices.Sensors.Location
+                {
+                    Latitude = 45.83111,
+                    Longitude = 16.11639
+                };
+            }
+
             var client = _httpClientFactory.CreateClient("BaseApi");
-            var response = await client.GetAsync($"api/Activity/GetActivities");
+            var response = await client.GetAsync($"api/Activity/GetActivities?latitude={location.Latitude}&longitude={location.Longitude}");
             var responseObject = await response.Content.ReadFromJsonAsync<List<ActivityResponse>>();
             return responseObject;
         }

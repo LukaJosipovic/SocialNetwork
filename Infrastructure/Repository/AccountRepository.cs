@@ -247,5 +247,12 @@ namespace Infrastructure.Repository
         {
             return await _userManager.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Id == userId) ?? throw new KeyNotFoundException("User not found");
         }
+
+        public async Task<List<string>> GetDeviceTokensByIdRange(List<string> IdRange, string category)
+        {
+            var users = _userManager.Users.Include(u => u.Devices).Where(u => IdRange.Contains(u.Id) && u.DoNotDisturb == false && (u.Activities == null || u.Activities.Contains(category)));
+            var deviceTokens = await users.SelectMany(u => u.Devices.Where(d => d.IsActive).Select(d => d.DeviceToken)).ToListAsync();
+            return deviceTokens;
+        }
     }
 }

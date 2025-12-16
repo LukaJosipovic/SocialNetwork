@@ -2,6 +2,7 @@
 using Application.Service.Activity;
 using Domain.Model;
 using Infrastructure.Data;
+using Infrastructure.Repository.Helper;
 using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Concurrent;
@@ -33,7 +34,7 @@ namespace Infrastructure.Repository
             return _activityKeys.TryAdd(cacheKey, true);
         }
 
-        public List<ActivityCache> GetActivities()
+        public List<ActivityCache> GetActivities(double latitude, double longitude)
         {
             var activities = new List<ActivityCache>();
             var expiredKeys = new List<string>();
@@ -41,7 +42,12 @@ namespace Infrastructure.Repository
             foreach (var key in _activityKeys.Keys)
             {
                 if (_memoryCache.TryGetValue<ActivityCache>(key, out var activity))
-                    activities.Add(activity);
+                {
+                    double distance = LocationHelper.GetDistanceInKm(latitude, longitude, activity.Latitude, activity.Longitude);
+
+                    if (distance <= activity.Range)
+                        activities.Add(activity);
+                }
                 else
                     expiredKeys.Add(key);
 

@@ -1,4 +1,5 @@
 ﻿using MobileClient.Services.Location;
+using MobileClient.Helper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,15 +19,6 @@ namespace MobileClient.BackgroundTask.Location
             _locationService = locationService;
         }
 
-        //public async Task StartAsync()
-        //{
-        //    if (_cts != null && !_cts.IsCancellationRequested)
-        //        return; // Already running
-
-        //    _cts = new CancellationTokenSource();
-        //    //_trackingTask = Task.Run(() => TrackLocationAsync(_cts.Token));
-        //    await TrackLocationAsync(_cts.Token);
-        //}
         public Task StartAsync()
         {
             if (_cts != null && !_cts.IsCancellationRequested)
@@ -56,28 +48,18 @@ namespace MobileClient.BackgroundTask.Location
         {
             while (!token.IsCancellationRequested)
             {
-                //var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>(); Permissions must be in main thread
-                //status = PermissionStatus.Granted;
-                //if (status != PermissionStatus.Granted)
-                //{
-                //    status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
-                //    if (status != PermissionStatus.Granted)
-                //    {
-                //        await Task.Delay(10000, token);
-                //        continue;
-                //    }
-                //}
-
                 try
                 {
-                    //var request = new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromSeconds(10));
-                    //var location = await Geolocation.Default.GetLocationAsync(request, token);
+                    var location = await LocationHelper.GetCurrentLocation();
 
-                    Microsoft.Maui.Devices.Sensors.Location location = new Microsoft.Maui.Devices.Sensors.Location
+                    if (location == null)
                     {
-                        Latitude = 45.83111,
-                        Longitude = 16.11639
-                    };
+                        location = new Microsoft.Maui.Devices.Sensors.Location
+                        {
+                            Latitude = 45.83111,
+                            Longitude = 16.11639
+                        };
+                    }
 
                     if (location != null)
                          await _locationService.AddLocation(location.Latitude, location.Longitude);

@@ -13,6 +13,8 @@ namespace Application.DTO.Request
         public string Description { get; set; } = null!;
         [Required]
         public string Category { get; set; } = null!;
-        public double MyProperty { get; set; }
+        public int Range { get; set; }
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
     }
 }

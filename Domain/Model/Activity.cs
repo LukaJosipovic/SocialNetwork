@@ -15,6 +15,7 @@ namespace Domain.Model
         public string ActivityCategory { get; set; }
         [NotMapped]
         public string CacheKey { get; set; }
+        public int Range { get; set; }
         //Creator
         public ApplicationUser User { get; set; }
     }

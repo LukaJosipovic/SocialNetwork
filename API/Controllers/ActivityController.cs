@@ -47,9 +47,9 @@ namespace API.Controllers
         }
 
         [HttpGet("GetActivities")]
-        public async Task<IActionResult> GetActivities()
+        public async Task<IActionResult> GetActivities(double latitude, double longitude)
         {
-            var result = await _activityService.GetActivities();
+            var result = await _activityService.GetActivities(latitude, longitude);
             return Ok(result);
         }
 
