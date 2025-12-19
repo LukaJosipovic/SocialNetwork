@@ -53,11 +53,15 @@
 
             _cancelTokenSource = new CancellationTokenSource();
 
-            Location location = new Location
+            var location = await LocationHelper.GetCurrentLocation();
+            if (location == null)
             {
-                Latitude = 45.815399,
-                Longitude = 15.966568
-            };
+                location = new Location
+                {
+                    Latitude = 45.815399,
+                    Longitude = 15.966568
+                };
+            }
 
             var usersLocatoins = await LocationService.GetUsersLocations();
 

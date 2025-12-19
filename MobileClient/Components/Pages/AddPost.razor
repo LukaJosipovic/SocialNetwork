@@ -5,7 +5,7 @@
 @using MobileClient.Services.Account
 @using MobileClient.Services.Alert
 
-<h3>AddPost</h3>
+@* <h3>AddPost</h3>
 
 @if (!string.IsNullOrEmpty(ImagePreview))
 {
@@ -22,7 +22,44 @@
     </div>
 
     <button type="submit">Upload</button>
-</EditForm>
+</EditForm> *@
+
+<div class="container py-3">
+
+    <!-- Preview Image -->
+    @if (!string.IsNullOrEmpty(ImagePreview))
+    {
+        <div class="card mb-3">
+            <img src="@ImagePreview" class="card-img-top" style="max-height: 350px; object-fit: cover;" />
+        </div>
+    }
+
+    <EditForm Model="@createPostRequest" OnValidSubmit="@CreatePost">
+
+        <!-- Image Picker -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <label class="form-label fw-semibold">Photo</label>
+                <InputFile OnChange="LoadImage" accept="image/*" class="form-control" />
+            </div>
+        </div>
+
+        <!-- Description -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <label class="form-label fw-semibold">Description</label>
+                <InputTextArea class="form-control" rows="3" placeholder="Write something..." @bind-Value="createPostRequest.Description" />
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="d-grid">
+            <button type="submit" class="btn btn-primary btn-lg" style="background-color: #512bdf;">Upload Post</button>
+        </div>
+
+    </EditForm>
+
+</div>
 
 @code {
     private string? ImagePreview;

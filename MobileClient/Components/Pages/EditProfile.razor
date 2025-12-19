@@ -11,7 +11,7 @@
 @inject ILocationTracker LocationTracker
 @inject ILocationService LocationService
 
-@if (!string.IsNullOrEmpty(ImagePreview))
+@* @if (!string.IsNullOrEmpty(ImagePreview))
 {
     <img src="@ImagePreview" alt="Uploaded Image" style="width: 150px; height: 150px;" />
 }
@@ -37,6 +37,96 @@
 <div class="form-check form-switch">
     <input class="form-check-input" @onchange="OnDoNotDisturbModeChanged" type="checkbox" role="switch" id="DoNotDisturb">
     <label class="form-check-label" for="DoNotDisturb">Do not disturb</label>
+</div> *@
+
+<div class="container py-3">
+    <div class="card mb-3">
+        <div class="card-body text-center">
+            @if (!string.IsNullOrEmpty(ImagePreview))
+            {
+                <img src="@ImagePreview"
+                     class="rounded-circle mb-3"
+                     style="width:120px; height:120px; object-fit:cover;" />
+            }
+
+            <InputFile OnChange="LoadImage" class="form-control mb-2" />
+
+            <button type="button"
+                    class="btn btn-primary w-100"
+                    @onclick="ChangeProfilePicture">
+                Change Profile Picture
+            </button>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <label class="form-label fw-semibold">Username</label>
+            <input type="text"
+                   class="form-control mb-2"
+                   @bind="username" />
+
+            <button type="button"
+                    class="btn btn-success w-100"
+                    @onclick="UpdateUsername">
+                Update Username
+            </button>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <label class="form-label fw-semibold">Activities</label>
+
+            <select multiple
+                    class="form-select mb-2"
+                    size="5"
+                    @onchange="OnSelectedCategoriesChanged">
+                @foreach (var category in Enum.GetValues<ActivityCategory>())
+                {
+                    <option value="@category.ToString()"
+                            selected="@SelectedCategories.Contains(category)">
+                        @GetEnumDescription(category)
+                    </option>
+                }
+            </select>
+
+            <button class="btn btn-primary w-100"
+                    @onclick="SubmitCategories">
+                Change Activities
+            </button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <label class="form-label fw-semibold mb-2">Preferences</label>
+
+            <div class="form-check form-switch mb-2">
+                <input class="form-check-input"
+                       type="checkbox"
+                       role="switch"
+                       id="GhostMode"
+                       @bind="IsGhostMode"
+                       @bind:after="OnGhostModeChanged">
+                <label class="form-check-label" for="GhostMode">
+                    Ghost mode
+                </label>
+            </div>
+
+            <div class="form-check form-switch">
+                <input class="form-check-input"
+                       type="checkbox"
+                       role="switch"
+                       id="DoNotDisturb"
+                       @onchange="OnDoNotDisturbModeChanged">
+                <label class="form-check-label" for="DoNotDisturb">
+                    Do not disturb
+                </label>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 @code {
@@ -89,14 +179,14 @@
 
             if (response.IsSuccess && !IsGhostMode)
             {
-                Microsoft.Maui.Devices.Sensors.Location location = new Microsoft.Maui.Devices.Sensors.Location
-                {
-                    Latitude = 45.83111,
-                    Longitude = 16.11639
-                };
+                // Microsoft.Maui.Devices.Sensors.Location location = new Microsoft.Maui.Devices.Sensors.Location
+                // {
+                //     Latitude = 45.83111,
+                //     Longitude = 16.11639
+                // };
 
-                if (location != null)
-                    await LocationService.AddLocation(location.Latitude, location.Longitude);
+                // if (location != null)
+                //     await LocationService.AddLocation(location.Latitude, location.Longitude);
 
                 await AlertService.ShowAlertAsync($"Ok", $"{response.Message}", "OK");
             }

@@ -1,8 +1,7 @@
 ﻿@page "/admin"
 @inject NavigationManager NavManager
 
-<h3>Admin</h3>
-<div class="d-flex justify-content-center align-items-center" style="min-height: calc(100vh - 3.5rem);">
+@* <div class="d-flex justify-content-center align-items-center" style="min-height: calc(100vh - 3.5rem);">
     <div style="width: 80%;">
             <button type="button" @onclick="AddAdminForm" class="btn btn-primary"  style="background-color: #512bdf; width: 100%">Add Admin</button>
     </div>
@@ -10,7 +9,30 @@
             <button type="button" @onclick="DeletePostAdmin" class="btn btn-primary"  style="background-color: #512bdf; width: 100%">Delete Posts</button>
     </div>
     <div style="width: 80%;">
-            <button type="button" @onclick="ShowBannedAccounts" class="btn btn-primary"  style="background-color: #512bdf; width: 100%">Delete Posts</button>
+        <button type="button" @onclick="ShowBannedAccounts" class="btn btn-primary" style="background-color: #512bdf; width: 100%">Show Banned Accounts</button>
+    </div>
+</div> *@
+<div class="container py-4">
+    <div class="card mb-3">
+        <div class="card-body">
+            <button type="button" class="btn btn-primary btn-lg w-100" style="background-color: #512bdf;" @onclick="AddAdminForm">
+                <i class="bi bi-person-plus me-2"></i> Add Admin
+            </button>
+        </div>
+    </div>
+    <div class="card mb-3">
+        <div class="card-body">
+            <button type="button" class="btn btn-primary btn-lg w-100" style="background-color: #512bdf;" @onclick="DeletePostAdmin">
+                Delete Posts
+            </button>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-body">
+            <button type="button" class="btn btn-primary btn-lg w-100" style="background-color: #512bdf;" @onclick="ShowBannedAccounts">
+                Show Banned Accounts
+            </button>
+        </div>
     </div>
 </div>
 

@@ -25,7 +25,6 @@ export function load_map(latitude, longitude) {
 		map.setView([latitude, longitude], 13);
 	}
 }
-
 export function add_user_markers(usersJson) {
 	const users = JSON.parse(usersJson);
 	const userMarkers = {};

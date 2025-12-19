@@ -9,9 +9,7 @@
 @inject NavigationManager NavManager
 @inject IAlertService AlertService
 
-<h3>Profile</h3>
-
-<div class="d-flex justify-content-between align-items-center">
+@* <div class="d-flex justify-content-between align-items-center">
     <div class="d-flex align-items-center">
         <h3>@profile.Name</h3>
     </div>
@@ -24,11 +22,43 @@
             <li><button class="dropdown-item" @onclick="() => ReportUser(UserId)">Report</button></li>
         </ul>
     </div>
+</div> *@
+@* <div style="float: right;">
+    <div class="dropdown">
+        <button class="btn btn-link p-0 m-0 border-0" type="button" id="iconMenuButton"
+                data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-three-dots-vertical fs-4"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="iconMenuButton">
+            <li><button class="dropdown-item" @onclick="() => ReportUser(UserId)">Report</button></li>
+        </ul>
+    </div>
+</div> *@
+<div class="d-flex justify-content-end">
+    <div class="dropdown">
+        <button class="btn btn-link p-0 m-0 border-0"
+                type="button"
+                id="iconMenuButton"
+                data-bs-toggle="dropdown"
+                aria-expanded="false">
+            <i class="bi bi-three-dots-vertical fs-4"></i>
+        </button>
+
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="iconMenuButton">
+            <li>
+                <button class="dropdown-item" @onclick="() => ReportUser(UserId)">
+                    Report
+                </button>
+            </li>
+        </ul>
+    </div>
 </div>
 
 @if (IsSuccess)
 {
-    <_Profile profile="@profile"/>
+    <div class="d-flex justify-content-center mt-3">
+        <_Profile profile="@profile"/>
+    </div>
 }
 
 @code {

@@ -61,6 +61,9 @@ namespace Application.Service.LocationService
         public List<LocationDTO> GetAllLocations(string userId)
         {
             var locations = _locationRepository.GetAllLocations();
+            var userLocation = locations.FirstOrDefault(u => u.Id == userId);
+            if (userLocation != null)
+                locations.Remove(userLocation);
             //var locationToRemove = locations.SingleOrDefault(locations => locations.Id == userId);
 
             //if (locationToRemove != null) 

@@ -10,7 +10,7 @@
 @inject IJSRuntime JS
 @inject IAlertService AlertService
 
-<h3>ChatRooms</h3>
+@* <h3>ChatRooms</h3>
 
 <div id="chatContainer" style="height: 500px; overflow-y: auto; border: 1px solid">
     @if (users.Count > 0)
@@ -42,7 +42,74 @@
     {
         <p>There is no people to chat</p>
     }
+</div> *@
+<div id="chatContainer"
+     class="container py-2 overflow-auto"
+     style="height: 500px">
+
+    @if (users.Count > 0)
+    {
+        @foreach (var user in users)
+        {
+            <div class="card mb-2">
+                <div class="card-body py-2">
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <!-- User info -->
+                        <div class="d-flex align-items-center flex-grow-1"
+                             @onclick="() => NavigateToChat(user.Id)"
+                             style="cursor:pointer;">
+
+                            @if (user.ProfilePictureString != null)
+                            {
+                                <img src="@user.ProfilePictureString"
+                                     class="rounded-circle me-3"
+                                     style="width:48px; height:48px; object-fit:cover;"
+                                     @onclick:stopPropagation="true"
+                                     @onclick="() => NavigateToUserProfile(user.Id)" />
+                            }
+
+                            <div>
+                                <div class="fw-semibold">
+                                    @user.Name
+                                </div>
+                                <small class="text-muted">
+                                    Tap to open chat
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <button type="button"
+                                class="btn btn-outline-danger btn-sm ms-2"
+                                @onclick="() => BlockUser(user.Id)">
+                            <i class="bi bi-ban"></i>
+                        </button>
+
+                    </div>
+
+                </div>
+            </div>
+        }
+
+        @if (isLoading)
+        {
+            <div class="text-center text-muted py-3">
+                <div class="spinner-border spinner-border-sm" role="status"></div>
+                <p class="mb-0 mt-2">Loading more…</p>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="text-center text-muted py-5">
+            <i class="bi bi-chat-dots fs-1"></i>
+            <p class="mt-2 mb-0">There is no one to chat with</p>
+        </div>
+    }
 </div>
+
 
 @code {
     private List<UserBriefDetailsDTO>? users = new();
