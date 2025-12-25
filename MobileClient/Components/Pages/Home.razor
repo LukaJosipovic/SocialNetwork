@@ -42,11 +42,10 @@
 {
     <div class="text-center text-muted py-5">
         <i class="bi bi-calendar-x fs-1"></i>
-        <p class="mt-2">No activities available</p>
+        <p class="mt-2">There are currently no posts</p>
     </div>
 }
-
-@if (postsDetails != null)
+else if (postsDetails != null)
 {
     foreach (var post in postsDetails)
     {
@@ -110,10 +109,6 @@
             <p>Like: @post.LikeCount</p>
         </div> *@
     }
-}
-else
-{
-    <p>There is no posts</p>
 }
 
 @code{

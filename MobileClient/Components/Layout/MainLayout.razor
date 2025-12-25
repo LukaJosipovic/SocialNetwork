@@ -34,12 +34,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var status = await LocationHelper.GetLocationPermission();
-        if (status == false)
-        {
-
-        }
-
         UserSessionService.OnUserBanned += async () =>
         {
             await AlertService.ShowAlertAsync($"Error", $"Your account has been banned due to too many reports to your account. If you think this ban is unjustified, contact our admin", "OK");
@@ -74,6 +68,16 @@
         // });
 
         await hubConnection.StartAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var status = await LocationHelper.GetLocationPermission();
+        if (status == false)
+        {
+
+        }
+
     }
 
     public async ValueTask DisposeAsync()

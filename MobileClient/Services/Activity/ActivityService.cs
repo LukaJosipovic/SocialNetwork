@@ -21,11 +21,19 @@ namespace MobileClient.Services.Activity
 
         public async Task<GeneralResponse> AcceptActivity(string cacheKey)
         {
-            var client = _httpClientFactory.CreateClient("BaseApi");
+            try
+            {
+                var client = _httpClientFactory.CreateClient("BaseApi");
 
-            var response = await client.PostAsJsonAsync($"api/Activity/AcceptActivity", cacheKey);
-            var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
-            return responseObject;
+                var response = await client.PostAsJsonAsync($"api/Activity/AcceptActivity", cacheKey);
+                var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
+                return responseObject;
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
         }
 
         public async Task<GeneralResponse> CreateActivity(CreateActivityRequest request)

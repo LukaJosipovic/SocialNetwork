@@ -14,10 +14,12 @@ namespace Application.Service.Chat
     public class ChatService : IChatService
     {
 		private readonly IChatRepository _chatRepository;
+        private readonly IAccountRepository _accountRepository;
 
-        public ChatService(IChatRepository chatRepository)
+        public ChatService(IChatRepository chatRepository, IAccountRepository accountRepository)
         {
             _chatRepository = chatRepository;
+            _accountRepository = accountRepository;
         }
 
         public async Task<ChatRoomResponse> GetChatRooms(string userId, PageSettingsRequest model)
@@ -89,9 +91,14 @@ namespace Application.Service.Chat
             {
                 var messageList = new MessageResponse();
                 messageList.MessagesDto = new List<MessageDTO>();
+
                 var userBlocked = await _chatRepository.CheckIfUserIsBlocked(userId, userToChatId);
-                messageList.ConversationBlocked = userBlocked;
+                var userToChat = await _accountRepository.GetUserById(userToChatId);
                 var messages = await _chatRepository.GetMessages(userId);
+
+                messageList.ConversationBlocked = userBlocked;
+                messageList.Name = userToChat.Name;
+                messageList.ProfilePictureString = $"data:image;base64,{Convert.ToBase64String(userToChat.ProfilePicture)}";
 
                 foreach (var message in messages)
                 {

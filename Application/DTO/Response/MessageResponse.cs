@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Application.DTO.Response
 {
-    public class MessageResponse
+    public class MessageResponse : UserBriefDetailsDTO
     {
-        public List<MessageDTO> MessagesDto { get; set; }
+        public List<MessageDTO> MessagesDto { get; set; } = new();
         public bool ConversationBlocked { get; set; }
     }
 }
