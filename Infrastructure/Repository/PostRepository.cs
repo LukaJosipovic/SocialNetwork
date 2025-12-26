@@ -58,7 +58,7 @@ namespace Infrastructure.Repository
 
         public async Task<List<Post>> GetReportedPosts()
         {
-            return await _context.Post.Where(p => p.Reports.Count() > 0).Include(p => p.User).Include(p => p.Reports).ToListAsync();
+            return await _context.Post.IgnoreQueryFilters().Where(p => p.Reports.Count() > 0).Include(p => p.User).Include(p => p.Reports).ToListAsync();
         }
 
         public async Task<List<Report>> GetReportPostId(int postId)

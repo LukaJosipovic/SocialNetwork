@@ -75,7 +75,7 @@ namespace MobileClient.Handlers
 
             if (result.IsBanned == true)
             {
-                _userSessionService.TriggerBanned();
+                await _userSessionService.TriggerBannedAsync();
             }
 
             if (result == null)

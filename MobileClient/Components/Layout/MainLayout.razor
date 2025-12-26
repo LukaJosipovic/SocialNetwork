@@ -34,13 +34,15 @@
 
     protected override async Task OnInitializedAsync()
     {
-        UserSessionService.OnUserBanned += async () =>
-        {
-            await AlertService.ShowAlertAsync($"Error", $"Your account has been banned due to too many reports to your account. If you think this ban is unjustified, contact our admin", "OK");
-            SecureStorage.Remove("accessToken");
-            SecureStorage.Remove("refreshToken");
-            NavManager.NavigateTo("/register");
-        };
+        // UserSessionService.OnUserBanned += async () =>
+        // {
+        //     await AlertService.ShowAlertAsync($"Error", $"Your account has been banned due to too many reports to your account. If you think this ban is unjustified, contact our admin", "OK");
+        //     SecureStorage.Remove("accessToken");
+        //     SecureStorage.Remove("refreshToken");
+        //     NavManager.NavigateTo("/register");
+        // };
+
+        UserSessionService.OnUserBanned += HandleUserBannedAsync;
 
         string url = "http://192.168.100.19:4321/socialnetwork/activityhub";
         string url2 = "https://localhost:7098/activityhub";
@@ -86,7 +88,7 @@
         {
             await hubConnection.DisposeAsync();
         }
-        //UserSessionService.OnUserBanned -= HandleUserBanned;
+        UserSessionService.OnUserBanned -= HandleUserBannedAsync;
     }
 
     private async Task<string> GetToken()
@@ -95,13 +97,22 @@
         return token;
     }
 
-    private async void HandleUserBanned(string message)
+    private async Task HandleUserBannedAsync()
     {
         // Clear tokens
-        await SecureStorage.SetAsync("accessToken", "");
-        await SecureStorage.SetAsync("refreshToken", "");
-        await AlertService.ShowAlertAsync($"Account Banned", message, "OK");
-        NavManager.NavigateTo("/login");
+        // await SecureStorage.SetAsync("accessToken", "");
+        // await SecureStorage.SetAsync("refreshToken", "");
+        // await AlertService.ShowAlertAsync($"Account Banned", message, "OK");
+        // NavManager.NavigateTo("/login");
+        await MainThread.InvokeOnMainThreadAsync(async () =>
+        {
+            await AlertService.ShowAlertAsync("Error", "Your account has been banned due to too many reports to your account. If you think this ban is unjustified, contact our admin", "OK");
+
+            SecureStorage.Remove("accessToken");
+            SecureStorage.Remove("refreshToken");
+
+            NavManager.NavigateTo("/register", forceLoad: true);
+        });
     }
 
     // private async Task SendMyLocationAsync()

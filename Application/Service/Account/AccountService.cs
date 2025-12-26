@@ -275,7 +275,7 @@ namespace Application.Service.Account
                             {
                                 To = reportedUser.Email,
                                 Subject = "Your account has been banned",
-                                Body = "Your account has been banned due to too many logins to your account. If you think this ban is unjustified, contact our admin"
+                                Body = "Your account has been banned due to too many reports to your account. If you think this ban is unjustified, contact our admin"
                             };
                             //_emailService.SendEmail(email);
                         }

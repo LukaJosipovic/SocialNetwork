@@ -9,15 +9,25 @@ namespace MobileClient.SessionService
     public class UserSessionService
     {
         //public event Action<string>? OnUserBanned;
-        public event Action? OnUserBanned;
 
         //public void TriggerBanned(string message)
         //{
         //    OnUserBanned?.Invoke(message);
         //}
-        public void TriggerBanned()
+
+        //public event Action? OnUserBanned;
+
+        //public void TriggerBanned()
+        //{
+        //    OnUserBanned?.Invoke();
+        //}
+        public event Func<Task>? OnUserBanned;
+
+        public async Task TriggerBannedAsync()
         {
-            OnUserBanned?.Invoke();
+            if (OnUserBanned is not null)
+                await OnUserBanned.Invoke();
         }
+
     }
 }

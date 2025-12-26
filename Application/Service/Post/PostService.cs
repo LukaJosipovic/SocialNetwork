@@ -1,6 +1,8 @@
 ﻿using Application.Contracts;
+using Application.DTO;
 using Application.DTO.Response;
 using Application.Helper;
+using Application.Service.Email;
 using Domain.Model;
 using System;
 using System.Collections.Generic;
@@ -15,11 +17,13 @@ namespace Application.Service.Post
     {
         private readonly IPostRepository _postRepository;
         private readonly IAccountRepository _accountRepository;
+        private readonly IEmailService _emailService;
 
-        public PostService(IPostRepository postRepository, IAccountRepository accountRepository)
+        public PostService(IPostRepository postRepository, IAccountRepository accountRepository, IEmailService emailService)
         {
             _postRepository = postRepository;
             _accountRepository = accountRepository;
+            _emailService = emailService;
         }
 
         public async Task<GeneralResponse> DeletePostAdmin(int postId)
@@ -269,7 +273,25 @@ namespace Application.Service.Post
                 var isSuccess = await _postRepository.ReportPost(report);
 
                 if (isSuccess)
+                {
+                    var reportNumber = await _accountRepository.GetReportCount(post.User.Id);
+
+                    if (reportNumber > 0)
+                    {
+                        var isBanned = await _accountRepository.BanAccount(post.User.Id);
+                        if (isBanned.Succeeded)
+                        {
+                            var email = new EmailDTO
+                            {
+                                To = reportedUser.Email,
+                                Subject = "Your account has been banned",
+                                Body = "Your account has been banned due to too many reports to your account. If you think this ban is unjustified, contact our admin"
+                            };
+                            //_emailService.SendEmail(email);
+                        }
+                    }
                     return ResponseHelper.CreateGeneralResponse(true, $"You reported {post.User.Name}'s post");
+                }
                 
                 return ResponseHelper.CreateGeneralResponse(false, "Post cannot be reported");
             }
