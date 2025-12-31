@@ -238,12 +238,31 @@ namespace Application.Service.Post
 
         public async Task<GeneralResponse> RemoveReport(int postId)
         {
+            var post = await _postRepository.GetPostById(postId);
             var reports = await _postRepository.GetReportPostId(postId);
             if (reports.Count > 0)
             {
                 var result = await _postRepository.RemoveReports(reports);
                 if (result)
+                {
+                    var reportNumber = await _accountRepository.GetReportCount(post.UserId);
+
+                    if (reportNumber < 1)
+                    {
+                        var isUnbanned = await _accountRepository.UnbanUser(post.UserId);
+                        if (isUnbanned.Succeeded)
+                        {
+                            var email = new EmailDTO
+                            {
+                                To = post.User.Email,
+                                Subject = "Your account has been unbanned",
+                                Body = "Your account has been unbanned after an admin reviewed your posts."
+                            };
+                            //_emailService.SendEmail(email);
+                        }
+                    }
                     return ResponseHelper.CreateGeneralResponse(true, "Reports have been removed from post");
+                }
 
                 return ResponseHelper.CreateGeneralResponse(true, "Something went wrong");
             }

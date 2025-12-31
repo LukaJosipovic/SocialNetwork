@@ -7,6 +7,8 @@ using System.Net.Http.Json;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Application.Exceptions;
+using Application.Helper;
 
 namespace MobileClient.Services.Location
 {
@@ -29,6 +31,11 @@ namespace MobileClient.Services.Location
                 var responseObject = await response.Content.ReadFromJsonAsync<List<LocationDTO>>();
                 return responseObject;
             }
+            catch (AccountBannedException)
+            {
+
+                throw;
+            }
             catch (Exception ex)
             {
 
@@ -45,9 +52,14 @@ namespace MobileClient.Services.Location
                 var responseObject = await response.Content.ReadFromJsonAsync<bool>();
                 return responseObject;
             }
-            catch (Exception ex)
+            catch (AccountBannedException)
             {
 
+                throw;
+            }
+            catch (Exception ex)
+            {
+                //return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
                 throw;
             }
         }

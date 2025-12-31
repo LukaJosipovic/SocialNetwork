@@ -30,5 +30,6 @@ namespace Application.Service.Account
         Task<GeneralResponse> BlockUser(string blockerId, string userIdToBlock);
         Task<GeneralResponse> UnblockUser(string blockerId, string blockedUserId);
         Task<List<UserBriefDetailsDTO>> GetBlockedUsers(string userId, PageSettingsRequest model);
+        Task<UserProfileRespons> GetBannedProfile(string email);
     }
 }

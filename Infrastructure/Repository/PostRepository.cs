@@ -63,7 +63,7 @@ namespace Infrastructure.Repository
 
         public async Task<List<Report>> GetReportPostId(int postId)
         {
-            return await _context.Report.Where(r => r.ReportedPost.Id == postId).ToListAsync();
+            return await _context.Report.Include(r => r.ReportedUser).IgnoreQueryFilters().Where(r => r.ReportedPost.Id == postId).ToListAsync();
         }
 
         public async Task<bool> LikePost(Like like)

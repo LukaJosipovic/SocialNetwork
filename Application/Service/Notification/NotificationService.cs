@@ -30,12 +30,11 @@ namespace Application.Service.Notification
             }
             catch (KeyNotFoundException ex)
             {
-
-                throw;
+                return null;
             }
             catch (Exception ex)
             {
-                throw;
+                return null;
             }
         }
 

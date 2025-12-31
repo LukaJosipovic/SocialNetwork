@@ -7,6 +7,9 @@
 @inject NavigationManager NavManager
 @inject IAlertService AlertService
 @inject IAccountService AccountService
+@using MobileClient.Services.LoadingService
+@inject LoadingService LoadingService
+
 
 @* <div class="d-flex justify-content-between align-items-center">
     <div class="d-flex align-items-center">
@@ -91,6 +94,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        LoadingService.IsLoading = true;
+
         var response = await AccountService.MyProfile();
 
         if (response.IsSuccess)
@@ -101,10 +106,14 @@
             IsSuccess = true;
             profile = response;
         }
+
+        LoadingService.IsLoading = true;
     }
 
     public async Task DeleteAccount()
     {
+        LoadingService.IsLoading = true;
+
         var response = await AccountService.DeleteAccount();
 
         if (response.IsSuccess)
@@ -112,13 +121,14 @@
             await AlertService.ShowAlertAsync($"Ok", $"{response.Message}", "OK");
             SecureStorage.Remove("accessToken");
             SecureStorage.Remove("refreshToken");
+            NavManager.NavigateTo($"/register");
         }
         else
         {
             await AlertService.ShowAlertAsync($"Error", $"{response.Message}", "OK");
         }
 
-        NavManager.NavigateTo($"/register");
+        LoadingService.IsLoading = false;
         //NavManager.NavigateTo($"/login");
     }
 

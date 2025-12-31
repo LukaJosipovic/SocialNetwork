@@ -105,7 +105,7 @@ namespace API.Controllers
             return BadRequest(result);
         }
 
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [HttpGet("GetReportedPosts")]
         public async Task<IActionResult> GetReportedPosts()
         {
@@ -113,19 +113,19 @@ namespace API.Controllers
             if (result.Count > 0)
             {
                 //mkanuti
-                var request = HttpContext.Request;
-                var baseUpl = $"{request.Scheme}://{request.Host}{request.PathBase}";
-                foreach (var post in result)
-                {
-                    //post.Content = $"{request.Scheme}://{request.Host}/{post.Content}";
-                    post.Content = $"{baseUpl}/{post.Content}";
-                }
-                return Ok(result);
+                //var request = HttpContext.Request;
+                //var baseUpl = $"{request.Scheme}://{request.Host}{request.PathBase}";
+                //foreach (var post in result)
+                //{
+                //    //post.Content = $"{request.Scheme}://{request.Host}/{post.Content}";
+                //    post.Content = $"{baseUpl}/{post.Content}";
+                //}
+                //return Ok(result);
             }
             return Ok(result);
         }
 
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [HttpDelete("DeletePostAdmin")]
         public async Task<IActionResult> DeletePostAdmin(int postId)
         {
@@ -137,7 +137,7 @@ namespace API.Controllers
             return BadRequest(result);
         }
 
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [HttpDelete("RemoveReport")]
         public async Task<IActionResult> RemoveReport(int postId)
         {

@@ -4,6 +4,7 @@
 @using MobileClient.Services.Alert
 @using MobileClient.SessionService
 @using MobileClient.Helper
+@using MobileClient.Components.Pages.Shared
 @inherits LayoutComponentBase
 @inject NavigationManager NavManager
 @implements IAsyncDisposable
@@ -13,6 +14,9 @@
 
 <div class="page">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+
+    <_LoadingOverlay/>
+
     <div class="sidebar">
         <NavMenu />
     </div>

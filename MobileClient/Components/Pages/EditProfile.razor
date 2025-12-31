@@ -10,6 +10,8 @@
 @using MobileClient.Services.Location
 @inject ILocationTracker LocationTracker
 @inject ILocationService LocationService
+@using MobileClient.Services.LoadingService
+@inject LoadingService LoadingService
 
 @* @if (!string.IsNullOrEmpty(ImagePreview))
 {
@@ -138,6 +140,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        LoadingService.IsLoading = true;
+
         var response = await AccountService.GetUserById();
         username = response.Name;
 
@@ -149,6 +153,8 @@
         {
             IsGhostMode = ghostMode;
         }
+
+        LoadingService.IsLoading = false;
     }
 
     private async Task LoadImage(InputFileChangeEventArgs e)
@@ -171,6 +177,8 @@
     {
         if (buffer != null)
         {
+            LoadingService.IsLoading = true;
+
             var request = new ChangeProfilePictureRequest
             {
                 ImageData = buffer
@@ -187,15 +195,17 @@
 
                 // if (location != null)
                 //     await LocationService.AddLocation(location.Latitude, location.Longitude);
-
+                LoadingService.IsLoading = false;
                 await AlertService.ShowAlertAsync($"Ok", $"{response.Message}", "OK");
             }
             else if (response.IsSuccess && IsGhostMode)
             {
+                LoadingService.IsLoading = false;
                 await AlertService.ShowAlertAsync($"Ok", $"{response.Message}", "OK");
             }
             else
             {
+                LoadingService.IsLoading = false;
                 await AlertService.ShowAlertAsync($"Error", $"{response.Message}", "OK");
             }
         }
@@ -203,12 +213,16 @@
 
     private async Task UpdateUsername()
     {
+        LoadingService.IsLoading = true;
+
         var response = await AccountService.UpdateUsername(username);
 
         if (response.IsSuccess)
             await AlertService.ShowAlertAsync($"Ok", $"{response.Message}", "OK");
         else
             await AlertService.ShowAlertAsync($"Error", $"{response.Message}", "OK");
+
+        LoadingService.IsLoading = false;
     }
 
     private void OnSelectedCategoriesChanged(ChangeEventArgs e)
@@ -229,12 +243,16 @@
 
     private async Task SubmitCategories()
     {
+        LoadingService.IsLoading = true;
+
         var response = await AccountService.ChangeActivities(SelectedCategories);
 
         if (response.IsSuccess)
             await AlertService.ShowAlertAsync($"Success", response.Message, "OK");
         else
             await AlertService.ShowAlertAsync($"Error", response.Message, "OK");
+
+        LoadingService.IsLoading = false;
     }
 
     private string GetEnumDescription(ActivityCategory category)

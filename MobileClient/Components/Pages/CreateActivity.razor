@@ -9,6 +9,8 @@
 @inject IActivityService ActivityService
 @inject IAlertService AlertService
 @inject NavigationManager NavManager
+@using MobileClient.Services.LoadingService
+@inject LoadingService LoadingService
 
 <NavLink href="/activities">
     Activities
@@ -96,6 +98,8 @@
 
     private async Task CreateUserActivity()
     {
+        LoadingService.IsLoading = true;
+
         var location = await LocationHelper.GetCurrentLocation();
 
         if (location == null)
@@ -116,13 +120,20 @@
             if (response.IsSuccess)
             {
                 await MainLayout.hubConnection.InvokeAsync("SendActivityNotification");
+                LoadingService.IsLoading = false;
                 await AlertService.ShowAlertAsync("Ok", $"{response.Message}", "OK");
             }
             else
+            {
+                LoadingService.IsLoading = false;
                 await AlertService.ShowAlertAsync("Error", $"{response.Message}", "OK");
+            }
         }
         else
+        {
+            LoadingService.IsLoading = false;
             await AlertService.ShowAlertAsync("Error", "Unable to get device location", "OK");
+        }
     }
 
     private async Task<string> GetToken()

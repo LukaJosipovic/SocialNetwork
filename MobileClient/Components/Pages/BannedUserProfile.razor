@@ -8,6 +8,8 @@
 @inject IAccountService AccountService
 @inject NavigationManager NavManager
 @inject IAlertService AlertService
+@using MobileClient.Services.LoadingService
+@inject LoadingService LoadingService
 
 <h3>Banned Profile</h3>
 
@@ -22,7 +24,7 @@
         </button>
         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="iconMenuButton">
             <li><button class="dropdown-item" @onclick="() => UnbanUser(UserId)">Unbann</button></li>
-            <li><button class="dropdown-item" @onclick="() => DeleteUser(UserId)">Delete</button></li>
+            @* <li><button class="dropdown-item" @onclick="() => DeleteUser(UserId)">Delete</button></li> *@
         </ul>
     </div>
 </div>
@@ -41,7 +43,9 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var response = await AccountService.GetUserProfile(UserId);
+        LoadingService.IsLoading = true;
+
+        var response = await AccountService.GetBannedProfile(UserId);
 
         if (response.IsSuccess)
         {
@@ -49,20 +53,25 @@
             profile = response;
         }
 
+        LoadingService.IsLoading = false;
     }
 
     private async Task UnbanUser(string userId)
     {
+        LoadingService.IsLoading = true;
+
         var response = await AccountService.UnbanUser(userId);
         if (response.IsSuccess)
             await AlertService.ShowAlertAsync("Ok", $"{response.Message}", "OK");
         else
             await AlertService.ShowAlertAsync("Error", $"{response.Message}", "OK");
+
+        LoadingService.IsLoading = false;
     }
 
-    private async Task DeleteUser(string userId)
-    {
+    // private async Task DeleteUser(string userId)
+    // {
         
-    }
+    // }
 
 }

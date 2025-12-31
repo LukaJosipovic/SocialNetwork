@@ -3,6 +3,8 @@
 @using MobileClient.Services.Account
 @inject IAccountService AccountService
 @inject NavigationManager NavManager
+@using MobileClient.Services.LoadingService
+@inject LoadingService LoadingService
 
 <h3>BannedAccounts</h3>
 
@@ -26,12 +28,16 @@
 
     private async Task SearchBannedAccounts()
     {
+        LoadingService.IsLoading = true;
+
         var user = await AccountService.GetBannedUser(email);
 
         if (user.IsSuccess)
             account = user;
         else
             account = null;
+
+        LoadingService.IsLoading = false;
     }
 
     private void NavigateToProfile(string userId)

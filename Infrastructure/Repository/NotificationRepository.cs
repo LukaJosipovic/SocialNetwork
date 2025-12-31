@@ -1,6 +1,7 @@
 ﻿using Application.Contracts;
 using Domain.Model;
 using Infrastructure.Data;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -48,7 +49,9 @@ namespace Infrastructure.Repository
 
         public async Task<UserDevice> GetUserDevice(string userId)
         {
-            return await _context.UserDevices.FirstOrDefaultAsync(u => u.UserId == userId) ?? throw new KeyNotFoundException("Device not found");
+            //return await _context.UserDevices.FirstOrDefaultAsync(u => u.UserId == userId) ?? throw new KeyNotFoundException("Device not found");
+            var user = await _context.Users.Include(u => u.Devices).FirstOrDefaultAsync(u => u.Id == userId) ?? throw new KeyNotFoundException("Device not found");
+            return user.Devices.FirstOrDefault(u => u.IsActive);
         }
 
         public async Task<bool> RegisterDevice(UserDevice userDevice)

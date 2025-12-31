@@ -16,6 +16,8 @@ using Plugin.Firebase.CloudMessaging;
 using System.Net;
 using Microsoft.Maui.LifecycleEvents;
 using MobileClient.Services.Notification;
+using MobileClient.Services.LoadingService;
+
 
 #if ANDROID
 using Plugin.Firebase.Core.Platforms.Android;
@@ -64,6 +66,7 @@ namespace MobileClient
             builder.Services.AddScoped<ILocationService, LocationService>();
             builder.Services.AddScoped<INotificationService, NotificationService>();
             builder.Services.AddSingleton<ILocationTracker, LocationTracker>();
+            builder.Services.AddSingleton<LoadingService>();
 #if ANDROID
             builder.Services.AddSingleton<IBackgroundLocationService, BackgroundLocationService>();
 #endif

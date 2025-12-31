@@ -4,6 +4,8 @@
 @using Application.DTO.Request
 @using MobileClient.Services.Account
 @using MobileClient.Services.Alert
+@using MobileClient.Services.LoadingService
+@inject LoadingService LoadingService
 
 @* <h3>AddPost</h3>
 
@@ -78,13 +80,17 @@
         }
         catch (Exception ex)
         {
-            await AlertService.ShowAlertAsync($"Error", "Error loafing image", "OK");
+            await AlertService.ShowAlertAsync($"Error", "Error loading image", "OK");
         }
     }
 
     private async Task CreatePost()
     {
+        LoadingService.IsLoading = true;
+
         createPostRequest.ImageData = buffer;
         var response = AccountService.CreatePost(createPostRequest);
+
+        LoadingService.IsLoading = false;
     }
 }

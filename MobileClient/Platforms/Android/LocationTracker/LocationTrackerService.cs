@@ -3,6 +3,7 @@ using Android.Content;
 using Android.Content.PM;
 using Android.OS;
 using Android.Runtime;
+using Application.Exceptions;
 using MobileClient.Helper;
 using MobileClient.Services.Location;
 using System;
@@ -36,7 +37,7 @@ namespace MobileClient.Platforms.Android.LocationTracker
                 await TrackLocationAsync(cts.Token);
             });
             trackLocation.Start();
-            return StartCommandResult.Sticky;
+            return StartCommandResult.NotSticky;
         }
 
         private async Task TrackLocationAsync(CancellationToken token)
@@ -56,10 +57,13 @@ namespace MobileClient.Platforms.Android.LocationTracker
                     await Task.Delay(20000, token);
                 }
             }
+            catch (AccountBannedException)
+            {
+                StopSelf();
+            }
             catch (Exception ex)
             {
 
-                throw;
             }
         }
 

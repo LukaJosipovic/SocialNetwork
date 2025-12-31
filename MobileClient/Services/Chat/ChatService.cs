@@ -1,6 +1,7 @@
 ﻿using Application.DTO;
 using Application.DTO.Request;
 using Application.DTO.Response;
+using Application.Exceptions;
 using Domain.Model;
 using System;
 using System.Collections.Generic;
@@ -21,19 +22,45 @@ namespace MobileClient.Services.Chat
         }
 
         public async Task<ChatRoomResponse> GetChatRooms(PageSettingsRequest model)
-        {   
-            var client = _httpClientFactory.CreateClient("BaseApi");
-            var response = await client.GetAsync($"api/Chat/GetChatRooms?PageNumber={model.PageNumber}&PageSize={model.PageSize}");
-            var responseObject = await response.Content.ReadFromJsonAsync<ChatRoomResponse>();
-            return responseObject;
+        {
+            try
+            {
+                var client = _httpClientFactory.CreateClient("BaseApi");
+                var response = await client.GetAsync($"api/Chat/GetChatRooms?PageNumber={model.PageNumber}&PageSize={model.PageSize}");
+                var responseObject = await response.Content.ReadFromJsonAsync<ChatRoomResponse>();
+                return responseObject;
+            }
+            catch (AccountBannedException)
+            {
+
+                throw;
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
         }
 
         public async Task<MessageResponse> GetMessages(string recipientId)
         {
-            var client = _httpClientFactory.CreateClient("BaseApi");
-            var response = await client.GetAsync($"api/Chat/GetMessages?userToChatId={recipientId}");
-            var responseObject = await response.Content.ReadFromJsonAsync<MessageResponse>();
-            return responseObject;
+            try
+            {
+                var client = _httpClientFactory.CreateClient("BaseApi");
+                var response = await client.GetAsync($"api/Chat/GetMessages?userToChatId={recipientId}");
+                var responseObject = await response.Content.ReadFromJsonAsync<MessageResponse>();
+                return responseObject;
+            }
+            catch (AccountBannedException)
+            {
+
+                throw;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
     }
 }

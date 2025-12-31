@@ -25,7 +25,7 @@ namespace MobileClient.Handlers
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-         {
+        {
             var token = await SecureStorage.GetAsync("accessToken");
 
             if (!string.IsNullOrEmpty(token))
@@ -39,11 +39,16 @@ namespace MobileClient.Handlers
                 var refreshSuccess = await TryRefreshTokenAsync(token, cancellationToken);
                 if (refreshSuccess)
                 {
+                    response.Dispose(); // Dispose the old response
+
+                    //var newRequest = await CloneHttpRequestMessageAsync(request);
+                    
                     // Retry the original request with the new access token
                     token = await SecureStorage.GetAsync("accessToken");
 
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-                    response.Dispose(); // Dispose the old response
+                    //newRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                    //response.Dispose(); 
 
                     // Retry the same request
                     response = await base.SendAsync(request, cancellationToken);
@@ -76,6 +81,8 @@ namespace MobileClient.Handlers
             if (result.IsBanned == true)
             {
                 await _userSessionService.TriggerBannedAsync();
+                throw new AccountBannedException();
+                //return false;
             }
 
             if (result == null)
@@ -91,6 +98,29 @@ namespace MobileClient.Handlers
             await SecureStorage.SetAsync("refreshToken", result.RefreshToken);
 
             return true;
+        }
+
+        private static async Task<HttpRequestMessage> CloneHttpRequestMessageAsync(HttpRequestMessage request)
+        {
+            var clone = new HttpRequestMessage(request.Method, request.RequestUri);
+
+            // Copy headers
+            foreach (var header in request.Headers)
+                clone.Headers.TryAddWithoutValidation(header.Key, header.Value);
+
+            // Copy content
+            if (request.Content != null)
+            {
+                var ms = new MemoryStream();
+                await request.Content.CopyToAsync(ms);
+                ms.Position = 0;
+                clone.Content = new StreamContent(ms);
+
+                foreach (var header in request.Content.Headers)
+                    clone.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
+            }
+
+            return clone;
         }
     }
 }

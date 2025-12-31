@@ -10,6 +10,8 @@
 @using System.Text.Json
 @using MobileClient.Helper;
 @inject ILocationService LocationService
+@using MobileClient.Services.LoadingService
+@inject LoadingService LoadingService
 
 <div id="map" style="height: calc(100vh - 3.5rem);"></div>
 
@@ -47,6 +49,8 @@
     {
         try
         {
+            LoadingService.IsLoading = true;
+
             _isCheckingLocation = true;
 
             GeolocationRequest request = new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromSeconds(10));
@@ -77,6 +81,7 @@
                 var userLocationsJson = JsonSerializer.Serialize(usersLocatoins);
                 await module.InvokeVoidAsync("add_user_markers", userLocationsJson);
             }
+            LoadingService.IsLoading = false;
         }
         catch (Exception ex)
         {

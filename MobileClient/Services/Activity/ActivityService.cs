@@ -1,5 +1,6 @@
 ﻿using Application.DTO.Request;
 using Application.DTO.Response;
+using Application.Exceptions;
 using MobileClient.Helper;
 using System;
 using System.Collections.Generic;
@@ -29,6 +30,11 @@ namespace MobileClient.Services.Activity
                 var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
                 return responseObject;
             }
+            catch (AccountBannedException)
+            {
+
+                throw;
+            }
             catch (Exception ex)
             {
 
@@ -38,10 +44,23 @@ namespace MobileClient.Services.Activity
 
         public async Task<GeneralResponse> CreateActivity(CreateActivityRequest request)
         {
-            var client = _httpClientFactory.CreateClient("BaseApi");
-            var response = await client.PostAsJsonAsync($"api/Activity/CreateActivity", request);
-            var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
-            return responseObject;
+            try
+            {
+                var client = _httpClientFactory.CreateClient("BaseApi");
+                var response = await client.PostAsJsonAsync($"api/Activity/CreateActivity", request);
+                var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
+                return responseObject;
+            }
+            catch (AccountBannedException)
+            {
+
+                throw;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
         public async Task<List<ActivityResponse>> GetActivities()
@@ -57,10 +76,23 @@ namespace MobileClient.Services.Activity
                 };
             }
 
-            var client = _httpClientFactory.CreateClient("BaseApi");
-            var response = await client.GetAsync($"api/Activity/GetActivities?latitude={location.Latitude}&longitude={location.Longitude}");
-            var responseObject = await response.Content.ReadFromJsonAsync<List<ActivityResponse>>();
-            return responseObject;
+            try
+            {
+                var client = _httpClientFactory.CreateClient("BaseApi");
+                var response = await client.GetAsync($"api/Activity/GetActivities?latitude={location.Latitude}&longitude={location.Longitude}");
+                var responseObject = await response.Content.ReadFromJsonAsync<List<ActivityResponse>>();
+                return responseObject;
+            }
+            catch (AccountBannedException)
+            {
+
+                throw;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
         public Task<GeneralResponse> ReportActivity(string cacheKey)

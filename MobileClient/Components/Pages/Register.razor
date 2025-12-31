@@ -7,6 +7,8 @@
 @inject NavigationManager NavManager
 @inject IAlertService AlertService
 @layout MobileClient.Components.Layout.EmptyLayout
+@using MobileClient.Services.LoadingService
+@inject LoadingService LoadingService
 
 <div class="d-flex justify-content-center align-items-center" style="min-height: calc(100vh - 3.5rem);">
     <div style="width: 80%;">
@@ -59,6 +61,7 @@
 
     private async Task RegisterUser()
     {
+        LoadingService.IsLoading = true;
 
         var result = await AuthService.Register(Request);
         if (result.IsSuccess)
@@ -69,6 +72,8 @@
         {
             await AlertService.ShowAlertAsync($"{result.Message}", $"{result.Errors?.First()}", "OK");
         }
+
+        LoadingService.IsLoading = false;
     }
 
     private async Task NavigateToLogin()

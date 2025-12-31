@@ -72,7 +72,7 @@ namespace Application.Service.Account
 
                 var post = new Domain.Model.Post
                 {
-                    UserId = new Guid(userId),
+                    UserId = userId,
                     Type = (request.ImageData == null) ? PostType.Text : PostType.Image,
                     Description = request.Description,
                     DateCreated = DateTime.Now,
@@ -324,10 +324,19 @@ namespace Application.Service.Account
         {
             try
             {
-                var result = await _accountRepository.UnbanUser(userId);
+                var user = await _accountRepository.RemoveAllReports(userId);
 
-                if (result.Succeeded)
-                    return ResponseHelper.CreateGeneralResponse(true, "Account successfully unblocked");
+                if (user != null)
+                {
+                    var email = new EmailDTO
+                    {
+                        To = user.Email,
+                        Subject = "Your account has been unbanned",
+                        Body = "Your account has been unbanned after an admin reviewed your profile."
+                    };
+                    //_emailService.SendEmail(email);
+                    return ResponseHelper.CreateGeneralResponse(true, "Account successfully unbanned");
+                }
                 
                 return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
@@ -452,6 +461,24 @@ namespace Application.Service.Account
             catch
             {
                 return ResponseHelper.CreateUserDetailsResponse(null, false, "Something went wrong");
+            }
+        }
+
+        public async Task<UserProfileRespons> GetBannedProfile(string userId)
+        {
+            try
+            {
+                var user = await _accountRepository.GetBannedProfile(userId);
+
+                return ResponseHelper.CreateUserProfileRespons(user, true, null);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return ResponseHelper.CreateUserProfileRespons(null, false, ex.Message);
+            }
+            catch (Exception)
+            {
+                return ResponseHelper.CreateUserProfileRespons(null, false, "An unexpected error occurred while getting user");
             }
         }
     }

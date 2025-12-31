@@ -3,6 +3,7 @@ using Application.DTO;
 using Application.DTO.Request;
 using Application.DTO.Response;
 using Application.Helper;
+using Application.Service.Notification;
 using Domain.Model;
 using FirebaseAdmin.Messaging;
 using Org.BouncyCastle.Asn1.Esf;
@@ -18,15 +19,15 @@ namespace Application.Service.Activity
     {
         private readonly IActivityRepository _activityRepository;
         private readonly IAccountRepository _accountRepository;
-        private readonly INotificationRepository _notificationRepository;
+        private readonly INotificationService _notificationService;
         private readonly ILocationRepository _locationRepository;
 
-        public ActivityService(IActivityRepository activityRepository, IAccountRepository accountRepository, INotificationRepository notificationRepository, ILocationRepository locationRepository)
+        public ActivityService(IActivityRepository activityRepository, IAccountRepository accountRepository, ILocationRepository locationRepository, INotificationService notificationService)
         {
             _activityRepository = activityRepository;
             _accountRepository = accountRepository;
-            _notificationRepository = notificationRepository;
             _locationRepository = locationRepository;
+            _notificationService = notificationService;
         }
 
         public async Task<GeneralResponse> AcceptActivity(string cacheKey, string userId)
@@ -61,10 +62,11 @@ namespace Application.Service.Activity
 
                     if (activitySaved == true && matchCreated == true)
                     {
-                        var device = await _notificationRepository.GetUserDevice(activityCache.UserId);
-
-                        var notificationSent = await NotificationHelper.SendNotification(device.DeviceToken, "Activity accepted", $"{acceptor.Name} accepted your activity");
-
+                        var deviceToken = await _notificationService.GetDeviceToken(activityCache.UserId);
+                        if (deviceToken != null)
+                        {
+                            var notificationSent = await NotificationHelper.SendNotification(deviceToken, "Activity accepted", $"{acceptor.Name} accepted your activity");
+                        }
                         return ResponseHelper.CreateGeneralResponse(true, "You accepted activity");
                     }
                 }

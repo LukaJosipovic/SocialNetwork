@@ -17,5 +17,6 @@ namespace Application.Contracts
         Task <string> GenerateResetPasswordToken(ApplicationUser user);
         Task<IdentityResult> ResetPassword(ApplicationUser user, ResetPasswordRequest request);
         Task<IdentityResult> ConfirmEmail(ApplicationUser user, string token);
+        Task<bool> GetUserByEmail(string email);
     }
 }

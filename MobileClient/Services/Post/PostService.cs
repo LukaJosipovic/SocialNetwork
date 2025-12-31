@@ -1,9 +1,10 @@
 ﻿using Application.DTO.Response;
+using Application.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http.Json;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -27,6 +28,11 @@ namespace MobileClient.Services.Post
                 var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
                 return responseObject;
             }
+            catch (AccountBannedException)
+            {
+
+                throw;
+            }
             catch (Exception ex)
             {
 
@@ -43,6 +49,11 @@ namespace MobileClient.Services.Post
                 var responseObject = await response.Content.ReadFromJsonAsync<List<PostDetailsResponse>>();
                 return responseObject;
             }
+            catch (AccountBannedException)
+            {
+
+                throw;
+            }
             catch (Exception ex)
             {
                 return new List<PostDetailsResponse>();
@@ -51,10 +62,23 @@ namespace MobileClient.Services.Post
 
         public async Task<PostDetailsResponse> GetPostById(int id)
         {
-            var client = _httpClientFactory.CreateClient("BaseApi");
-            var response = await client.GetAsync($"GetPostById?id={id}");
-            var responseObject = await response.Content.ReadFromJsonAsync<PostDetailsResponse>();
-            return responseObject;
+            try
+            {
+                var client = _httpClientFactory.CreateClient("BaseApi");
+                var response = await client.GetAsync($"GetPostById?id={id}");
+                var responseObject = await response.Content.ReadFromJsonAsync<PostDetailsResponse>();
+                return responseObject;
+            }
+            catch (AccountBannedException)
+            {
+
+                throw;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
         public async Task<List<PostDetailsResponse>> GetReportedPosts()
@@ -65,6 +89,11 @@ namespace MobileClient.Services.Post
                 var response = await client.GetAsync("GetReportedPosts");
                 var responseObject = await response.Content.ReadFromJsonAsync<List<PostDetailsResponse>>();
                 return responseObject;
+            }
+            catch (AccountBannedException)
+            {
+
+                throw;
             }
             catch (Exception ex)
             {
@@ -91,26 +120,65 @@ namespace MobileClient.Services.Post
 
         public async Task<GeneralResponse> ReportPost(int id)
         {
-            var client = _httpClientFactory.CreateClient("BaseApi");
-            var response = await client.PostAsync($"ReportPost?id={id}", null);
-            var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
-            return responseObject;
+            try
+            {
+                var client = _httpClientFactory.CreateClient("BaseApi");
+                var response = await client.PostAsync($"ReportPost?id={id}", null);
+                var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
+                return responseObject;
+            }
+            catch (AccountBannedException)
+            {
+
+                throw;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
         public async Task<LikeResponse> LikePost(int postId)
         {
-            var client = _httpClientFactory.CreateClient("BaseApi");
-            var response = await client.PostAsync($"LikePost?postId={postId}", null);
-            var responseObject = await response.Content.ReadFromJsonAsync<LikeResponse>();
-            return responseObject;
+            try
+            {
+                var client = _httpClientFactory.CreateClient("BaseApi");
+                var response = await client.PostAsync($"LikePost?postId={postId}", null);
+                var responseObject = await response.Content.ReadFromJsonAsync<LikeResponse>();
+                return responseObject;
+            }
+            catch (AccountBannedException)
+            {
+
+                throw;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
         public async Task<LikeResponse> DislikePost(int postId)
         {
-            var client = _httpClientFactory.CreateClient("BaseApi");
-            var response = await client.DeleteAsync($"DeletePost?postId={postId}");
-            var responseObject = await response.Content.ReadFromJsonAsync<LikeResponse>();
-            return responseObject;
+            try
+            {
+                var client = _httpClientFactory.CreateClient("BaseApi");
+                var response = await client.DeleteAsync($"DeletePost?postId={postId}");
+                var responseObject = await response.Content.ReadFromJsonAsync<LikeResponse>();
+                return responseObject;
+            }
+            catch (AccountBannedException)
+            {
+
+                throw;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
     }
 }

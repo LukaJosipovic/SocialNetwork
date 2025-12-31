@@ -288,6 +288,17 @@ namespace API.Controllers
             return BadRequest(result);
         }
 
+        [HttpGet("GetBannedProfile")]
+        public async Task<IActionResult> GetBannedProfile(string userId)
+        {
+            var result = await _accountService.GetBannedProfile(userId);
+
+            if (result.IsSuccess)
+                return Ok(result);
+
+            return BadRequest(result);
+        }
+
         [HttpGet("GetBlockedUsers")]
         public async Task<IActionResult> GetBlockedUsers([FromQuery] PageSettingsRequest model)
         {

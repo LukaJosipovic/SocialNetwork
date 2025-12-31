@@ -3,6 +3,8 @@
 @using MobileClient.Services.Post
 @inject IPostService PostService
 @inject NavigationManager NavManager
+@using MobileClient.Services.LoadingService
+@inject LoadingService LoadingService
 
 @if (postDetails != null)
 {
@@ -28,6 +30,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        LoadingService.IsLoading = true;
+
         var response = await PostService.GetPostById(PostId);
         if (response.IsSuccess)
             postDetails = response;
@@ -35,6 +39,7 @@
         if (response.User.ProfilePicture != null)
             profileImage = $"data:image;base64,{Convert.ToBase64String(response.User.ProfilePicture)}";
 
+        LoadingService.IsLoading = false;
     }
 
     private void NavigateToUserProfile(string userId)

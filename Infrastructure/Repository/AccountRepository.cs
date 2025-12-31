@@ -210,6 +210,20 @@ namespace Infrastructure.Repository
             user.IsBanned = false;
             return await _userManager.UpdateAsync(user);
         }
+        public async Task<ApplicationUser?> RemoveAllReports(string userId)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId) ?? throw new KeyNotFoundException("User not found");
+            user.IsBanned = false;
+
+            var reposrts = await _context.Report.Where(r => r.ReportedUserId == userId).ToListAsync();
+
+            var result = await _context.SaveChangesAsync();
+
+            if (result > 0)
+                return user;
+            
+            return null;
+        }
 
         public async Task<bool> BlockUser(UserBlocks block)
         {
@@ -253,6 +267,13 @@ namespace Infrastructure.Repository
             var users = _userManager.Users.Include(u => u.Devices).Where(u => IdRange.Contains(u.Id) && u.DoNotDisturb == false && (u.Activities == null || u.Activities.Contains(category)));
             var deviceTokens = await users.SelectMany(u => u.Devices.Where(d => d.IsActive).Select(d => d.DeviceToken)).ToListAsync();
             return deviceTokens;
+        }
+
+        public async Task<ApplicationUser> GetBannedProfile(string userId)
+        {
+            return await _context.Users.IgnoreQueryFilters().Include(u => u.Posts)
+                .ThenInclude(p => p.Likes).Include(u => u.Matches)
+                .FirstOrDefaultAsync(u => u.Id == userId) ?? throw new KeyNotFoundException("User cannot be found");
         }
     }
 }

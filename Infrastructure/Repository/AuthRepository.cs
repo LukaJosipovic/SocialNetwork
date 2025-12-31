@@ -42,6 +42,16 @@ namespace Infrastructure.Repository
             return result;
         }
 
+        public async Task<bool> GetUserByEmail(string email)
+        {
+            var result = await _userManager.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Email == email);
+
+            if (result == null)
+                return false;
+
+            return true;
+        }
+
         public async Task<string> GenerateResetPasswordToken(ApplicationUser user)
         {
             return await _userManager.GeneratePasswordResetTokenAsync(user);

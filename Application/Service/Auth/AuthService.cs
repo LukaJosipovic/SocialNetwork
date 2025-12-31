@@ -44,6 +44,11 @@ namespace Application.Service.Auth
 
         public async Task<RegisterResponse> CreateAccount(CreateAccountRequest model, string role)
         {
+            var userExists = await _authRepository.GetUserByEmail(model.Email);
+
+            if (userExists)
+                return ResponseHelper.CreateRegisterResponse(false, "Email already exists", null);
+
             var basePath = Path.GetDirectoryName(Environment.CurrentDirectory);
             var filePath = Path.Combine(basePath, "Img", "unknown.png");
             var imageByte = await File.ReadAllBytesAsync(filePath);
