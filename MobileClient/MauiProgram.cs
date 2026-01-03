@@ -68,6 +68,11 @@ namespace MobileClient
             builder.Services.AddSingleton<ILocationTracker, LocationTracker>();
             builder.Services.AddSingleton<LoadingService>();
 #if ANDROID
+            builder.Services.AddSingleton<ILocationStopper, AndroidLocationStopper>();
+#else
+            builder.Services.AddSingleton<ILocationStopper, DefaultLocationStopper>();
+#endif
+#if ANDROID
             builder.Services.AddSingleton<IBackgroundLocationService, BackgroundLocationService>();
 #endif
             //builder.Services.Configure<HostOptions>(x =>

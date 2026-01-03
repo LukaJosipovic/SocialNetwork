@@ -57,13 +57,9 @@ namespace MobileClient.Platforms.Android.LocationTracker
                     await Task.Delay(20000, token);
                 }
             }
-            catch (AccountBannedException)
+            catch (System.OperationCanceledException)
             {
-                StopSelf();
-            }
-            catch (Exception ex)
-            {
-
+                
             }
         }
 
@@ -87,6 +83,13 @@ namespace MobileClient.Platforms.Android.LocationTracker
         public override IBinder? OnBind(Intent? intent)
         {
             return null;
+        }
+
+        public override void OnDestroy()
+        {
+            base.OnDestroy();
+            cts.Cancel();
+            StopForeground(true);
         }
     }
 }

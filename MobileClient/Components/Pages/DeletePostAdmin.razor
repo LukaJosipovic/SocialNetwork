@@ -55,21 +55,28 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var response = await PostService.GetReportedPosts();
-        if (response.Count > 0)
+        try
         {
-            foreach (var post in response)
+            var response = await PostService.GetReportedPosts();
+            if (response.Count > 0)
             {
-                //prebaciti u service
-                if (post.User.ProfilePicture != null)
-                    post.User.ProfilePictureString = $"data:image;base64,{Convert.ToBase64String(post.User.ProfilePicture)}";
+                foreach (var post in response)
+                {
+                    //prebaciti u service
+                    if (post.User.ProfilePicture != null)
+                        post.User.ProfilePictureString = $"data:image;base64,{Convert.ToBase64String(post.User.ProfilePicture)}";
 
+                }
+                postsDetails = response;
             }
-            postsDetails = response;
+            else
+            {
+                postsDetails = null;
+            }
         }
-        else
+        catch (Exception)
         {
-            postsDetails = null;
+            await AlertService.ShowAlertAsync("Ok", "Something went wrong", "OK");
         }
     }
 

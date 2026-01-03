@@ -3,22 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-#if ANDROID
-using MobileClient.Platforms.Android.BackgroundService;
-#endif
+using MobileClient.BackgroundTask.Location;
 
 namespace MobileClient.SessionService
 {
     public class UserSessionService
     {
-#if ANDROID
-        private readonly IBackgroundLocationService _backgroundLocationService;
+        private readonly ILocationStopper _locationStopper;
 
-        public UserSessionService(IBackgroundLocationService backgroundLocationService)
+        public UserSessionService(ILocationStopper locationStopper)
         {
-            _backgroundLocationService = backgroundLocationService;
+            _locationStopper = locationStopper;
         }
-#endif
 
         //public event Action<string>? OnUserBanned;
 
@@ -37,9 +33,8 @@ namespace MobileClient.SessionService
 
         public async Task TriggerBannedAsync()
         {
-#if ANDROID
-            await _backgroundLocationService.Stop();
-#endif
+            await _locationStopper.StopAsync();
+
             if (OnUserBanned is not null)
                 await OnUserBanned.Invoke();
         }

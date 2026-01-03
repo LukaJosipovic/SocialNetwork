@@ -18,12 +18,13 @@ namespace Application.Service.Post
         private readonly IPostRepository _postRepository;
         private readonly IAccountRepository _accountRepository;
         private readonly IEmailService _emailService;
-
-        public PostService(IPostRepository postRepository, IAccountRepository accountRepository, IEmailService emailService)
+        private readonly ILocationRepository _locationRepository;
+        public PostService(IPostRepository postRepository, IAccountRepository accountRepository, IEmailService emailService, ILocationRepository locationRepository)
         {
             _postRepository = postRepository;
             _accountRepository = accountRepository;
             _emailService = emailService;
+            _locationRepository = locationRepository;
         }
 
         public async Task<GeneralResponse> DeletePostAdmin(int postId)
@@ -119,7 +120,7 @@ namespace Application.Service.Post
             }
         }
 
-        public async Task<List<PostDetailsResponse>> GetReportedPosts()
+        public async Task<List<PostDetailsResponse>?> GetReportedPosts()
         {
             try
             {
@@ -149,14 +150,13 @@ namespace Application.Service.Post
                 }
                 return postsDetails;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return null;//implementirati handler za exceptione
-                throw;
+                return null;
             }
         }
 
-        public async Task<LikeResponse> LikePost(int postId, string userId)
+        public async Task<LikeResponse?> LikePost(int postId, string userId)
         {
             try
             {
@@ -196,7 +196,6 @@ namespace Application.Service.Post
             catch (Exception)
             {
                 return null;
-                throw;
             }
         }
 
@@ -229,10 +228,9 @@ namespace Application.Service.Post
                     Message = "Something went wrong"
                 };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return null;
-                throw;
             }
         }
 
@@ -297,6 +295,7 @@ namespace Application.Service.Post
 
                     if (reportNumber > 0)
                     {
+                        _locationRepository.RemoveUserLocation(userId);
                         var isBanned = await _accountRepository.BanAccount(post.User.Id);
                         if (isBanned.Succeeded)
                         {

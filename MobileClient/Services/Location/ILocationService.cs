@@ -12,7 +12,7 @@ namespace MobileClient.Services.Location
     public interface ILocationService
     {
         Task<List<LocationDTO>> GetUsersLocations();
-        Task<bool> AddLocation(double latitude, double longitude);
+        Task<GeneralResponse> AddLocation(double latitude, double longitude);
         Task<bool> RemoveLocation();
     }
 }

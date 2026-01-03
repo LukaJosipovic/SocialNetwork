@@ -89,7 +89,12 @@
         LoadingService.IsLoading = true;
 
         createPostRequest.ImageData = buffer;
-        var response = AccountService.CreatePost(createPostRequest);
+        var response = await AccountService.CreatePost(createPostRequest);
+
+        if (response.IsSuccess)
+        {
+            await AlertService.ShowAlertAsync($"Ok", "Post created successfully ", "OK");
+        }
 
         LoadingService.IsLoading = false;
     }

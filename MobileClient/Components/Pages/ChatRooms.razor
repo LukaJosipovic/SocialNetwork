@@ -155,6 +155,10 @@
             senderId = response.MyId;
             pageSettings.PageNumber++;
         }
+        else if (response.IsSuccess == false)
+        {
+            await AlertService.ShowAlertAsync($"Error", $"{response.Message}", "OK");
+        }
         else
         {
             //users = null;

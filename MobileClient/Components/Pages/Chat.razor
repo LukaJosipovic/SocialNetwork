@@ -2,10 +2,12 @@
 @using Application.DTO
 @using Application.DTO.Response
 @using Microsoft.AspNetCore.SignalR.Client
+@using MobileClient.Services.Alert
 @using MobileClient.Services.Chat
 @inject IChatService ChatService
 @inject NavigationManager NavManager
 @implements IAsyncDisposable
+@inject IAlertService AlertService
 
 <nav class="navbar fixed-top navbar-light bg-light">
     <div class="container-fluid">
@@ -143,45 +145,52 @@
         try
         {
             var messageRespons = await ChatService.GetMessages(recipientId);
-            messageFromUser = messageRespons;
-            userToChat.Name = messageRespons.Name;
-            userToChat.ProfilePictureString = messageRespons.ProfilePictureString;
-
-            conversationBlocked = messageRespons.ConversationBlocked;
-            var oldDessages = messageRespons.MessagesDto;
-
-            foreach (var message in oldDessages)
+            if (messageRespons.IsSuccess)
             {
-                messages.Add(message.Content);
-            }
+                messageFromUser = messageRespons;
+                userToChat.Name = messageRespons.Name;
+                userToChat.ProfilePictureString = messageRespons.ProfilePictureString;
 
-            var url1 = "http://192.168.100.19:4321/socialnetwork/chathub";
-            var url2 = "";
-            if (DeviceInfo.Platform == DevicePlatform.Android)
-                url2 = "http://10.0.2.2:5209/chathub";
-            else
-                url2 = "https://localhost:7098/chathub";
+                conversationBlocked = messageRespons.ConversationBlocked;
+                var oldDessages = messageRespons.MessagesDto;
 
-            hubConnection = new HubConnectionBuilder().WithUrl(NavManager.ToAbsoluteUri(url2), async options =>
-            {
-                options.AccessTokenProvider = async() => await GetToken();
-            }).WithAutomaticReconnect().Build();
-
-            hubConnection.On<string, string>("ReceiveClientMessage", (senderId, message) =>
-            {
-                //var formattedMessage = $"From {senderId}: {message}";
-                //var formattedMessage = $"{message}";
-                //messages.Add(message);
-                messageFromUser.MessagesDto.Add(new MessageDTO
+                foreach (var message in oldDessages)
                 {
-                    SenderId = senderId,
-                    ReceiverId = recipientId,
-                    Content = message
-                });
-                InvokeAsync(StateHasChanged);
-            });
+                    messages.Add(message.Content);
+                }
 
-            await hubConnection.StartAsync();
+                var url1 = "http://192.168.100.19:4321/socialnetwork/chathub";
+                var url2 = "";
+                if (DeviceInfo.Platform == DevicePlatform.Android)
+                    url2 = "http://10.0.2.2:5209/chathub";
+                else
+                    url2 = "https://localhost:7098/chathub";
+
+                hubConnection = new HubConnectionBuilder().WithUrl(NavManager.ToAbsoluteUri(url2), async options =>
+                {
+                    options.AccessTokenProvider = async() => await GetToken();
+                }).WithAutomaticReconnect().Build();
+
+                hubConnection.On<string, string>("ReceiveClientMessage", (senderId, message) =>
+                {
+                    //var formattedMessage = $"From {senderId}: {message}";
+                    //var formattedMessage = $"{message}";
+                    //messages.Add(message);
+                    messageFromUser.MessagesDto.Add(new MessageDTO
+                    {
+                        SenderId = senderId,
+                        ReceiverId = recipientId,
+                        Content = message
+                    });
+                    InvokeAsync(StateHasChanged);
+                });
+
+                await hubConnection.StartAsync();
+            }
+            else
+            {
+                await AlertService.ShowAlertAsync("Error", messageRespons.Message, "OK");
+            }
         }
         catch (Exception ex)
         {

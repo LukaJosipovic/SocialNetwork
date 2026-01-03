@@ -47,7 +47,7 @@ namespace Application.Service.Auth
             var userExists = await _authRepository.GetUserByEmail(model.Email);
 
             if (userExists)
-                return ResponseHelper.CreateRegisterResponse(false, "Email already exists", null);
+                return ResponseHelper.CreateRegisterResponse(false, null, new List<string> { "Email already exists" });
 
             var basePath = Path.GetDirectoryName(Environment.CurrentDirectory);
             var filePath = Path.Combine(basePath, "Img", "unknown.png");

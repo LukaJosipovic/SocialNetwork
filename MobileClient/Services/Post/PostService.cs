@@ -1,5 +1,6 @@
 ﻿using Application.DTO.Response;
 using Application.Exceptions;
+using Application.Helper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,15 +29,13 @@ namespace MobileClient.Services.Post
                 var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
                 return responseObject;
             }
-            catch (AccountBannedException)
+            catch (AccountBannedException ex)
             {
-
-                throw;
+                return ResponseHelper.CreateGeneralResponse(false, ex.Message);
             }
             catch (Exception ex)
             {
-
-                throw;
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
         }
 
@@ -56,7 +55,7 @@ namespace MobileClient.Services.Post
             }
             catch (Exception ex)
             {
-                return new List<PostDetailsResponse>();
+                throw;
             }
         }
 
@@ -69,15 +68,21 @@ namespace MobileClient.Services.Post
                 var responseObject = await response.Content.ReadFromJsonAsync<PostDetailsResponse>();
                 return responseObject;
             }
-            catch (AccountBannedException)
+            catch (AccountBannedException ex)
             {
-
-                throw;
+                return new PostDetailsResponse
+                {
+                    IsSuccess = false,
+                    Message = ex.Message
+                };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                return new PostDetailsResponse
+                {
+                    IsSuccess = false,
+                    Message = "Something went wrong"
+                };
             }
         }
 
@@ -89,11 +94,6 @@ namespace MobileClient.Services.Post
                 var response = await client.GetAsync("GetReportedPosts");
                 var responseObject = await response.Content.ReadFromJsonAsync<List<PostDetailsResponse>>();
                 return responseObject;
-            }
-            catch (AccountBannedException)
-            {
-
-                throw;
             }
             catch (Exception ex)
             {
@@ -113,8 +113,7 @@ namespace MobileClient.Services.Post
             }
             catch (Exception ex)
             {
-
-                throw;
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
         }
 
@@ -127,15 +126,13 @@ namespace MobileClient.Services.Post
                 var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
                 return responseObject;
             }
-            catch (AccountBannedException)
+            catch (AccountBannedException ex)
             {
-
-                throw;
+                return ResponseHelper.CreateGeneralResponse(false, ex.Message);
             }
             catch (Exception)
             {
-
-                throw;
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
         }
 
@@ -148,15 +145,22 @@ namespace MobileClient.Services.Post
                 var responseObject = await response.Content.ReadFromJsonAsync<LikeResponse>();
                 return responseObject;
             }
-            catch (AccountBannedException)
+            catch (AccountBannedException ex)
             {
-
-                throw;
+                return new LikeResponse
+                {
+                    IsSuccess = false,
+                    Message = ex.Message
+                };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
 
-                throw;
+                return new LikeResponse
+                {
+                    IsSuccess = false,
+                    Message = "Something went wrong"
+                };
             }
         }
 
@@ -169,15 +173,22 @@ namespace MobileClient.Services.Post
                 var responseObject = await response.Content.ReadFromJsonAsync<LikeResponse>();
                 return responseObject;
             }
-            catch (AccountBannedException)
+            catch (AccountBannedException ex)
             {
-
-                throw;
+                return new LikeResponse
+                {
+                    IsSuccess = false,
+                    Message = ex.Message
+                };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
 
-                throw;
+                return new LikeResponse
+                {
+                    IsSuccess = false,
+                    Message = "Something went wrong"
+                };
             }
         }
     }

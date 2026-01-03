@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Application.DTO.Response
 {
-    public class ChatRoomResponse
+    public class ChatRoomResponse : GeneralResponse
     {
         public string MyId { get; set; }
         public List<UserBriefDetailsDTO> UsersChatList { get; set; }

@@ -18,11 +18,13 @@ namespace Application.Service.Account
     {
         private readonly IAccountRepository _accountRepository;
         private readonly IEmailService _emailService;
+        private readonly ILocationRepository _locationRepository;
 
-        public AccountService(IAccountRepository accountRepository, IEmailService emailService)
+        public AccountService(IAccountRepository accountRepository, IEmailService emailService, ILocationRepository locationRepository)
         {
             _accountRepository = accountRepository;
             _emailService = emailService;
+            _locationRepository = locationRepository;
         }
 
         public async Task<GeneralResponse> ChangeActivities(List<ActivityCategory> activities, string userId)
@@ -268,6 +270,7 @@ namespace Application.Service.Account
                     
                     if (reportNumber > 0)
                     {
+                        _locationRepository.RemoveUserLocation(userId);
                         var isBanned = await _accountRepository.BanAccount(userId);
                         if (isBanned.Succeeded)
                         {
@@ -300,7 +303,7 @@ namespace Application.Service.Account
             try
             {
                 var user = await _accountRepository.GetBannedUser(email);
-                return ResponseHelper.CreateBannedUserResponse(true, user);
+                return ResponseHelper.CreateBannedUserResponse(true, null, user);
             }
             catch (KeyNotFoundException ex)
             {

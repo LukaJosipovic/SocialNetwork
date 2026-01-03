@@ -110,7 +110,7 @@ namespace API.Controllers
         public async Task<IActionResult> GetReportedPosts()
         {
             var result = await _postService.GetReportedPosts();
-            if (result.Count > 0)
+            if (result != null && result.Count > 0)
             {
                 //mkanuti
                 //var request = HttpContext.Request;

@@ -41,10 +41,11 @@ namespace API.Controllers
         public async Task<IActionResult> RemoveLocation()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var result = _locationService.RemoveUserLocation(userId);
 
             if (userId == null)
                 return Unauthorized("User cannot be found");
+
+            var result = _locationService.RemoveUserLocation(userId);
 
             if (result)
                 return Ok(result);

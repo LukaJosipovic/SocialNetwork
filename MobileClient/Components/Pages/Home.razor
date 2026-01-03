@@ -1,5 +1,6 @@
 ﻿@page "/home"
 @using Application.DTO.Response
+@using Application.Exceptions
 @using MobileClient.Services.Alert
 @using MobileClient.Services.LoadingService
 @using MobileClient.Services.Post
@@ -121,19 +122,30 @@ else if (postsDetails != null)
     {
         LoadingService.IsLoading = true;
 
-        var response = await PostService.GetAllPosts();
-        if (response.Count > 0)
+        try
         {
-            foreach (var post in response)
+            var response = await PostService.GetAllPosts();
+            if (response.Count > 0)
             {
-                if (post.User.ProfilePicture != null)
-                    post.User.ProfilePictureString = $"data:image;base64,{Convert.ToBase64String(post.User.ProfilePicture)}";
+                foreach (var post in response)
+                {
+                    if (post.User.ProfilePicture != null)
+                        post.User.ProfilePictureString = $"data:image;base64,{Convert.ToBase64String(post.User.ProfilePicture)}";
+                }
+                postsDetails = response;
             }
-            postsDetails = response;
+            else
+            {
+                postsDetails = null;
+            }
         }
-        else
+        catch (AccountBannedException ex)
         {
-            postsDetails = null;
+            await AlertService.ShowAlertAsync("Error", $"{ex.Message}", "OK");
+        }
+        catch (Exception ex)
+        {
+            await AlertService.ShowAlertAsync("Error", $"{ex.Message}", "OK");
         }
         //await Task.Delay(5000);
         LoadingService.IsLoading = false;

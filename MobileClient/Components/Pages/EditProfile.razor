@@ -284,12 +284,12 @@
 
         if (response.IsSuccess && gostMode)
         {
-            var result = await LocationTracker.Stop();
+            //var result = await LocationTracker.Stop();
             await AlertService.ShowAlertAsync($"Success", response.Message, "OK");
         }
         else if (response.IsSuccess && !gostMode)
         {
-            await LocationTracker.StartAsync();
+            //await LocationTracker.StartAsync();
             await AlertService.ShowAlertAsync($"Success", response.Message, "OK");
         }
         else

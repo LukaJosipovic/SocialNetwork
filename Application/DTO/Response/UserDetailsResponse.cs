@@ -9,8 +9,8 @@ namespace Application.DTO.Response
 {
     public class UserDetailsResponse : GeneralResponse
     {
-        public string Name { get; set; } = null!;
-        public string Email { get; set; } = null!;
+        public string? Name { get; set; }
+        public string? Email { get; set; }
         public string? Description { get; set; }
         public byte[]? ProfilePicture { get; set; }
         public bool GhostMode { get; set; }

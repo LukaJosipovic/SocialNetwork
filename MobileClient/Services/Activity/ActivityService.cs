@@ -1,6 +1,8 @@
 ﻿using Application.DTO.Request;
 using Application.DTO.Response;
 using Application.Exceptions;
+using Application.Helper;
+using MobileClient.BackgroundTask.Location;
 using MobileClient.Helper;
 using System;
 using System.Collections.Generic;
@@ -14,7 +16,6 @@ namespace MobileClient.Services.Activity
     public class ActivityService : IActivityService
     {
         private readonly IHttpClientFactory _httpClientFactory;
-
         public ActivityService(IHttpClientFactory httpClientFactory)
         {
             _httpClientFactory = httpClientFactory;
@@ -30,15 +31,13 @@ namespace MobileClient.Services.Activity
                 var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
                 return responseObject;
             }
-            catch (AccountBannedException)
+            catch (AccountBannedException ex)
             {
-
-                throw;
+                return ResponseHelper.CreateGeneralResponse(false, ex.Message);
             }
             catch (Exception ex)
             {
-
-                throw;
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
         }
 
@@ -51,15 +50,13 @@ namespace MobileClient.Services.Activity
                 var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
                 return responseObject;
             }
-            catch (AccountBannedException)
+            catch (AccountBannedException ex)
             {
-
-                throw;
+                return ResponseHelper.CreateGeneralResponse(false, ex.Message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
         }
 
@@ -83,21 +80,16 @@ namespace MobileClient.Services.Activity
                 var responseObject = await response.Content.ReadFromJsonAsync<List<ActivityResponse>>();
                 return responseObject;
             }
-            catch (AccountBannedException)
+            catch (AccountBannedException ex)
             {
 
                 throw;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
 
                 throw;
             }
-        }
-
-        public Task<GeneralResponse> ReportActivity(string cacheKey)
-        {
-            throw new NotImplementedException();
         }
     }
 }

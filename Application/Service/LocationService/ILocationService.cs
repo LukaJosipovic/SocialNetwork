@@ -1,4 +1,5 @@
 ﻿using Application.DTO;
+using Application.DTO.Response;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace Application.Service.LocationService
 {
     public interface ILocationService
     {
-        Task<bool> AddUserLocation(string userId, double latitude, double longitude);
+        Task<GeneralResponse> AddUserLocation(string userId, double latitude, double longitude);
         List<LocationDTO> GetAllLocations(string userId);
         bool RemoveUserLocation(string userId);
     }

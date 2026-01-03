@@ -10,6 +10,7 @@
 @inject IAlertService AlertService
 @using MobileClient.Services.LoadingService
 @inject LoadingService LoadingService
+@inject IAlertService AlertService
 
 <h3>Banned Profile</h3>
 
@@ -51,6 +52,10 @@
         {
             IsSuccess = response.IsSuccess;
             profile = response;
+        }
+        else
+        {
+            await AlertService.ShowAlertAsync("Error", $"{response.Message}", "OK");
         }
 
         LoadingService.IsLoading = false;

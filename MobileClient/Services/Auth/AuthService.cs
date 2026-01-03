@@ -8,6 +8,8 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
+using Application.Exceptions;
+
 #if ANDROID
 using MobileClient.Platforms.Android.BackgroundService;
 #endif
@@ -37,25 +39,25 @@ namespace MobileClient.Services.Auth
 #endif
         private HttpClient CreateClient() => _httpClientFactory.CreateClient("BaseApi");
 
-        private async Task<TResponse> PostAsync<TRequest, TResponse>(string url, TRequest request, TResponse fallback)
-        {
-            try
-            {
-                var client = CreateClient();
-                var response = await client.PostAsJsonAsync(url, request);
+        //private async Task<TResponse> PostAsync<TRequest, TResponse>(string url, TRequest request, TResponse fallback)
+        //{
+        //    try
+        //    {
+        //        var client = CreateClient();
+        //        var response = await client.PostAsJsonAsync(url, request);
                 
-                if (response.IsSuccessStatusCode)
-                    return await response.Content.ReadFromJsonAsync<TResponse>();
+        //        if (response.IsSuccessStatusCode)
+        //            return await response.Content.ReadFromJsonAsync<TResponse>();
                 
 
-                var errorResponse = await response.Content.ReadFromJsonAsync<TResponse>();
-                return errorResponse ?? fallback;
-            }
-            catch
-            {
-                return fallback;
-            }
-        }
+        //        var errorResponse = await response.Content.ReadFromJsonAsync<TResponse>();
+        //        return errorResponse ?? fallback;
+        //    }
+        //    catch
+        //    {
+        //        return fallback;
+        //    }
+        //}
 
         public async Task<string> Test()
         {
@@ -71,7 +73,6 @@ namespace MobileClient.Services.Auth
             try
             {
                 var client = _httpClientFactory.CreateClient("BaseApi");
-                //var resultJwtTest = await client.GetAsync("api/Auth/JwtTest");
                 var response = await client.PostAsJsonAsync("api/Auth/Login", request);
                 var responseObject = await response.Content.ReadFromJsonAsync<LoginResponse>();
                 if (responseObject.IsSuccess)
@@ -84,12 +85,20 @@ namespace MobileClient.Services.Auth
                 }
                 return responseObject;
             }
+            catch (AccountBannedException ex)
+            {
+                return new LoginResponse
+                {
+                    IsSuccess = false,
+                    Message = ex.Message
+                };
+            }
             catch (Exception ex)
             {
                 return new LoginResponse
                 {
                     IsSuccess = false,
-                    Message = "Something went wrong please try again later"
+                    Message = "Something went wrong"
                 };
             }
             //var response = await PostAsync("api/Auth/Login", request, new LoginResponse
@@ -118,12 +127,20 @@ namespace MobileClient.Services.Auth
                 var responseObject = await response.Content.ReadFromJsonAsync<RegisterResponse>();
                 return responseObject;
             }
-            catch (Exception ex)
+            catch (AccountBannedException ex)
             {
                 return new RegisterResponse
                 {
                     IsSuccess = false,
-                    Message = "Something went wrong please try again later"
+                    Message = ex.Message
+                };
+            }
+            catch(Exception ex)
+            {
+                return new RegisterResponse
+                {
+                    IsSuccess = false,
+                    Message = "Something went wrong"
                 };
             }
             //return await PostAsync("api/Auth/CreateAccount", request, new RegisterResponse
@@ -155,7 +172,7 @@ namespace MobileClient.Services.Auth
                 return new RegisterResponse
                 {
                     IsSuccess = false,
-                    Message = "Something went wrong please try again later"
+                    Message = "Something went wrong"
                 };
             }
             //return await PostAsync("api/Auth/AddAdmin", request, new RegisterResponse

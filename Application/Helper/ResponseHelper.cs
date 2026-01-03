@@ -125,13 +125,22 @@ namespace Application.Helper
             }
         }
 
-        public static BannedAccountResponse CreateBannedUserResponse(bool IsSuccess, ApplicationUser user)
+        public static BannedAccountResponse CreateBannedUserResponse(bool IsSuccess, string? message, ApplicationUser? user)
         {
+            if (IsSuccess)
+            {
+                return new BannedAccountResponse
+                {
+                    UserId = user.Id,
+                    Email = user.Email,
+                    IsSuccess = IsSuccess,
+                    Message = message
+                };
+            }
             return new BannedAccountResponse
             {
-                UserId = user.Id,
-                Email = user.Email,
-                IsSuccess = IsSuccess
+                IsSuccess = IsSuccess,
+                Message = message
             };
         }
     }

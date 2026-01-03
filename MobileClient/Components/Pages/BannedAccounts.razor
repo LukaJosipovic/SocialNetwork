@@ -3,8 +3,10 @@
 @using MobileClient.Services.Account
 @inject IAccountService AccountService
 @inject NavigationManager NavManager
+@using MobileClient.Services.Alert
 @using MobileClient.Services.LoadingService
 @inject LoadingService LoadingService
+@inject IAlertService AlertService
 
 <h3>BannedAccounts</h3>
 
@@ -35,7 +37,10 @@
         if (user.IsSuccess)
             account = user;
         else
+        {
             account = null;
+            await AlertService.ShowAlertAsync($"Ok", $"{user.Message}", "OK");
+        }
 
         LoadingService.IsLoading = false;
     }

@@ -30,15 +30,21 @@ namespace MobileClient.Services.Chat
                 var responseObject = await response.Content.ReadFromJsonAsync<ChatRoomResponse>();
                 return responseObject;
             }
-            catch (AccountBannedException)
+            catch (AccountBannedException ex)
             {
-
-                throw;
+                return new ChatRoomResponse
+                {
+                    IsSuccess = false,
+                    Message = ex.Message
+                };
             }
             catch (Exception ex)
             {
-
-                throw;
+                return new ChatRoomResponse
+                {
+                    IsSuccess = false,
+                    Message = "Something went wrong"
+                };
             }
         }
 
@@ -51,15 +57,21 @@ namespace MobileClient.Services.Chat
                 var responseObject = await response.Content.ReadFromJsonAsync<MessageResponse>();
                 return responseObject;
             }
-            catch (AccountBannedException)
+            catch (AccountBannedException ex)
             {
-
-                throw;
+                return new MessageResponse
+                {
+                    IsSuccess = false,
+                    Message = ex.Message
+                };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                return new MessageResponse
+                {
+                    IsSuccess = false,
+                    Message = "Something went wrong"
+                };
             }
         }
     }

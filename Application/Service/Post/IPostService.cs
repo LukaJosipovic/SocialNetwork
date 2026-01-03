@@ -12,10 +12,10 @@ namespace Application.Service.Post
         Task<PostDetailsResponse> GetPostById(int id);
         Task<List<PostDetailsResponse>> GetAllPosts(string userId);
         Task<GeneralResponse> ReportPost(int id, string userId);
-        Task<List<PostDetailsResponse>> GetReportedPosts();
+        Task<List<PostDetailsResponse>?> GetReportedPosts();
         Task<GeneralResponse> DeletePostAdmin(int postId);
         Task<GeneralResponse> RemoveReport(int postId);
-        Task<LikeResponse> LikePost(int postId, string userId);
+        Task<LikeResponse?> LikePost(int postId, string userId);
         Task<LikeResponse> DislikePost(int postId, string userId);
     }
 }

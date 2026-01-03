@@ -1,5 +1,7 @@
 ﻿using Application.Contracts;
 using Application.DTO;
+using Application.DTO.Response;
+using Application.Helper;
 using Domain.Model;
 using System;
 using System.Collections.Generic;
@@ -20,7 +22,7 @@ namespace Application.Service.LocationService
             _locationRepository = locationRepository;
         }
 
-        public async Task<bool> AddUserLocation(string userId, double latitude, double longitude)
+        public async Task<GeneralResponse> AddUserLocation(string userId, double latitude, double longitude)
         {
             try
             {
@@ -37,11 +39,15 @@ namespace Application.Service.LocationService
                 };
 
                 var result = _locationRepository.AddUserLocation(userLocation);
-                return result;
+                if (result)
+                {
+                    return ResponseHelper.CreateGeneralResponse(true, "Location added succesfully");
+                }
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong"); ;
             }
             catch (KeyNotFoundException ex)
             {
-                return false;
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
         }
 
@@ -54,6 +60,10 @@ namespace Application.Service.LocationService
             catch (KeyNotFoundException ey)
             {
 
+                throw;
+            }
+            catch (Exception ex)
+            {
                 throw;
             }
         }

@@ -3,6 +3,8 @@ using Application.DTO.Request;
 using Application.DTO.Response;
 using Application.Enum;
 using Application.Exceptions;
+using Application.Helper;
+using MobileClient.BackgroundTask.Location;
 using System.Net.Http.Json;
 
 namespace MobileClient.Services.Account
@@ -25,15 +27,13 @@ namespace MobileClient.Services.Account
                 var responseObject = await response.Content.ReadFromJsonAsync<ProfilePictureResponse>();
                 return responseObject;
             }
-            catch (AccountBannedException)
+            catch (AccountBannedException ex)
             {
-
-                throw;
+                return ResponseHelper.CreateProfilePictureResponse(false, ex.Message, null);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                return ResponseHelper.CreateProfilePictureResponse(false, "Something went wrong", null);
             }
         }
 
@@ -46,15 +46,13 @@ namespace MobileClient.Services.Account
                 var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
                 return responseObject;
             }
-            catch (AccountBannedException)
+            catch (AccountBannedException ex)
             {
-
-                throw;
+                return ResponseHelper.CreateGeneralResponse(false, ex.Message);
             }
             catch (Exception)
             {
-
-                throw;
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
         }
 
@@ -67,15 +65,13 @@ namespace MobileClient.Services.Account
                 var responseObject = await response.Content.ReadFromJsonAsync<UserDetailsResponse>();
                 return responseObject;
             }
-            catch (AccountBannedException)
+            catch (AccountBannedException ex)
             {
-
-                throw;
+                return ResponseHelper.CreateUserDetailsResponse(null, false, ex.Message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                return ResponseHelper.CreateUserDetailsResponse(null, false, "Something went wrong");
             }
         }
 
@@ -88,15 +84,13 @@ namespace MobileClient.Services.Account
                 var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
                 return responseObject;
             }
-            catch (AccountBannedException)
+            catch (AccountBannedException ex)
             {
-
-                throw;
+                return ResponseHelper.CreateGeneralResponse(false, ex.Message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
         }
         
@@ -109,15 +103,13 @@ namespace MobileClient.Services.Account
                 var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
                 return responseObject;
             }
-            catch (AccountBannedException)
+            catch (AccountBannedException ex)
             {
-
-                throw;
+                return ResponseHelper.CreateGeneralResponse(false, ex.Message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
         }
 
@@ -130,15 +122,13 @@ namespace MobileClient.Services.Account
                 var responseObject = await response.Content.ReadFromJsonAsync<UserProfileRespons>();
                 return responseObject;
             }
-            catch (AccountBannedException)
+            catch (AccountBannedException ex)
             {
-
-                throw;
+                return ResponseHelper.CreateUserProfileRespons(null, false, ex.Message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                return ResponseHelper.CreateUserProfileRespons(null, false, "Something went wrong");
             }
         }
 
@@ -151,15 +141,13 @@ namespace MobileClient.Services.Account
                 var responseObject = await response.Content.ReadFromJsonAsync<UserProfileRespons>();
                 return responseObject;
             }
-            catch (AccountBannedException)
+            catch (AccountBannedException ex)
             {
-
-                throw;
+                return ResponseHelper.CreateUserProfileRespons(null, false, ex.Message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                return ResponseHelper.CreateUserProfileRespons(null, false, "Something went wrong");
             }
         }
 
@@ -172,15 +160,13 @@ namespace MobileClient.Services.Account
                 var responseObject = await response.Content.ReadFromJsonAsync<UserProfileRespons>();
                 return responseObject;
             }
-            catch (AccountBannedException)
+            catch (AccountBannedException ex)
             {
-
-                throw;
+                return ResponseHelper.CreateUserProfileRespons(null, false, ex.Message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                return ResponseHelper.CreateUserProfileRespons(null, false, "Something went wrong");
             }
         }
 
@@ -193,15 +179,13 @@ namespace MobileClient.Services.Account
                 var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
                 return responseObject;
             }
-            catch (AccountBannedException)
+            catch (AccountBannedException ex)
             {
-
-                throw;
+                return ResponseHelper.CreateGeneralResponse(false, ex.Message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
         }
         public async Task<GeneralResponse> GhostMode(bool ghostMode)
@@ -213,15 +197,13 @@ namespace MobileClient.Services.Account
                 var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
                 return responseObject;
             }
-            catch (AccountBannedException)
+            catch (AccountBannedException ex)
             {
-
-                throw;
+                return ResponseHelper.CreateGeneralResponse(false, ex.Message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
         }
         
@@ -234,15 +216,13 @@ namespace MobileClient.Services.Account
                 var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
                 return responseObject;
             }
-            catch (AccountBannedException)
+            catch (AccountBannedException ex)
             {
-
-                throw;
+                return ResponseHelper.CreateGeneralResponse(false, ex.Message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
         }
 
@@ -255,15 +235,13 @@ namespace MobileClient.Services.Account
                 var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
                 return responseObject;
             }
-            catch (AccountBannedException)
+            catch (AccountBannedException ex)
             {
-
-                throw;
+                return ResponseHelper.CreateGeneralResponse(false, ex.Message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
         }
 
@@ -276,15 +254,13 @@ namespace MobileClient.Services.Account
                 var responseObject = await response.Content.ReadFromJsonAsync<BannedAccountResponse>();
                 return responseObject;
             }
-            catch (AccountBannedException)
+            catch (AccountBannedException ex)
             {
-
-                throw;
+                return ResponseHelper.CreateBannedUserResponse(false, ex.Message, null);
             }
             catch (Exception)
             {
-
-                throw;
+                return ResponseHelper.CreateBannedUserResponse(false, "Something went wrong", null);
             }
         }
 
@@ -297,15 +273,13 @@ namespace MobileClient.Services.Account
                 var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
                 return responseObject;
             }
-            catch (AccountBannedException)
+            catch (AccountBannedException ex)
             {
-
-                throw;
+                return ResponseHelper.CreateGeneralResponse(false, ex.Message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
         }
 
@@ -318,15 +292,13 @@ namespace MobileClient.Services.Account
                 var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
                 return responseObject;
             }
-            catch (AccountBannedException)
+            catch (AccountBannedException ex)
             {
-
-                throw;
+                return ResponseHelper.CreateGeneralResponse(false, ex.Message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
         }
 
@@ -339,12 +311,12 @@ namespace MobileClient.Services.Account
                 var responseObject = await response.Content.ReadFromJsonAsync<List<UserBriefDetailsDTO>>();
                 return responseObject;
             }
-            catch (AccountBannedException)
+            catch (AccountBannedException ex)
             {
 
                 throw;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
 
                 throw;
@@ -360,15 +332,13 @@ namespace MobileClient.Services.Account
                 var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
                 return responseObject;
             }
-            catch (AccountBannedException)
+            catch (AccountBannedException ex)
             {
-
-                throw;
+                return ResponseHelper.CreateGeneralResponse(false, ex.Message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
         }
     }

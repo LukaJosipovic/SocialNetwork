@@ -12,7 +12,6 @@ namespace MobileClient.Services.Activity
     {
         Task<GeneralResponse> CreateActivity(CreateActivityRequest request);
         Task<List<ActivityResponse>> GetActivities();
-        Task<GeneralResponse> ReportActivity(string cacheKey);
         Task<GeneralResponse> AcceptActivity(string cacheKey);
     }
 }

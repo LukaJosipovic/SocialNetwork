@@ -1,5 +1,6 @@
 ﻿@page "/activities"
 @using Application.DTO.Response
+@using Application.Exceptions
 @using MobileClient.Services.Activity
 @using MobileClient.Services.Alert
 @using MobileClient.Services.LoadingService
@@ -71,7 +72,7 @@
                             }
                         </div>
                         <!-- Menu -->
-                        <div class="dropdown">
+                        @* <div class="dropdown">
                             <button class="btn btn-link p-0 text-body"
                                     type="button"
                                     data-bs-toggle="dropdown"
@@ -86,7 +87,7 @@
                                     </button>
                                 </li>
                             </ul>
-                        </div>
+                        </div> *@
                     </div>
                 </div>
 
@@ -113,21 +114,32 @@
     {
         LoadingService.IsLoading = true;
 
-        var response = await ActivityService.GetActivities();
-        if (response.Count > 0)
+        try
         {
-            foreach (var activity in response)
+            var response = await ActivityService.GetActivities();
+            if (response.Count > 0)
             {
-                if (activity.User.ProfilePicture != null)
+                foreach (var activity in response)
                 {
-                    activity.User.ProfilePictureString = $"data:image;base64,{Convert.ToBase64String(activity.User.ProfilePicture)}";
+                    if (activity.User.ProfilePicture != null)
+                    {
+                        activity.User.ProfilePictureString = $"data:image;base64,{Convert.ToBase64String(activity.User.ProfilePicture)}";
+                    }
                 }
+                activities = response;
             }
-            activities = response;
+            else
+            {
+                activities = null;
+            }
         }
-        else
+        catch (AccountBannedException ex)
         {
-            activities = null;
+            await AlertService.ShowAlertAsync("Error", $"{ex.Message}", "OK");
+        }
+        catch (Exception ex)
+        {
+            await AlertService.ShowAlertAsync("Error", "Something went wrong", "OK");
         }
 
         LoadingService.IsLoading = false;
@@ -138,14 +150,14 @@
         NavManager.NavigateTo($"/profile/user/{userId}");
     }
 
-    private async Task ReportActivity(string cacheKey)
-    {
-        var response = await ActivityService.ReportActivity(cacheKey);
-        if (response.IsSuccess)
-            await AlertService.ShowAlertAsync("Ok", $"{response.Message}", "OK");
-        else
-            await AlertService.ShowAlertAsync("Error", $"{response.Message}", "OK");
-    }
+    // private async Task ReportActivity(string cacheKey)
+    // {
+    //     var response = await ActivityService.ReportActivity(cacheKey);
+    //     if (response.IsSuccess)
+    //         await AlertService.ShowAlertAsync("Ok", $"{response.Message}", "OK");
+    //     else
+    //         await AlertService.ShowAlertAsync("Error", $"{response.Message}", "OK");
+    // }
 
     private async Task AcceptActivity(string cacheKey)
     {

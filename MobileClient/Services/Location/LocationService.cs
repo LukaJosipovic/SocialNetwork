@@ -43,24 +43,22 @@ namespace MobileClient.Services.Location
             }
         }
 
-        public async Task<bool> AddLocation(double latitude, double longitude)
+        public async Task<GeneralResponse> AddLocation(double latitude, double longitude)
         {
             try
             {
                 var client = _httpClientFactory.CreateClient("BaseApi");
                 var response = await client.PostAsync($"api/Location/AddLocation?latitude={latitude}&longitude={longitude}", new StringContent(string.Empty));
-                var responseObject = await response.Content.ReadFromJsonAsync<bool>();
+                var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
                 return responseObject;
             }
-            catch (AccountBannedException)
+            catch (AccountBannedException ex)
             {
-
-                throw;
+                return ResponseHelper.CreateGeneralResponse(true, ex.Message);
             }
             catch (Exception ex)
             {
-                //return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
-                throw;
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
         }
         
