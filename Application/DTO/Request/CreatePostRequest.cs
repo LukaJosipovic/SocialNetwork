@@ -14,7 +14,8 @@ namespace Application.DTO.Request
         [Required]
         public Guid UserId { get; set; }
         public PostType Type { get; set; }
-        public byte[]? ImageData { get; set; }
+        [Required(ErrorMessage = "The image is required")]
+        public byte[] ImageData { get; set; }
         public string? Description { get; set; }
         [Required]
         public DateTime DateCreated { get; set; }

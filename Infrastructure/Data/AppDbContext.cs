@@ -12,7 +12,7 @@ namespace Infrastructure.Data
 {
     public class AppDbContext : IdentityDbContext<ApplicationUser>
     {
-        public AppDbContext(DbContextOptions options) : base(options)
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
         }
 
@@ -33,13 +33,13 @@ namespace Infrastructure.Data
             .HasOne(m => m.Creator)  // Match has one User1
             .WithMany(u => u.Matches)  // ApplicationUser has many Matches
             .HasForeignKey(m => m.CreatorId)  // Foreign key in Match for User1
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<Match>()
             .HasOne(m => m.Acceptor)  // Match has one User2
             .WithMany()  // ApplicationUser has no navigation property for Matches of User2
             .HasForeignKey(m => m.AcceptorId)  // Foreign key in Match for User2
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
 
             builder.Entity<ChatMessage>()
@@ -69,12 +69,12 @@ namespace Infrastructure.Data
             builder.Entity<Post>()
             .HasMany(p => p.Reports)
             .WithOne(r => r.ReportedPost)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<Post>()
             .HasMany(p => p.Likes)
             .WithOne(l => l.Post)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<UserBlocks>()
             .HasOne(b => b.BlockerUser)
@@ -95,7 +95,8 @@ namespace Infrastructure.Data
             builder.Entity<UserDevice>()
             .HasOne(u => u.User)
             .WithMany(u => u.Devices)
-            .HasForeignKey(u => u.UserId);
+            .HasForeignKey(u => u.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<ApplicationUser>().HasQueryFilter(u => !u.IsBanned && !u.IsDeleted);
             builder.Entity<Post>().HasQueryFilter(p => !p.User.IsBanned && !p.User.IsDeleted);

@@ -112,6 +112,7 @@ namespace Application.Service.Chat
                     };
                     messageList.MessagesDto.Add(messageDto);
                 }
+                messageList.IsSuccess = true;
                 return messageList;
             }
             catch (Exception ex)

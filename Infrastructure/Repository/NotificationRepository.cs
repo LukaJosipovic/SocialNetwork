@@ -23,6 +23,10 @@ namespace Infrastructure.Repository
         public async Task<bool> ActivateDevice(string userId, string deviceToken)
         {
             var userDevice = await _context.UserDevices.FirstOrDefaultAsync(u => u.UserId == userId && u.DeviceToken == deviceToken) ?? throw new KeyNotFoundException("Device not found");
+            
+            if (userDevice.IsActive)
+                return true;
+
             userDevice.IsActive = true;
             var result = await _context.SaveChangesAsync();
 

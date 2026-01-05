@@ -49,7 +49,12 @@ namespace API.Controllers
         [HttpGet("GetActivities")]
         public async Task<IActionResult> GetActivities(double latitude, double longitude)
         {
-            var result = await _activityService.GetActivities(latitude, longitude);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId == null)
+                return Unauthorized("User cannot be found");
+
+            var result = await _activityService.GetActivities(latitude, longitude, userId);
             return Ok(result);
         }
 

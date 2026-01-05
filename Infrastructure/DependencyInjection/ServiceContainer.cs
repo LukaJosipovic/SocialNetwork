@@ -33,9 +33,14 @@ namespace Infrastructure.DependencyInjection
     {
         public static IServiceCollection AddInfrastructureService(this IServiceCollection services, ConfigurationManager configuration)
         {
+            //services.AddDbContext<AppDbContext>(options =>
+            //{
+            //    options.UseInMemoryDatabase("SocialNetworkDb");
+            //});
+
             services.AddDbContext<AppDbContext>(options =>
             {
-                options.UseInMemoryDatabase("SocialNetworkDb");
+                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
             });
 
             services.AddIdentityCore<ApplicationUser>().AddRoles<IdentityRole>().AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();

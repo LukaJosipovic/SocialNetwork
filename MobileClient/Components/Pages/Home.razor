@@ -145,7 +145,7 @@ else if (postsDetails != null)
         }
         catch (Exception ex)
         {
-            await AlertService.ShowAlertAsync("Error", $"{ex.Message}", "OK");
+            await AlertService.ShowAlertAsync("Error", "Something went wrong", "OK");
         }
         //await Task.Delay(5000);
         LoadingService.IsLoading = false;

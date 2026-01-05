@@ -34,7 +34,7 @@ namespace Infrastructure.Repository
             return _activityKeys.TryAdd(cacheKey, true);
         }
 
-        public List<ActivityCache> GetActivities(double latitude, double longitude)
+        public List<ActivityCache> GetActivities(double latitude, double longitude, string userId)
         {
             var activities = new List<ActivityCache>();
             var expiredKeys = new List<string>();
@@ -45,7 +45,7 @@ namespace Infrastructure.Repository
                 {
                     double distance = LocationHelper.GetDistanceInKm(latitude, longitude, activity.Latitude, activity.Longitude);
 
-                    if (distance <= activity.Range)
+                    if (distance <= activity.Range && activity.UserId != userId)
                         activities.Add(activity);
                 }
                 else

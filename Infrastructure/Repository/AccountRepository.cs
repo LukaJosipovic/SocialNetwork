@@ -212,10 +212,11 @@ namespace Infrastructure.Repository
         }
         public async Task<ApplicationUser?> RemoveAllReports(string userId)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId) ?? throw new KeyNotFoundException("User not found");
+            var user = await _context.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Id == userId) ?? throw new KeyNotFoundException("User not found");
             user.IsBanned = false;
 
             var reposrts = await _context.Report.Where(r => r.ReportedUserId == userId).ToListAsync();
+            _context.RemoveRange(reposrts);
 
             var result = await _context.SaveChangesAsync();
 

@@ -11,7 +11,7 @@ namespace Application.Contracts
     {
         bool CreateActivity(ActivityCache model);
         Task<bool> CreateMatch(Match match);
-        List<ActivityCache> GetActivities(double latitude, double longitude);
+        List<ActivityCache> GetActivities(double latitude, double longitude, string userId);
         ActivityCache GetActivityByCacheKey(string cacheKey);
         Task<bool> SaveActivity(Activity activity);
     }

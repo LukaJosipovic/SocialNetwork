@@ -375,6 +375,10 @@ namespace Application.Service.Account
 
                 return ResponseHelper.CreateGeneralResponse(true, "User blocked successfully");
             }
+            catch (KeyNotFoundException ex)
+            {
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
+            }
             catch (Exception ex)
             {
                 return ResponseHelper.CreateGeneralResponse(false, ex.Message);

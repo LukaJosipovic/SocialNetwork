@@ -91,11 +91,11 @@
             await AlertService.ShowAlertAsync("Error", $"{result.Message}", "OK");
         }
 
-        await Share.RequestAsync(new ShareTextRequest
-        {
-            Text = token,
-            Title = "Share Firebase Token"
-        });
+        // await Share.RequestAsync(new ShareTextRequest
+        // {
+        //     Text = token,
+        //     Title = "Share Firebase Token"
+        // });
         #endif
     }
 }

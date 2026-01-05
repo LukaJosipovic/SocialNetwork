@@ -37,12 +37,13 @@
     }
 
     <EditForm Model="@createPostRequest" OnValidSubmit="@CreatePost">
-
+        <DataAnnotationsValidator />
         <!-- Image Picker -->
         <div class="card mb-3">
             <div class="card-body">
                 <label class="form-label fw-semibold">Photo</label>
                 <InputFile OnChange="LoadImage" accept="image/*" class="form-control" />
+                <ValidationMessage For="() => createPostRequest.ImageData" class="text-danger" />
             </div>
         </div>
 
@@ -77,6 +78,7 @@
             buffer = new byte[file.Size];
             await file.OpenReadStream(maxAllowedSize: 8 * 1024 * 1024).ReadAsync(buffer);
             ImagePreview = $"data:image;base64,{Convert.ToBase64String(buffer)}";
+            createPostRequest.ImageData = buffer;
         }
         catch (Exception ex)
         {
@@ -88,7 +90,7 @@
     {
         LoadingService.IsLoading = true;
 
-        createPostRequest.ImageData = buffer;
+        //createPostRequest.ImageData = buffer;
         var response = await AccountService.CreatePost(createPostRequest);
 
         if (response.IsSuccess)

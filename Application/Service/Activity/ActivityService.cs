@@ -129,11 +129,11 @@ namespace Application.Service.Activity
             }
         }
 
-        public async Task<List<ActivityResponse>> GetActivities(double latitude, double longitude)
+        public async Task<List<ActivityResponse>> GetActivities(double latitude, double longitude, string userId)
         {
             try
             {
-                var result = _activityRepository.GetActivities(latitude, longitude);
+                var result = _activityRepository.GetActivities(latitude, longitude, userId);
                 var activitiesList = new List<ActivityResponse>();
                 foreach (var activity in result)
                 {
