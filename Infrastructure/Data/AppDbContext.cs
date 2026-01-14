@@ -24,6 +24,7 @@ namespace Infrastructure.Data
         public DbSet<Activity> Activity { get; set; }
         public DbSet<UserBlocks> UserBlocks { get; set; }
         public DbSet<UserDevice> UserDevices { get; set; }
+        public DbSet<Conversation> Conversation { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -31,7 +32,8 @@ namespace Infrastructure.Data
 
             builder.Entity<Match>()
             .HasOne(m => m.Creator)  // Match has one User1
-            .WithMany(u => u.Matches)  // ApplicationUser has many Matches
+            //.WithMany(u => u.Matches)  // ApplicationUser has many Matches
+            .WithMany()
             .HasForeignKey(m => m.CreatorId)  // Foreign key in Match for User1
             .OnDelete(DeleteBehavior.Restrict);
 
@@ -42,16 +44,22 @@ namespace Infrastructure.Data
             .OnDelete(DeleteBehavior.Restrict);
 
 
-            builder.Entity<ChatMessage>()
-            .HasOne(m => m.Sender)
-            .WithMany()
-            .HasForeignKey(m => m.SenderId)
-            .OnDelete(DeleteBehavior.Restrict);
+            //builder.Entity<ChatMessage>()
+            //.HasOne(m => m.Sender)
+            //.WithMany()
+            //.HasForeignKey(m => m.SenderId)
+            //.OnDelete(DeleteBehavior.Restrict);
 
+            //builder.Entity<ChatMessage>()
+            //.HasOne(m => m.Receiver)
+            //.WithMany()
+            //.HasForeignKey(m => m.ReceiverId)
+            //.OnDelete(DeleteBehavior.Restrict);
+            
             builder.Entity<ChatMessage>()
-            .HasOne(m => m.Receiver)
-            .WithMany()
-            .HasForeignKey(m => m.ReceiverId)
+            .HasOne(m => m.Conversation)
+            .WithMany(c => c.Messages)
+            .HasForeignKey(m => m.ConversationId)
             .OnDelete(DeleteBehavior.Restrict);
             
             builder.Entity<Report>()
@@ -97,6 +105,22 @@ namespace Infrastructure.Data
             .WithMany(u => u.Devices)
             .HasForeignKey(u => u.UserId)
             .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Conversation>()
+            .HasOne(c => c.User1)
+            .WithMany()
+            .HasForeignKey(c => c.User1Id)
+            .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Conversation>()
+            .HasOne(c => c.User2)
+            .WithMany()
+            .HasForeignKey(c => c.User2Id)
+            .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Conversation>()
+            .HasIndex(c => new { c.User1Id, c.User2Id })
+            .IsUnique();
 
             builder.Entity<ApplicationUser>().HasQueryFilter(u => !u.IsBanned && !u.IsDeleted);
             builder.Entity<Post>().HasQueryFilter(p => !p.User.IsBanned && !p.User.IsDeleted);

@@ -20,17 +20,47 @@ namespace Infrastructure.Repository
             _context = context;
         }
 
-        public async Task<List<Match>> GetUsersForChat(string userId, PageSettingsRequest model)
+        public async Task<List<Conversation>> GetUsersForChat(string userId, PageSettingsRequest model)
         {
             var skip = (model.PageNumber - 1) * model.PageSize;
 
-            return await _context.Match.IgnoreQueryFilters().Where(m => m.CreatorId == userId || m.AcceptorId == userId).Include(m => m.Creator).Include(m => m.Acceptor).Skip(skip).Take(model.PageSize).ToListAsync();
+            var conversations = await _context.Conversation.Where(c => c.User1Id == userId || c.User2Id == userId)
+                .Include(c => c.Messages)
+                .Include(c => c.User1)
+                .Include(c => c.User2)
+                .Skip(skip)
+                .Take(model.PageSize)
+                .ToListAsync();
+
+            foreach (var conversation in conversations)
+            {
+                conversation.HasUnreadMessages = conversation.Messages != null && conversation.Messages.Any(m => !m.IsRead && m.UserId != userId);
+            }
+            return conversations;
+            //return await _context.Match.IgnoreQueryFilters().Where(m => m.CreatorId == userId || m.AcceptorId == userId).Include(m => m.Creator).Include(m => m.Acceptor).Skip(skip).Take(model.PageSize).ToListAsync();
             //var acceptors = await _context.Match.Where(m => m.CreatorId == userId).Select(m => m.Acceptor).ToListAsync();
         }
 
-        public async Task<List<ChatMessage>> GetMessages(string userId)
+        public async Task<List<ChatMessage>> GetMessages(string userId, int conversationId)
         {
-            return await _context.ChatMessage.IgnoreQueryFilters().Where(m => m.SenderId == userId || m.ReceiverId == userId).ToListAsync();
+            //return await _context.ChatMessage.IgnoreQueryFilters().Where(m => m.SenderId == userId || m.ReceiverId == userId).ToListAsync();
+            return await _context.ChatMessage.IgnoreQueryFilters().Where(m => m.ConversationId == conversationId).ToListAsync();
+        }
+
+        public async Task<bool> MarkMessagesAsRead(string userId, int conversationId)
+        {
+            var unreadMessages = await _context.ChatMessage.IgnoreQueryFilters().Where(m => m.ConversationId == conversationId && m.UserId != userId && !m.IsRead) .ToListAsync();
+
+            foreach (var message in unreadMessages)
+            {
+                message.IsRead = true;
+            }
+
+            var result = await _context.SaveChangesAsync();
+            if (result > 0)
+                return true;
+
+            return false;
         }
 
         public async Task<bool> CheckIfUserIsBlocked(string userId, string userToChatId)

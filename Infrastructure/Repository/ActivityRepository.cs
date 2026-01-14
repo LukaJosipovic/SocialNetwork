@@ -81,6 +81,17 @@ namespace Infrastructure.Repository
             return false;
         }
 
+        public async Task<bool> CreateConversation(Conversation conversation)
+        {
+            await _context.Conversation.AddAsync(conversation);
+            var result = await _context.SaveChangesAsync();
+            
+            if (result > 0)
+                return true;
+
+            return false;
+        }
+
         public async Task<bool> SaveActivity(Domain.Model.Activity activity)
         {
             await _context.Activity.AddAsync(activity);

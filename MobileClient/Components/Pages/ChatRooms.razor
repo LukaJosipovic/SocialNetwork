@@ -1,6 +1,7 @@
 ﻿@page "/chatrooms"
 @using Application.DTO
 @using Application.DTO.Request
+@using Application.DTO.Response
 @using MobileClient.Services.Account
 @using MobileClient.Services.Alert
 @using MobileClient.Services.Chat
@@ -47,32 +48,32 @@
      class="container py-2 overflow-auto"
      style="height: 85vh; margin-top: 20px;">
 
-    @if (users.Count > 0)
+    @if (conversations.Count > 0)
     {
-        @foreach (var user in users)
+        @foreach (var conversation in conversations)
         {
-            <div class="card mb-2">
+            <div class="card mb-2 @(conversation.HasUnreadMessages ? "border-primary bg-light" : "")">
                 <div class="card-body py-2">
 
                     <div class="d-flex justify-content-between align-items-center">
 
                         <!-- User info -->
                         <div class="d-flex align-items-center flex-grow-1"
-                             @onclick="() => NavigateToChat(user.Id)"
+                             @onclick="() => NavigateToChat(conversation.UserId, conversation.ConversationId)"
                              style="cursor:pointer;">
 
-                            @if (user.ProfilePictureString != null)
+                            @if (conversation.ProfilePictureString != null)
                             {
-                                <img src="@user.ProfilePictureString"
+                                <img src="@conversation.ProfilePictureString"
                                      class="rounded-circle me-3"
                                      style="width:48px; height:48px; object-fit:cover;"
                                      @onclick:stopPropagation="true"
-                                     @onclick="() => NavigateToUserProfile(user.Id)" />
+                                     @onclick="() => NavigateToUserProfile(conversation.UserId)" />
                             }
 
                             <div>
                                 <div class="fw-semibold">
-                                    @user.Name
+                                    @conversation.Name
                                 </div>
                                 <small class="text-muted">
                                     Tap to open chat
@@ -83,7 +84,7 @@
                         <!-- Actions -->
                         <button type="button"
                                 class="btn btn-outline-danger btn-sm ms-2"
-                                @onclick="() => BlockUser(user.Id)">
+                                @onclick="() => BlockUser(conversation.UserId)">
                             <i class="bi bi-ban"></i>
                         </button>
 
@@ -112,7 +113,7 @@
 
 
 @code {
-    private List<UserBriefDetailsDTO>? users = new();
+    private List<ConversationDTO> conversations = new();
     //My Id
     private string? senderId;
     private string? recipientId;
@@ -142,16 +143,16 @@
         isLoading = true;
 
         var response = await ChatService.GetChatRooms(pageSettings);
-        if (response.UsersChatList != null && response.UsersChatList.Any())
+        if (response.ConversationList != null && response.ConversationList.Any())
         {
-            foreach (var user in response.UsersChatList)
-            {
-                if (user.ProfilePicture != null)
-                {
-                    user.ProfilePictureString = $"data:image;base64,{Convert.ToBase64String(user.ProfilePicture)}";
-                }
-            }
-            users.AddRange(response.UsersChatList);
+            // foreach (var user in response.UsersChatList)
+            // {
+            //     if (user.ProfilePicture != null)
+            //     {
+            //         user.ProfilePictureString = $"data:image;base64,{Convert.ToBase64String(user.ProfilePicture)}";
+            //     }
+            // }
+            conversations.AddRange(response.ConversationList);
             senderId = response.MyId;
             pageSettings.PageNumber++;
         }
@@ -174,9 +175,9 @@
         await LoadUsers();
     }
 
-    private void NavigateToChat(string RecipientId)
+    private void NavigateToChat(string RecipientId, int conversationId)
     {
-        NavManager.NavigateTo($"/chat/{senderId}/{RecipientId}");
+        NavManager.NavigateTo($"/chat/{senderId}/{RecipientId}/{conversationId.ToString()}");
     }
 
     private void NavigateToUserProfile(string userId)

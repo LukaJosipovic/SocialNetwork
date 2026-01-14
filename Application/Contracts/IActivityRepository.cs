@@ -11,6 +11,7 @@ namespace Application.Contracts
     {
         bool CreateActivity(ActivityCache model);
         Task<bool> CreateMatch(Match match);
+        Task<bool> CreateConversation(Conversation conversation);
         List<ActivityCache> GetActivities(double latitude, double longitude, string userId);
         ActivityCache GetActivityByCacheKey(string cacheKey);
         Task<bool> SaveActivity(Activity activity);

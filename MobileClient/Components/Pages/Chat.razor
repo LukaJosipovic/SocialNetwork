@@ -1,4 +1,4 @@
-﻿@page "/chat/{senderId}/{recipientId}"
+﻿@page "/chat/{senderId}/{recipientId}/{conversationId}"
 @using Application.DTO
 @using Application.DTO.Response
 @using Microsoft.AspNetCore.SignalR.Client
@@ -90,7 +90,7 @@
     <div class="flex-grow-1 overflow-auto p-3 bg-light pb-5">
         @foreach (var message in messageFromUser.MessagesDto)
         {
-            if (message.SenderId == senderId)
+            if (message.UserId == senderId)
             {
                 <div class="d-flex mb-2">
                     <div style="background-color: #512bdf; color: white" class="d-inline-block p-2 rounded shadow-sm w-auto ms-auto">
@@ -139,12 +139,14 @@
     public string? senderId { get; set; }
     [Parameter]
     public string? recipientId { get; set; }
+    [Parameter]
+    public string? conversationId { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            var messageRespons = await ChatService.GetMessages(recipientId);
+            var messageRespons = await ChatService.GetMessages(recipientId, int.Parse(conversationId));
             if (messageRespons.IsSuccess)
             {
                 messageFromUser = messageRespons;
@@ -178,8 +180,8 @@
                     //messages.Add(message);
                     messageFromUser.MessagesDto.Add(new MessageDTO
                     {
-                        SenderId = senderId,
-                        ReceiverId = recipientId,
+                        UserId = senderId,
+                        //ReceiverId = recipientId,
                         Content = message
                     });
                     InvokeAsync(StateHasChanged);
@@ -207,11 +209,11 @@
             //messages.Add(messageInput);
             messageFromUser.MessagesDto.Add(new MessageDTO
             {
-                SenderId = senderId,
-                ReceiverId = recipientId,
+                UserId = senderId,
+                //ReceiverId = recipientId,
                 Content = messageInput
             });
-            await hubConnection.SendAsync("SendMessageToClient", senderId, recipientId, messageInput);
+            await hubConnection.SendAsync("SendMessageToClient", senderId, recipientId, messageInput, int.Parse(conversationId));
         }
     }
 

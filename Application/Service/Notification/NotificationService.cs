@@ -21,7 +21,7 @@ namespace Application.Service.Notification
             _accountRepository = accountRepository;
         }
 
-        public async Task<string> GetDeviceToken(string userId)
+        public async Task<string?> GetDeviceToken(string userId)
         {
             try
             {

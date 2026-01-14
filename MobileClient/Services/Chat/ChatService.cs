@@ -48,12 +48,12 @@ namespace MobileClient.Services.Chat
             }
         }
 
-        public async Task<MessageResponse> GetMessages(string recipientId)
+        public async Task<MessageResponse> GetMessages(string recipientId, int conversationId)
         {
             try
             {
                 var client = _httpClientFactory.CreateClient("BaseApi");
-                var response = await client.GetAsync($"api/Chat/GetMessages?userToChatId={recipientId}");
+                var response = await client.GetAsync($"api/Chat/GetMessages?userToChatId={recipientId}&conversationId={conversationId}");
                 var responseObject = await response.Content.ReadFromJsonAsync<MessageResponse>();
                 return responseObject;
             }

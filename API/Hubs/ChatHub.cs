@@ -43,7 +43,7 @@ namespace API.Hubs
             return base.OnDisconnectedAsync(exception);
         }
 
-        public async Task SendMessageToClient(string senderId, string receiverId, string message)
+        public async Task SendMessageToClient(string senderId, string receiverId, string message, int conversationId)
         {
             //var chatMessage = new ChatMessage
             //{
@@ -55,7 +55,7 @@ namespace API.Hubs
 
             //await _context.ChatMessage.AddAsync(chatMessage);
             //await _context.SaveChangesAsync();
-            var result = await _chatService.SaveMessage(senderId, receiverId, message);
+            var result = await _chatService.SaveMessage(senderId, receiverId, message, conversationId);
             var deviceToken = await _notificationService.GetDeviceToken(receiverId);
             if (deviceToken != null)
             {

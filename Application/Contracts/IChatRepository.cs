@@ -10,8 +10,9 @@ namespace Application.Contracts
 {
     public interface IChatRepository
     {
-        Task<List<Match>> GetUsersForChat(string userId, PageSettingsRequest model);
-        Task<List<ChatMessage>> GetMessages(string userId);
+        Task<List<Conversation>> GetUsersForChat(string userId, PageSettingsRequest model);
+        Task<List<ChatMessage>> GetMessages(string userId, int conversationId);
+        Task<bool> MarkMessagesAsRead(string userId, int conversationId);
         Task<bool> CheckIfUserIsBlocked(string userId, string userToChatId);
         Task<bool> SaveMessage(ChatMessage message);
     }

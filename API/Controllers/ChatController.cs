@@ -33,14 +33,14 @@ namespace API.Controllers
         }
 
         [HttpGet("GetMessages")]
-        public async Task<IActionResult> GetMessages(string userToChatId)
+        public async Task<IActionResult> GetMessages(string userToChatId, int conversationId)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             
             if (userId == null)
                 return Unauthorized("User cannot be found");
 
-            var messages = await _chatService.GetMessages(userId, userToChatId);
+            var messages = await _chatService.GetMessages(userId, userToChatId, conversationId);
 
             return Ok(messages);
         }

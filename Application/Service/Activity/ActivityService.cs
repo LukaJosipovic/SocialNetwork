@@ -62,24 +62,35 @@ namespace Application.Service.Activity
 
                     if (activitySaved == true && matchCreated == true)
                     {
-                        var deviceToken = await _notificationService.GetDeviceToken(activityCache.UserId);
-                        if (deviceToken != null)
+                        var user1Id = creator.Id.CompareTo(acceptor.Id) < 0 ? creator.Id : acceptor.Id;
+                        var user2Id = creator.Id.CompareTo(acceptor.Id) < 0 ? acceptor.Id : creator.Id;
+
+                        var conversation = new Conversation
                         {
-                            var notificationSent = await NotificationHelper.SendNotification(deviceToken, "Activity accepted", $"{acceptor.Name} accepted your activity");
+                            User1Id = user1Id,
+                            User2Id = user2Id
+                        };
+                        var conversationCreated = await _activityRepository.CreateConversation(conversation);
+                        if (conversationCreated == true)
+                        {
+                            var deviceToken = await _notificationService.GetDeviceToken(activityCache.UserId);
+                            if (deviceToken != null)
+                            {
+                                var notificationSent = await NotificationHelper.SendNotification(deviceToken, "Activity accepted", $"{acceptor.Name} accepted your activity");
+                            }
+                            return ResponseHelper.CreateGeneralResponse(true, "You accepted activity");
                         }
-                        return ResponseHelper.CreateGeneralResponse(true, "You accepted activity");
                     }
                 }
                 return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
             catch (KeyNotFoundException ex)
             {
-
-                throw;
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
             catch (Exception ex) 
             {
-                throw;
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
         }
 
