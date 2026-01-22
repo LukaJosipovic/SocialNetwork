@@ -211,7 +211,6 @@ namespace Application.Service.Auth
                 if (result.Succeeded)
                     return ResponseHelper.CreateGeneralResponse(true, "Email confirmed successfully");
 
-                //logirat result.Errors
                 return ResponseHelper.CreateGeneralResponse(true, "Something went wrong");
             }
             catch (KeyNotFoundException ex)

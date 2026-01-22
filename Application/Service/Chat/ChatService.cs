@@ -26,13 +26,11 @@ namespace Application.Service.Chat
         {
 			try
 			{
-                //var usersChatList = new List<UserBriefDetailsDTO>();
                 var conversations = await _chatRepository.GetUsersForChat(userId, model);
                 var skip = (model.PageNumber - 1) * model.PageSize;
 
                 var chatRooms = new ChatRoomResponse();
                 chatRooms.MyId = userId;
-                //chatRooms.ConversationList = new List<ConversationDTO>();
 
                 foreach (var conversation in conversations)
                 {
@@ -104,6 +102,7 @@ namespace Application.Service.Chat
 
                 messageList.ConversationBlocked = userBlocked;
                 messageList.Name = userToChat.Name;
+                messageList.Id = userToChat.Id;
                 messageList.ProfilePictureString = $"data:image;base64,{Convert.ToBase64String(userToChat.ProfilePicture)}";
 
                 foreach (var message in messages)
@@ -112,7 +111,6 @@ namespace Application.Service.Chat
                     {
                         Id = message.Id,
                         UserId = message.UserId,
-                        //ReceiverId = message.ReceiverId,
                         Content = message.Content,
                         Timestamp = message.Timestamp
                     };
@@ -135,7 +133,6 @@ namespace Application.Service.Chat
                 var chatMessage = new ChatMessage
                 {
                     UserId = senderId,
-                    //ReceiverId = receiverId,
                     Content = message,
                     ConversationId = conversationId,
                     Timestamp = DateTime.Now

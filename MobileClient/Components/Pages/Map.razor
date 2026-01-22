@@ -34,7 +34,6 @@
             {
                 status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
             }
-            //status = PermissionStatus.Granted;
             if (status == PermissionStatus.Granted)
             {
                 await GetCurrentLocation();

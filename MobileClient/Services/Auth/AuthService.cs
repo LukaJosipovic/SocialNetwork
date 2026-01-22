@@ -101,13 +101,6 @@ namespace MobileClient.Services.Auth
                     Message = "Something went wrong"
                 };
             }
-            //var response = await PostAsync("api/Auth/Login", request, new LoginResponse
-            //{
-            //    IsSuccess = false,
-            //    Message = "Something went wrong please try again later"
-            //});
-            
-            //return response;
         }
 
         public async Task<RegisterResponse> Register(CreateAccountRequest request)
@@ -143,11 +136,6 @@ namespace MobileClient.Services.Auth
                     Message = "Something went wrong"
                 };
             }
-            //return await PostAsync("api/Auth/CreateAccount", request, new RegisterResponse
-            //{
-            //    IsSuccess = false,
-            //    Message = "Something went wrong please try again later"
-            //});
         }
 
         public async Task<RegisterResponse> AddAdmin(CreateAccountRequest request)
@@ -175,11 +163,6 @@ namespace MobileClient.Services.Auth
                     Message = "Something went wrong"
                 };
             }
-            //return await PostAsync("api/Auth/AddAdmin", request, new RegisterResponse
-            //{
-            //    IsSuccess = false,
-            //    Message = "Something went wrong please try again later"
-            //});
         }
 
         public async Task<GeneralResponse> ForgotPassword(ForgotUserPasswordRequest request)
@@ -199,11 +182,6 @@ namespace MobileClient.Services.Auth
                     Message = "Something went wrong"
                 };
             }
-            //return await PostAsync("api/Auth/ForgotPassword", request, new GeneralResponse
-            //{
-            //    IsSuccess = false,
-            //    Message = "Something went wrong"
-            //});
         }
     }
 }

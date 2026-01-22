@@ -10,32 +10,6 @@
 @using MobileClient.Services.LoadingService
 @inject LoadingService LoadingService
 
-
-@* <div class="d-flex justify-content-between align-items-center">
-    <div class="d-flex align-items-center">
-        <div class="dropdown">
-            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Dropdown button
-            </button>
-            <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#">Action</a></li>
-                <li><a class="dropdown-item" href="#">Another action</a></li>
-                <li><a class="dropdown-item" @onclick="DeleteAccount" href="#">Delete Profile</a></li>
-            </ul>
-        </div>
-    </div>
-    <div class="dropdown">
-        <button class="btn btn-link p-0 m-0 border-0" type="button" id="iconMenuButton"
-                data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="bi bi-three-dots-vertical fs-4"></i>
-        </button>
-        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="iconMenuButton">
-            <li><button class="dropdown-item" @onclick="DeleteAccount">Delete Profile</button></li>
-            <li><button class="dropdown-item" @onclick="NavigateToBlockedUsers">Blocked Users</button></li>
-        </ul>
-    </div>
-</div>
- *@
 <div class="d-flex justify-content-end">
     <div class="dropdown">
         <button class="btn btn-link p-0 m-0 border-0"
@@ -52,33 +26,6 @@
         </ul>
     </div>
 </div>
-
-@* <div>
-    @if (!string.IsNullOrEmpty(profileImage))
-    {
-        <img src="@profileImage" alt="Profile picture" style="width: 150px; height: 150px;" />
-    }
-    <p>@profile.Name</p>
-    <p>@profile.Description</p>
-</div> *@
-@* <div class="dropdown">
-    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-        Dropdown button
-    </button>
-    <ul class="dropdown-menu">
-        <li><a class="dropdown-item" href="#">Action</a></li>
-        <li><a class="dropdown-item" href="#">Another action</a></li>
-        <li><a class="dropdown-item" @onclick="DeleteAccount" href="#">Delete Profile</a></li>
-    </ul>
-</div> *@
-
-@* @if (profile.PostDTO != null && profile.PostDTO.Count > 0)
-{
-    foreach (var post in profile.PostDTO)
-    {
-        <img src="@post.ImageUrl" alt="Post picture" style="width: 100%; cursor: pointer;" @onclick="() => NavigateToPostDetails(post.PostID)" />
-    }
-} *@
 
 @if (IsSuccess)
 {
@@ -129,7 +76,7 @@
         }
 
         LoadingService.IsLoading = false;
-        //NavManager.NavigateTo($"/login");
+        NavManager.NavigateTo($"/register");
     }
 
     private void NavigateToPostDetails(int postId)

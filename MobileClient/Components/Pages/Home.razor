@@ -9,38 +9,6 @@
 @inject NavigationManager NavManager
 @inject LoadingService LoadingService
 
-@* <style>
-    .post-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .like-section {
-        display: flex;
-        align-items: center;
-    }
-
-    .like-icon {
-        font-size: 30px;
-        color: red;
-        cursor: pointer;
-    }
-
-    .like-count {
-        margin-left: 10px;
-        font-weight: bold;
-    }
-
-    .post-date {
-        white-space: nowrap;
-    }
-
-    .post-description {
-        margin-top: 8px;
-    }
-</style> *@
-
 @if (postsDetails == null || !postsDetails.Any())
 {
     <div class="text-center text-muted py-5">
@@ -98,19 +66,6 @@ else if (postsDetails != null)
                 </div>
             </div>
         </div>
-        @* <div>
-            @if (post.IsLiked)
-            {
-                <i class="bi bi-suit-heart-fill" id="@post.PostId" style="font-size: 30px; color: red;" @onclick="() => DislikePost(post.PostId)"></i><b>@post.LikeCount</b>
-            }
-            else
-            {
-                <i class="bi bi-suit-heart" id="@post.PostId" style="font-size: 30px; color: red;" @onclick="() => LikePost(post.PostId)"></i><b>@post.LikeCount</b>
-            }
-            <p>@post.DateCreated</p>
-            <p>@post.Description</p>
-            <p>Like: @post.LikeCount</p>
-        </div> *@
     }
 }
 
@@ -147,7 +102,6 @@ else if (postsDetails != null)
         {
             await AlertService.ShowAlertAsync("Error", "Something went wrong", "OK");
         }
-        //await Task.Delay(5000);
         LoadingService.IsLoading = false;
     }
 
@@ -165,7 +119,6 @@ else if (postsDetails != null)
         var response = await PostService.LikePost(postId);
         if (response.IsSuccess)
         {
-            //await AlertService.ShowAlertAsync("Ok", $"{response.Message}", "OK");
             var post = postsDetails.FirstOrDefault(p => p.PostId == response.PostId);
             post.LikeCount = response.LikeCount;
             post.IsLiked = true;
@@ -183,7 +136,6 @@ else if (postsDetails != null)
         var response = await PostService.DislikePost(postId);
         if (response.IsSuccess)
         {
-            //await AlertService.ShowAlertAsync("Ok", $"{response.Message}", "OK");
             var post = postsDetails.FirstOrDefault(p => p.PostId == response.PostId);
             post.LikeCount = response.LikeCount;
             post.IsLiked = false;

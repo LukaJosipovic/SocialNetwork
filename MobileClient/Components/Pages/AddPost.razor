@@ -7,25 +7,6 @@
 @using MobileClient.Services.LoadingService
 @inject LoadingService LoadingService
 
-@* <h3>AddPost</h3>
-
-@if (!string.IsNullOrEmpty(ImagePreview))
-{
-    <img src="@ImagePreview" alt="Uploaded Image" style="width: 100%;" />
-}
-<EditForm Model="@createPostRequest" OnValidSubmit="@CreatePost">
-    <div>
-        <label>Choose Image:</label>
-        <InputFile OnChange="LoadImage" accept="image/*" />
-    </div>
-    <div>
-        <label>Description:</label>
-        <InputText @bind-Value="createPostRequest.Description" class="form-control" />
-    </div>
-
-    <button type="submit">Upload</button>
-</EditForm> *@
-
 <div class="container py-3">
 
     <!-- Preview Image -->
@@ -90,7 +71,6 @@
     {
         LoadingService.IsLoading = true;
 
-        //createPostRequest.ImageData = buffer;
         var response = await AccountService.CreatePost(createPostRequest);
 
         if (response.IsSuccess)

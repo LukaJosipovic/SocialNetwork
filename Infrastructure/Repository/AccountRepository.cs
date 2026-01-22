@@ -44,46 +44,6 @@ namespace Infrastructure.Repository
 
         public async Task<bool> CreatePost(Post request, byte[]? imageData)
         {
-            //try
-            //{
-            //    if (imageData != null)
-            //    {
-            //        var fileName = Guid.NewGuid().ToString() + ".jpg";
-            //        //var path = Directory.GetCurrentDirectory();
-            //        //var filePath = Path.Combine(path, "Upload", fileName);
-
-            //        var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "Upload");
-            //        if (!Directory.Exists(folderPath))
-            //        {
-            //            Directory.CreateDirectory(folderPath);
-            //        }
-            //        var filePath = Path.Combine(folderPath, fileName);
-
-            //        await File.WriteAllBytesAsync(filePath, imageData);
-
-            //        request.Content = $"Upload/{fileName}";
-            //    }
-            //    else
-            //    {
-            //        request.Content = null;
-            //    }
-
-            //    await _context.Post.AddAsync(request);
-            //    var result = await _context.SaveChangesAsync();
-
-            //    if (result > 0)
-            //        return true;
-
-            //    return false;
-            //}
-            //catch (IOException)
-            //{
-            //    throw new IOException("Post cannot be crated");
-            //}
-            //catch (Exception ex) 
-            //{
-            //    throw new Exception(ex.Message);
-            //}
             await _context.Post.AddAsync(request);
             var result = await _context.SaveChangesAsync();
 

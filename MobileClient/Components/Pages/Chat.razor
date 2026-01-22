@@ -4,90 +4,30 @@
 @using Microsoft.AspNetCore.SignalR.Client
 @using MobileClient.Services.Alert
 @using MobileClient.Services.Chat
+@using MobileClient.Services.LoadingService
+@inject IJSRuntime JS
 @inject IChatService ChatService
 @inject NavigationManager NavManager
 @implements IAsyncDisposable
 @inject IAlertService AlertService
+@inject LoadingService LoadingService
+@layout MobileClient.Components.Layout.ChatLayout
 
 <nav class="navbar fixed-top navbar-light bg-light">
     <div class="container-fluid">
-        <div class="d-flex align-items-center" @onclick="() => NavigateToUserProfile(messageFromUser.Id)">
-            <img src="@messageFromUser.ProfilePictureString" alt="Profile picture" style="width: 50px; height: 50px;" class="me-2 rounded-circle" />
-            <p class="mb-0" style="cursor: default;">@messageFromUser.Name</p>
+        <div class="d-flex align-items-center">
+            @if (IsSuccess)
+            {
+                <span class="bi bi-arrow-left fs-3" @onclick="NavigateToChatRooms"></span>
+                <img src="@messageFromUser.ProfilePictureString" alt="Profile picture" style="width: 50px; height: 50px;" class="me-2 rounded-circle" @onclick="() => NavigateToUserProfile(messageFromUser.Id)" />
+                <p class="mb-0" style="cursor: default;">@messageFromUser.Name</p>
+            }
         </div>
     </div>
 </nav>
 
-@* <div>
-    <div>
-        <label>
-            Sender: <input @bind="senderId" />
-        </label>
-    </div>
-    <div>
-        <label>
-            Recipient ID: <input @bind="recipientId" />
-        </label>
-    </div>
-
-    <hr />
-
-    <div>
-        <ul>
-            @foreach (var message in messages)
-            {
-                <li>@message</li>
-            }
-        </ul>
-    </div>
-    
-    <div>
-        @if (conversationBlocked == false)
-        {
-            <label>
-                Message: <input @bind="messageInput" />
-            </label>
-            <button @onclick="Send" disabled="@(IsConnected == false)">Send</button>
-        }
-    </div>
-</div> *@
-
-@* <div class="d-flex flex-column vh-100">
-
-    <!-- Messages area -->
-    <div class="flex-grow-1 overflow-auto p-3 bg-light">
-        @foreach (var message in messages)
-        {
-            <div class="mb-2">
-                <div class="p-2 rounded bg-white shadow-sm">
-                    @message
-                </div>
-            </div>
-        }
-    </div>
-
-    <!-- Input area (fixed bottom) -->
-    @if (!conversationBlocked)
-    {
-        <div class="border-top bg-white p-2">
-            <div class="input-group">
-                <input class="form-control"
-                       placeholder="Type a message..."
-                       @bind="messageInput" />
-
-                <button class="btn btn-primary"
-                        @onclick="Send"
-                        disabled="@(IsConnected == false)">
-                    Send
-                </button>
-            </div>
-        </div>
-    }
-
-</div> *@
-
 <div class="vh-100 d-flex flex-column">
-    <div class="flex-grow-1 overflow-auto p-3 bg-light pb-5">
+    <div id="chatContainer" class="flex-grow-1 w-100 overflow-auto p-3 bg-light pb-5">
         @foreach (var message in messageFromUser.MessagesDto)
         {
             if (message.UserId == senderId)
@@ -135,6 +75,7 @@
     private string? userInput;
     private string? messageInput;
     private bool conversationBlocked;
+    private bool IsSuccess;
     [Parameter]
     public string? senderId { get; set; }
     [Parameter]
@@ -146,17 +87,21 @@
     {
         try
         {
+            LoadingService.IsLoading = true;
+
             var messageRespons = await ChatService.GetMessages(recipientId, int.Parse(conversationId));
             if (messageRespons.IsSuccess)
             {
+                IsSuccess = messageRespons.IsSuccess;
+
                 messageFromUser = messageRespons;
                 userToChat.Name = messageRespons.Name;
                 userToChat.ProfilePictureString = messageRespons.ProfilePictureString;
 
                 conversationBlocked = messageRespons.ConversationBlocked;
-                var oldDessages = messageRespons.MessagesDto;
+                var oldMessages = messageRespons.MessagesDto;
 
-                foreach (var message in oldDessages)
+                foreach (var message in oldMessages)
                 {
                     messages.Add(message.Content);
                 }
@@ -188,6 +133,11 @@
                 });
 
                 await hubConnection.StartAsync();
+
+                await InvokeAsync(StateHasChanged);
+                await JS.InvokeVoidAsync("scrollToBottom", "chatContainer");
+
+                LoadingService.IsLoading = false;
             }
             else
             {
@@ -196,7 +146,7 @@
         }
         catch (Exception ex)
         {
-            
+
             throw;
         }
     }
@@ -230,9 +180,14 @@
         var token = await SecureStorage.GetAsync("accessToken");
         return token;
     }
-    
-    private void NavigateToUserProfile(string userId)
+
+    private async Task NavigateToUserProfile(string userId)
     {
         NavManager.NavigateTo($"/profile/user/{userId}");
+    }
+
+    private async Task NavigateToChatRooms()
+    {
+        NavManager.NavigateTo("/chatrooms");
     }
 }

@@ -50,7 +50,7 @@ namespace MobileClient.Services.Account
             {
                 return ResponseHelper.CreateGeneralResponse(false, ex.Message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }

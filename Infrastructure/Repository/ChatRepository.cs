@@ -37,14 +37,11 @@ namespace Infrastructure.Repository
                 conversation.HasUnreadMessages = conversation.Messages != null && conversation.Messages.Any(m => !m.IsRead && m.UserId != userId);
             }
             return conversations;
-            //return await _context.Match.IgnoreQueryFilters().Where(m => m.CreatorId == userId || m.AcceptorId == userId).Include(m => m.Creator).Include(m => m.Acceptor).Skip(skip).Take(model.PageSize).ToListAsync();
-            //var acceptors = await _context.Match.Where(m => m.CreatorId == userId).Select(m => m.Acceptor).ToListAsync();
         }
 
         public async Task<List<ChatMessage>> GetMessages(string userId, int conversationId)
         {
-            //return await _context.ChatMessage.IgnoreQueryFilters().Where(m => m.SenderId == userId || m.ReceiverId == userId).ToListAsync();
-            return await _context.ChatMessage.IgnoreQueryFilters().Where(m => m.ConversationId == conversationId).ToListAsync();
+            return await _context.ChatMessage.IgnoreQueryFilters().Where(m => m.ConversationId == conversationId).OrderBy(m => m.Timestamp).ToListAsync();
         }
 
         public async Task<bool> MarkMessagesAsRead(string userId, int conversationId)

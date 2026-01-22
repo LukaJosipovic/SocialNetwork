@@ -55,17 +55,6 @@
 
     protected override void OnInitialized()
     {
-        // hubConnection = new HubConnectionBuilder().WithUrl(NavManager.ToAbsoluteUri("https://localhost:7098/activityhub"), async options =>
-        // {
-        //     options.AccessTokenProvider = async () => await GetToken();
-        // }).WithAutomaticReconnect().Build();
-        // hubConnection.On("ReceiveActivityNotification", () => InvokeAsync(() =>
-        // {
-        //     hasNewActivity = true;
-        //     StateHasChanged();
-        // }));
-
-        // await hubConnection.StartAsync();
         MainLayout.OnNewActivityReceived += HandleNewActivity;
     }
 
