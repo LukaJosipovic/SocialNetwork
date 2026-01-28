@@ -88,7 +88,7 @@ namespace Application.Service.Chat
 			}
         }
 
-        public async Task<MessageResponse> GetMessages(string userId, string userToChatId, int conversationId)
+        public async Task<MessageResponse> GetMessages(string userId, string userToChatId, int conversationId, PageSettingsRequest model)
         {
             try
             {
@@ -97,7 +97,7 @@ namespace Application.Service.Chat
 
                 var userBlocked = await _chatRepository.CheckIfUserIsBlocked(userId, userToChatId);
                 var userToChat = await _accountRepository.GetUserById(userToChatId);
-                var messages = await _chatRepository.GetMessages(userId, conversationId);
+                var messages = await _chatRepository.GetMessages(userId, conversationId, model);
                 await _chatRepository.MarkMessagesAsRead(userId, conversationId);
 
                 messageList.ConversationBlocked = userBlocked;

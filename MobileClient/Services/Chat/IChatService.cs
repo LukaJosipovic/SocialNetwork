@@ -13,6 +13,6 @@ namespace MobileClient.Services.Chat
     public interface IChatService
     {
         Task<ChatRoomResponse> GetChatRooms(PageSettingsRequest model);
-        Task<MessageResponse> GetMessages(string recipientId, int conversationId);
+        Task<MessageResponse> GetMessages(string recipientId, int conversationId, PageSettingsRequest model);
     }
 }

@@ -14,7 +14,7 @@ namespace Application.Service.Chat
     public interface IChatService
     {
         Task<ChatRoomResponse> GetChatRooms(string userId, PageSettingsRequest model);
-        Task<MessageResponse> GetMessages(string userId, string userToChatId, int conversationId);
+        Task<MessageResponse> GetMessages(string userId, string userToChatId, int conversationId, PageSettingsRequest model);
         Task<bool> SaveMessage(string senderId, string receiverId, string message, int conversationId);
     }
 }

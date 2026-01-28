@@ -48,12 +48,13 @@ namespace MobileClient.Services.Chat
             }
         }
 
-        public async Task<MessageResponse> GetMessages(string recipientId, int conversationId)
+        public async Task<MessageResponse> GetMessages(string recipientId, int conversationId, PageSettingsRequest model)
         {
             try
             {
+                model.PageSize = 20;
                 var client = _httpClientFactory.CreateClient("BaseApi");
-                var response = await client.GetAsync($"api/Chat/GetMessages?userToChatId={recipientId}&conversationId={conversationId}");
+                var response = await client.GetAsync($"api/Chat/GetMessages?userToChatId={recipientId}&conversationId={conversationId}&PageNumber={model.PageNumber}&PageSize={model.PageSize}");
                 var responseObject = await response.Content.ReadFromJsonAsync<MessageResponse>();
                 return responseObject;
             }

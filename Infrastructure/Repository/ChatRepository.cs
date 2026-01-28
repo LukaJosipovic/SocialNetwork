@@ -39,9 +39,18 @@ namespace Infrastructure.Repository
             return conversations;
         }
 
-        public async Task<List<ChatMessage>> GetMessages(string userId, int conversationId)
+        public async Task<List<ChatMessage>> GetMessages(string userId, int conversationId, PageSettingsRequest model)
         {
-            return await _context.ChatMessage.IgnoreQueryFilters().Where(m => m.ConversationId == conversationId).OrderBy(m => m.Timestamp).ToListAsync();
+            var skip = (model.PageNumber - 1) * model.PageSize;
+
+            //return await _context.ChatMessage.IgnoreQueryFilters().Where(m => m.ConversationId == conversationId).OrderBy(m => m.Timestamp).Skip(skip).Take(model.PageSize).ToListAsync();
+            return await _context.ChatMessage
+                .IgnoreQueryFilters()
+                .Where(m => m.ConversationId == conversationId)
+                .OrderByDescending(m => m.Timestamp)
+                .Skip(skip)
+                .Take(model.PageSize)
+                .OrderBy(m => m.Timestamp).ToListAsync();
         }
 
         public async Task<bool> MarkMessagesAsRead(string userId, int conversationId)

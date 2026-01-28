@@ -1,5 +1,6 @@
 ﻿@page "/chat/{senderId}/{recipientId}/{conversationId}"
 @using Application.DTO
+@using Application.DTO.Request
 @using Application.DTO.Response
 @using Microsoft.AspNetCore.SignalR.Client
 @using MobileClient.Services.Alert
@@ -13,27 +14,30 @@
 @inject LoadingService LoadingService
 @layout MobileClient.Components.Layout.ChatLayout
 
-<nav class="navbar fixed-top navbar-light bg-light">
-    <div class="container-fluid">
-        <div class="d-flex align-items-center">
-            @if (IsSuccess)
-            {
-                <span class="bi bi-arrow-left fs-3" @onclick="NavigateToChatRooms"></span>
-                <img src="@messageFromUser.ProfilePictureString" alt="Profile picture" style="width: 50px; height: 50px;" class="me-2 rounded-circle" @onclick="() => NavigateToUserProfile(messageFromUser.Id)" />
-                <p class="mb-0" style="cursor: default;">@messageFromUser.Name</p>
-            }
+<div class="container-fluid vh-100 d-flex flex-column p-0">
+    <nav class="navbar navbar-light bg-light flex-shrink-0">
+        <div class="container-fluid">
+            <div class="d-flex align-items-center">
+                @if (IsSuccess)
+                {
+                    <span class="bi bi-arrow-left fs-3" @onclick="NavigateToChatRooms"></span>
+                    <img src="@messageFromUser.ProfilePictureString"
+                         style="width:50px;height:50px"
+                         class="me-2 rounded-circle" />
+                    <p class="mb-0">@messageFromUser.Name</p>
+                }
+            </div>
         </div>
-    </div>
-</nav>
-
-<div class="vh-100 d-flex flex-column">
-    <div id="chatContainer" class="flex-grow-1 w-100 overflow-auto p-3 bg-light pb-5">
+    </nav>
+    <div id="chatContainer"
+         class="flex-grow-1 overflow-auto bg-light px-3">
         @foreach (var message in messageFromUser.MessagesDto)
         {
             if (message.UserId == senderId)
             {
                 <div class="d-flex mb-2">
-                    <div style="background-color: #512bdf; color: white" class="d-inline-block p-2 rounded shadow-sm w-auto ms-auto">
+                    <div class="ms-auto p-2 rounded text-white shadow-sm"
+                         style="background-color:#512bdf">
                         @message.Content
                     </div>
                 </div>
@@ -41,22 +45,20 @@
             else
             {
                 <div class="d-flex mb-2">
-                    <div class="d-inline-block p-2 rounded bg-white shadow-sm w-auto">
+                    <div class="p-2 rounded bg-white shadow-sm">
                         @message.Content
                     </div>
                 </div>
             }
         }
     </div>
-
     @if (!conversationBlocked)
     {
-        <div class="fixed-bottom bg-light p-2">
+        <div class="bg-light p-2 flex-shrink-0 border-top">
             <div class="input-group">
                 <input class="form-control"
                        placeholder="Type a message..."
                        @bind="messageInput" />
-
                 <button class="btn btn-primary"
                         @onclick="Send"
                         disabled="@(IsConnected == false)">
@@ -70,12 +72,16 @@
 @code {
     private HubConnection? hubConnection;
     private List<string> messages = new();
-    private UserBriefDetailsDTO userToChat = new();
     private MessageResponse messageFromUser = new();
+    private PageSettingsRequest pageSettings = new();
     private string? userInput;
     private string? messageInput;
     private bool conversationBlocked;
     private bool IsSuccess;
+    private bool isLoading = false;
+    private bool hasMoreData = true;
+    private IJSObjectReference? module;
+    //private DotNetObjectReference<YourComponent>? dotNetRef;
     [Parameter]
     public string? senderId { get; set; }
     [Parameter]
@@ -89,14 +95,12 @@
         {
             LoadingService.IsLoading = true;
 
-            var messageRespons = await ChatService.GetMessages(recipientId, int.Parse(conversationId));
+            var messageRespons = await ChatService.GetMessages(recipientId, int.Parse(conversationId), pageSettings);
             if (messageRespons.IsSuccess)
             {
                 IsSuccess = messageRespons.IsSuccess;
 
                 messageFromUser = messageRespons;
-                userToChat.Name = messageRespons.Name;
-                userToChat.ProfilePictureString = messageRespons.ProfilePictureString;
 
                 conversationBlocked = messageRespons.ConversationBlocked;
                 var oldMessages = messageRespons.MessagesDto;
@@ -106,7 +110,7 @@
                     messages.Add(message.Content);
                 }
 
-                var url1 = "http://192.168.100.19:4321/socialnetwork/chathub";
+                //var url1 = "http://192.168.100.19:4321/socialnetwork/chathub";
                 var url2 = "";
                 if (DeviceInfo.Platform == DevicePlatform.Android)
                     url2 = "http://10.0.2.2:5209/chathub";
@@ -118,18 +122,15 @@
                     options.AccessTokenProvider = async() => await GetToken();
                 }).WithAutomaticReconnect().Build();
 
-                hubConnection.On<string, string>("ReceiveClientMessage", (senderId, message) =>
+                hubConnection.On<string, string>("ReceiveClientMessage", async (senderId, message) =>
                 {
-                    //var formattedMessage = $"From {senderId}: {message}";
-                    //var formattedMessage = $"{message}";
-                    //messages.Add(message);
                     messageFromUser.MessagesDto.Add(new MessageDTO
                     {
                         UserId = senderId,
-                        //ReceiverId = recipientId,
                         Content = message
                     });
-                    InvokeAsync(StateHasChanged);
+                    await InvokeAsync(StateHasChanged);
+                    await module.InvokeVoidAsync("scrollToBottom", "chatContainer");
                 });
 
                 await hubConnection.StartAsync();
@@ -151,19 +152,28 @@
         }
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await JS.InvokeAsync<IJSObjectReference>("import", "./infiniteScroll.js");
+            await module.InvokeVoidAsync("checkDivScrollTop", "chatContainer", "LoadOlderMessages", DotNetObjectReference.Create(this));
+        }
+    }
+
     private async Task Send()
     {
         if (hubConnection != null)
         {
-            //var formattedMessage = $"From {senderId}: {messageInput}";
-            //messages.Add(messageInput);
             messageFromUser.MessagesDto.Add(new MessageDTO
             {
                 UserId = senderId,
-                //ReceiverId = recipientId,
                 Content = messageInput
             });
             await hubConnection.SendAsync("SendMessageToClient", senderId, recipientId, messageInput, int.Parse(conversationId));
+            messageInput = string.Empty;
+            await InvokeAsync(StateHasChanged);
+            await JS.InvokeVoidAsync("scrollToBottom", "chatContainer");
         }
     }
 
@@ -173,6 +183,41 @@
     {
         if (hubConnection != null)
             await hubConnection.DisposeAsync();
+    }
+
+    [JSInvokable]
+    public async Task LoadOlderMessages()
+    {
+        if (isLoading || !hasMoreData)
+            return;
+
+        isLoading = true;
+
+        // Dohvat trenutne visine scrolla prije nego se učitaju priješnje poruke
+        var previousHeight = await module.InvokeAsync<double>("getScrollHeight", "chatContainer");
+
+        pageSettings.PageNumber++;
+
+        var response = await ChatService.GetMessages(
+            recipientId,
+            int.Parse(conversationId),
+            pageSettings);
+
+        if (response.MessagesDto != null && response.MessagesDto.Any())
+        {
+            // Prepend messages
+            messageFromUser.MessagesDto.InsertRange(0, response.MessagesDto);
+        }
+        else
+        {
+            hasMoreData = false;
+        }
+
+        isLoading = false;
+        StateHasChanged();
+
+        //  Vračanje pozicije scrolla (prevencija skakanja na vrh nakon dohvata starih poruka)
+        await module.InvokeVoidAsync("restoreScrollPosition", "chatContainer", previousHeight);
     }
 
     private async Task<string> GetToken()
