@@ -33,7 +33,7 @@
                 @foreach (var category in Enum.GetValues<ActivityCategory>())
                 {
                     <option value="@category.ToString()">
-                        @GetEnumDescription(category)
+                        @EnumHelper.GetEnumDescription(category)
                     </option>
                 }
             </select>
@@ -65,24 +65,6 @@
             hasNewActivity = true;
             StateHasChanged();
         });
-    }
-
-    private string GetEnumDescription(ActivityCategory category)
-    {
-        return category switch
-        {
-            ActivityCategory.FoodAndDrink => "Food & Drink",
-            ActivityCategory.SportsAndFitness => "Sports & Fitness",
-            ActivityCategory.ArtsAndCulture => "Arts & Culture",
-            ActivityCategory.EntertainmentAndNightlife => "Entertainment & Nightlife",
-            ActivityCategory.LearningAndHobbies => "Learning & Hobbies",
-            ActivityCategory.OutdoorsAndNature => "Outdoors & Nature",
-            ActivityCategory.VolunteeringAndCauses => "Volunteering & Causes",
-            ActivityCategory.GamesAndActivities => "Games & Activities",
-            ActivityCategory.TravelAndExploration => "Travel & Exploration",
-            ActivityCategory.ChillAndRelaxation => "Chill & Relaxation",
-            _ => category.ToString()
-        };
     }
 
     private async Task CreateUserActivity()

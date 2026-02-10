@@ -46,7 +46,7 @@
 </div> *@
 <div id="chatContainer"
      class="container py-2 overflow-auto"
-     style="height: 85vh; margin-top: 20px;">
+     style="height: 89vh; margin-top: 20px;">
 
     @if (conversations.Count > 0)
     {
@@ -57,7 +57,6 @@
 
                     <div class="d-flex justify-content-between align-items-center">
 
-                        <!-- User info -->
                         <div class="d-flex align-items-center flex-grow-1"
                              @onclick="() => NavigateToChat(conversation.UserId, conversation.ConversationId)"
                              style="cursor:pointer;">
@@ -81,24 +80,22 @@
                             </div>
                         </div>
 
-                        <!-- Actions -->
-                        <button type="button"
-                                class="btn btn-outline-danger btn-sm ms-2"
-                                @onclick="() => BlockUser(conversation.UserId)">
-                            <i class="bi bi-ban"></i>
-                        </button>
+                        @if (conversation.IsBlocked)
+                        {
+                            <span class="badge bg-secondary">Blocked</span>
+                        }
+                        else
+                        {
+                            <button type="button"
+                                    class="btn btn-outline-danger btn-sm ms-2"
+                                    @onclick="() => BlockUser(conversation.UserId)">
+                                <i class="bi bi-ban"></i>
+                            </button>
+                        }
 
                     </div>
 
                 </div>
-            </div>
-        }
-
-        @if (isLoading)
-        {
-            <div class="text-center text-muted py-3">
-                <div class="spinner-border spinner-border-sm" role="status"></div>
-                <p class="mb-0 mt-2">Loading more…</p>
             </div>
         }
     }
@@ -118,7 +115,6 @@
     private string? senderId;
     private string? recipientId;
     private PageSettingsRequest pageSettings = new();
-    private bool isLoading = false;
     private bool hasMoreData = true;
 
     protected override async Task OnInitializedAsync()
@@ -137,36 +133,40 @@
 
     private async Task LoadUsers()
     {
-        if (isLoading || !hasMoreData) 
+        try
+        {
+            if (!hasMoreData) 
+                return;
+
+            var response = await ChatService.GetChatRooms(pageSettings);
+            if (response.ConversationList != null && response.ConversationList.Any())
+            {
+                // foreach (var user in response.UsersChatList)
+                // {
+                //     if (user.ProfilePicture != null)
+                //     {
+                //         user.ProfilePictureString = $"data:image;base64,{Convert.ToBase64String(user.ProfilePicture)}";
+                //     }
+                // }
+                conversations.AddRange(response.ConversationList);
+                senderId = response.MyId;
+                pageSettings.PageNumber++;
+            }
+            else if (response.IsSuccess == false)
+            {
+                await AlertService.ShowAlertAsync($"Error", $"{response.Message}", "OK");
+            }
+            else
+            {
+                //users = null;
+                hasMoreData = false;
+            }
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
             return;
-
-        isLoading = true;
-
-        var response = await ChatService.GetChatRooms(pageSettings);
-        if (response.ConversationList != null && response.ConversationList.Any())
-        {
-            // foreach (var user in response.UsersChatList)
-            // {
-            //     if (user.ProfilePicture != null)
-            //     {
-            //         user.ProfilePictureString = $"data:image;base64,{Convert.ToBase64String(user.ProfilePicture)}";
-            //     }
-            // }
-            conversations.AddRange(response.ConversationList);
-            senderId = response.MyId;
-            pageSettings.PageNumber++;
         }
-        else if (response.IsSuccess == false)
-        {
-            await AlertService.ShowAlertAsync($"Error", $"{response.Message}", "OK");
-        }
-        else
-        {
-            //users = null;
-            hasMoreData = false;
-        }
-        isLoading = false;
-        StateHasChanged();
     }
 
     [JSInvokable]
@@ -190,7 +190,15 @@
         var response = await AccountService.BlockUser(userId);
 
         if (response.IsSuccess)
+        {
+            var conversation = conversations.FirstOrDefault(c => c.UserId == userId);
+
+            if (conversation != null)
+                conversation.IsBlocked = true;
+
             await AlertService.ShowAlertAsync($"Ok", $"{response.Message}", "OK");
+            StateHasChanged();
+        }
         else
             await AlertService.ShowAlertAsync($"Error", $"{response.Message}", "OK");
     }

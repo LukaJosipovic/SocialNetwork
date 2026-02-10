@@ -5,6 +5,7 @@
 @using Application.DTO.Response
 @using Application.Enum
 @using MobileClient.BackgroundTask.Location
+@using MobileClient.Helper
 @using MobileClient.Services.Account
 @using MobileClient.Services.Alert
 @using MobileClient.Services.Location
@@ -60,7 +61,7 @@
                 {
                     <option value="@category.ToString()"
                             selected="@SelectedCategories.Contains(category)">
-                        @GetEnumDescription(category)
+                        @EnumHelper.GetEnumDescription(category)
                     </option>
                 }
             </select>
@@ -216,24 +217,6 @@
             await AlertService.ShowAlertAsync($"Error", response.Message, "OK");
 
         LoadingService.IsLoading = false;
-    }
-
-    private string GetEnumDescription(ActivityCategory category)
-    {
-        return category switch
-        {
-            ActivityCategory.FoodAndDrink => "Food & Drink",
-            ActivityCategory.SportsAndFitness => "Sports & Fitness",
-            ActivityCategory.ArtsAndCulture => "Arts & Culture",
-            ActivityCategory.EntertainmentAndNightlife => "Entertainment & Nightlife",
-            ActivityCategory.LearningAndHobbies => "Learning & Hobbies",
-            ActivityCategory.OutdoorsAndNature => "Outdoors & Nature",
-            ActivityCategory.VolunteeringAndCauses => "Volunteering & Causes",
-            ActivityCategory.GamesAndActivities => "Games & Activities",
-            ActivityCategory.TravelAndExploration => "Travel & Exploration",
-            ActivityCategory.ChillAndRelaxation => "Chill & Relaxation",
-            _ => category.ToString()
-        };
     }
 
     private async Task OnGhostModeChanged()//ChangeEventArgs e)

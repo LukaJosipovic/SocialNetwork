@@ -13,5 +13,6 @@ namespace Application.DTO.Response
         public string? Name { get; set; }
         public string? ProfilePictureString { get; set; }
         public bool HasUnreadMessages { get; set; }
+        public bool IsBlocked { get; set; }
     }
 }

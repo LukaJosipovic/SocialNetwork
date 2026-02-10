@@ -130,7 +130,7 @@
                         Content = message
                     });
                     await InvokeAsync(StateHasChanged);
-                    await module.InvokeVoidAsync("scrollToBottom", "chatContainer");
+                    await JS.InvokeVoidAsync("scrollToBottom", "chatContainer");
                 });
 
                 await hubConnection.StartAsync();

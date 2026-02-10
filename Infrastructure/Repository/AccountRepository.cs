@@ -188,6 +188,12 @@ namespace Infrastructure.Repository
 
         public async Task<bool> BlockUser(UserBlocks block)
         {
+            var conversation = await _context.Conversation.FirstOrDefaultAsync(u => 
+            (u.User1Id == block.BlockerUserId && u.User2Id == block.BlockedUserId) || 
+            (u.User1Id == block.BlockedUserId && u.User2Id == block.BlockerUserId)) ?? throw new KeyNotFoundException("Conversation not found");
+            
+            conversation.IsBlocked = true;
+
             await _context.UserBlocks.AddAsync(block);
             var result = await _context.SaveChangesAsync();
 
@@ -198,6 +204,12 @@ namespace Infrastructure.Repository
         }
         public async Task<bool> UnblockUser(UserBlocks block)
         {
+            var conversation = await _context.Conversation.FirstOrDefaultAsync(u =>
+            (u.User1Id == block.BlockerUserId && u.User2Id == block.BlockedUserId) ||
+            (u.User1Id == block.BlockedUserId && u.User2Id == block.BlockerUserId)) ?? throw new KeyNotFoundException("Conversation not found");
+
+            conversation.IsBlocked = false;
+
             _context.UserBlocks.Remove(block);
             var result = await _context.SaveChangesAsync();
 

@@ -17,6 +17,7 @@ namespace Domain.Model
         public DateTime LastMessageAt { get; set; }
         [NotMapped]
         public bool HasUnreadMessages { get; set; }
+        public bool IsBlocked { get; set; }
         public ICollection<ChatMessage>? Messages { get; set; }
     }
 }

@@ -6,6 +6,8 @@ using Application.Helper;
 using Application.Service.Notification;
 using Domain.Model;
 using FirebaseAdmin.Messaging;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Asn1.Esf;
 using System;
 using System.Collections.Generic;
@@ -87,6 +89,10 @@ namespace Application.Service.Activity
             catch (KeyNotFoundException ex)
             {
                 return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
+            }
+            catch (DbUpdateException ex) when (ex.InnerException is SqlException sqlEx && (sqlEx.Number == 2601 || sqlEx.Number == 2627))
+            {
+                return ResponseHelper.CreateGeneralResponse(true, "You accepted activity");
             }
             catch (Exception ex) 
             {

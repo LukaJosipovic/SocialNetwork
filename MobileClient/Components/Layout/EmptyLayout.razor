@@ -1,5 +1,6 @@
 ﻿@using MobileClient.Helper
 @using MobileClient.Components.Pages.Shared
+@inject NavigationManager NavManager
 @inherits LayoutComponentBase
 
 <div class="page">
@@ -29,5 +30,10 @@
         {
 
         }
+
+        // var token = await SecureStorage.GetAsync("accessToken");
+
+        // if (!string.IsNullOrEmpty(token))
+        //     NavManager.NavigateTo("/home");
     }
 }

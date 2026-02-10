@@ -43,7 +43,8 @@ namespace Application.Service.Chat
                             UserId = conversation.User2Id,
                             Name = conversation.User2.Name,
                             ProfilePictureString = $"data:image;base64,{Convert.ToBase64String(conversation.User2.ProfilePicture)}",
-                            HasUnreadMessages = conversation.HasUnreadMessages
+                            HasUnreadMessages = conversation.HasUnreadMessages,
+                            IsBlocked = conversation.IsBlocked
                         };
                         chatRooms.ConversationList.Add(conversationUserDetails);
                     }
@@ -56,7 +57,8 @@ namespace Application.Service.Chat
                             UserId = conversation.User1Id,
                             Name = conversation.User1.Name,
                             ProfilePictureString = $"data:image;base64,{Convert.ToBase64String(conversation.User1.ProfilePicture)}",
-                            HasUnreadMessages = conversation.HasUnreadMessages
+                            HasUnreadMessages = conversation.HasUnreadMessages,
+                            IsBlocked = conversation.IsBlocked
                         };
                         chatRooms.ConversationList.Add(conversationUserDetails);
                     }
@@ -78,13 +80,16 @@ namespace Application.Service.Chat
                 var chatRoomsPagination = chatRooms.ConversationList.Skip(skip).Take(model.PageSize).ToList();
 
                 chatRooms.ConversationList = chatRoomsPagination;
-
+                chatRooms.IsSuccess = true;
                 return chatRooms;
             }
 			catch (Exception ex)
 			{
-
-				throw;
+                return new ChatRoomResponse
+                {
+                    IsSuccess = false,
+                    Message = "Something went wrong",
+                };
 			}
         }
 

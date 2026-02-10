@@ -1,4 +1,6 @@
-﻿<style>
+﻿@inject IJSRuntime JS
+
+@*  <style>
     .navbar-toggler {
     position: relative;
     }
@@ -23,9 +25,9 @@
     </div>
 </div>
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler @(hasNewActivity ? "has-new-activity" : "" )" />
+<input type="checkbox" title="Navigation menu" class="navbar-toggler @(hasNewActivity ? "has-new-activity" : "" )" /> *@
 
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+@*<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
     <nav class="flex-column">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="home" Match="NavLinkMatch.All">
@@ -93,10 +95,207 @@
             </a>
         </div>
     </nav>
+</div> *@
+
+<style>
+    /* .app-shell {
+        position: relative;
+    }
+    .app-header {
+        height: 56px;
+        background: #121212;
+        color: white;
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+        box-shadow: 0 2px 6px rgba(0,0,0,.3);
+        z-index: 1000;
+    }
+
+    .app-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-left: 12px;
+    } */
+
+    /* Menu button */
+    /* .menu-btn {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 26px;
+        position: relative;
+    } */
+
+    /* Red notification dot */
+    /* .has-new-activity::after {
+        content: "";
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 10px;
+        height: 10px;
+        background: #ff3b30;
+        border-radius: 50%;
+    } */
+
+    /* Drawer */
+    /* .side-drawer {
+        height: 100%;
+        position: absolute;
+        top: 56px;
+        left: -260px;
+        width: 260px;
+        height: calc(100% - 56px);
+        background: #1e1e1e;
+        transition: left 0.25s ease;
+        box-shadow: 2px 0 10px rgba(0,0,0,.4);
+        z-index: 999;
+    } */
+
+    /* .side-drawer.open {
+        left: 0;
+    } */
+
+    /* Nav items */
+    /* .side-drawer nav {
+        display: flex;
+        flex-direction: column;
+    } */
+
+    /* .nav-item {
+        padding: 14px 20px;
+        color: #ddd;
+        text-decoration: none;
+        font-size: 16px;
+        background: #1e1e1e;
+        border-bottom: 1px solid rgba(255,255,255,.05);
+    }
+
+    .nav-item:hover,
+    .nav-item.active {
+        background: #2a2a2a;
+        color: white;
+    } */
+
+    /* CTA highlight */
+    /* .nav-item.highlight {
+        color: #4da3ff;
+        font-weight: 600;
+    } */
+    .app-header {
+        height: 56px;
+        background: #121212;
+        color: white;
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+        box-shadow: 0 2px 6px rgba(0,0,0,.3);
+    }
+
+    .app-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-left: 12px;
+    }
+
+    /* Menu button */
+    .menu-btn {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 26px;
+        position: relative;
+    }
+
+    /* Red notification dot */
+    .has-new-activity::after {
+        content: "";
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 10px;
+        height: 10px;
+        background: #ff3b30;
+        border-radius: 50%;
+    }
+
+    /* Drawer */
+    .side-drawer {
+        position: fixed;
+        top: 56px;
+        left: -260px;
+        width: 260px;
+        height: calc(100% - 56px);
+        background: #1e1e1e;
+        transition: left 0.25s ease;
+        box-shadow: 2px 0 10px rgba(0,0,0,.4);
+        z-index: 999;
+    }
+
+    .side-drawer.open {
+        left: 0;
+    }
+
+    /* Nav items */
+    .side-drawer nav {
+        display: flex;
+        flex-direction: column;
+        }
+
+    .nav-item {
+        padding: 14px 20px;
+        color: #ddd;
+        text-decoration: none;
+        font-size: 16px;
+        border-bottom: 1px solid rgba(255,255,255,.05);
+    }
+
+    .nav-item:hover,
+    .nav-item.active {
+        background: #2a2a2a;
+        color: white;
+    }
+
+        /* CTA highlight */
+    .nav-item.highlight {
+        color: #4da3ff;
+        font-weight: 600;
+    }
+</style>
+
+<div class="app-header fixed-top">
+    <button class="menu-btn @(hasNewActivity ? "has-new-activity" : "")" @onclick="ToggleMenu">
+        <i class="bi bi-list"></i>
+    </button>
+    <span class="app-title">MobileClient</span>
+</div>
+
+<div class="side-drawer @(isOpen ? "open" : "")">
+    <nav>
+        <NavLink href="home" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-house"></i> Home</NavLink>
+        <NavLink href="register" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-person-plus"></i> Register</NavLink>
+        <NavLink href="login" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-key"></i> Login</NavLink>
+        <NavLink href="weather" @onclick="ToggleMenu" class="nav-item"> Weather</NavLink>
+        <NavLink href="map" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-geo-alt"></i> Map</NavLink>
+        <NavLink href="editmyprofile" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-pencil-square"></i> Edit Profile</NavLink>
+        <NavLink href="addpost" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-file-earmark-plus"></i> Add Post</NavLink>
+        <NavLink href="myprofile" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-person"></i> My Profile</NavLink>
+        <NavLink href="chat" @onclick="ToggleMenu" class="nav-item"> Chat</NavLink>
+        <NavLink href="chatrooms" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-chat-dots"></i> Chat Rooms</NavLink>
+        <NavLink href="activities" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-activity"></i> Activities</NavLink>
+        <a href="createactivity" style="color: #ddd; text-decoration: none;" @onclick="ToggleMenu"
+           class="nav-item highlight @(hasNewActivity ? "has-new-activity" : "")">
+            <i class="bi bi-plus-lg"></i> Create Activity
+        </a>
+    </nav>
 </div>
 
 @code{
     private bool hasNewActivity = false;
+
+    private bool isOpen;
+
 
     protected override void OnInitialized()
     {
@@ -110,5 +309,11 @@
             hasNewActivity = true;
             StateHasChanged();
         });
+    }
+    
+    private async Task ToggleMenu()
+    {
+        isOpen = !isOpen;
+        await JS.InvokeVoidAsync("lockScroll", isOpen);
     }
 }

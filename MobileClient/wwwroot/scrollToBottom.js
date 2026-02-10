@@ -14,3 +14,7 @@ window.scrollToBottom = (id) => {
         }
     });
 };
+
+window.lockScroll = function (lock) {
+    document.body.style.overflow = lock ? 'hidden' : '';
+};
