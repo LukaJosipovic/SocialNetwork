@@ -88,7 +88,7 @@ namespace API.Controllers
             return BadRequest(result);
         }
 
-        [HttpDelete("DeletePost")]
+        [HttpDelete("DislikePost")]
         public async Task<IActionResult> DislikePost(int postId)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -102,6 +102,22 @@ namespace API.Controllers
             {
                 return Ok(result);
             }
+            return BadRequest(result);
+        }
+
+        [HttpDelete("DeletePost")]
+        public async Task<IActionResult> DeletePost(int postId)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId == null)
+                return Unauthorized("User cannot be found");
+
+            var result = await _postService.DeletePost(userId, postId);
+
+            if (result.IsSuccess)
+                return Ok(result);
+
             return BadRequest(result);
         }
 

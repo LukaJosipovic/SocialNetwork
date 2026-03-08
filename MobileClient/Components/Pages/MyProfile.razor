@@ -1,6 +1,8 @@
 ﻿@inject IAccountService AccountService
 @page "/myprofile"
 @using Application.DTO.Response
+@using Microsoft.AspNetCore.Components.Authorization
+@using MobileClient.AuthStateProvider
 @using MobileClient.Services.Account
 @using MobileClient.Services.Alert
 @using MobileClient.Components.Pages.Shared
@@ -9,6 +11,7 @@
 @inject IAccountService AccountService
 @using MobileClient.Services.LoadingService
 @inject LoadingService LoadingService
+@inject AuthenticationStateProvider AuthStateProvider
 
 <div class="d-flex justify-content-end">
     <div class="dropdown">
@@ -23,6 +26,7 @@
         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="iconMenuButton">
             <li><button class="dropdown-item" @onclick="NavigateToBlockedUsers">Blocked Users</button></li>
             <li><button class="dropdown-item" @onclick="DeleteAccount">Delete Profile</button></li>
+            <li><button class="dropdown-item" @onclick="Logout">Logout</button></li>
         </ul>
     </div>
 </div>
@@ -83,9 +87,16 @@
     {
         NavManager.NavigateTo($"/profile/{postId}");
     }
-    
+
     private void NavigateToBlockedUsers()
     {
         NavManager.NavigateTo($"/blockedusers");
+    }
+
+    private void Logout()
+    {
+        var authProvider = (CustomAuthStateProvider)AuthStateProvider;
+        authProvider.NotifyUserLogout();
+        NavManager.NavigateTo($"/login");
     }
 }

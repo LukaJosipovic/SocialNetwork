@@ -9,6 +9,10 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
 using Application.Exceptions;
+using MobileClient.AuthStateProvider;
+using Microsoft.AspNetCore.Components.Authorization;
+
+
 
 #if ANDROID
 using MobileClient.Platforms.Android.BackgroundService;
@@ -21,20 +25,24 @@ namespace MobileClient.Services.Auth
 #if ANDROID
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IBackgroundLocationService _backgroundLocationService;
+        private readonly AuthenticationStateProvider _authStateProvider;
 
-        public AuthService(IHttpClientFactory httpClientFactory, IBackgroundLocationService backgroundLocationService)
+        public AuthService(IHttpClientFactory httpClientFactory, IBackgroundLocationService backgroundLocationService, AuthenticationStateProvider authStateProvider)
         {
             _httpClientFactory = httpClientFactory;
             _backgroundLocationService = backgroundLocationService;
+            _authStateProvider = authStateProvider;
         }
 #else
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILocationTracker _locationTracker;
+        private readonly AuthenticationStateProvider _authStateProvider;
 
-        public AuthService(IHttpClientFactory httpClientFactory, ILocationTracker locationTracker)
+        public AuthService(IHttpClientFactory httpClientFactory, ILocationTracker locationTracker, AuthenticationStateProvider authStateProvider)
         {
             _httpClientFactory = httpClientFactory;
             _locationTracker = locationTracker;
+            _authStateProvider = authStateProvider;
         }
 #endif
         private HttpClient CreateClient() => _httpClientFactory.CreateClient("BaseApi");
@@ -77,6 +85,8 @@ namespace MobileClient.Services.Auth
                 var responseObject = await response.Content.ReadFromJsonAsync<LoginResponse>();
                 if (responseObject.IsSuccess)
                 {
+                    var authProvider = (CustomAuthStateProvider)_authStateProvider;
+                    authProvider.NotifyUserAuthentication(responseObject.AccessToken);
 #if ANDROID
                     await _backgroundLocationService.Start();
 #else

@@ -1,5 +1,7 @@
 ﻿@page "/admin"
+@using Microsoft.AspNetCore.Authorization
 @inject NavigationManager NavManager
+@attribute [Authorize(Roles = "Admin")]
 
 <div class="container py-4">
     <div class="card mb-3">

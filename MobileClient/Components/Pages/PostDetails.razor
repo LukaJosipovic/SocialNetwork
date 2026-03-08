@@ -1,18 +1,45 @@
 ﻿@page "/profile/{PostId:int}"
 @using Application.DTO.Response
+@using Microsoft.AspNetCore.Components.Authorization
+@using MobileClient.Services.Alert
 @using MobileClient.Services.Post
 @inject IPostService PostService
 @inject NavigationManager NavManager
 @using MobileClient.Services.LoadingService
+@using System.Security.Claims
 @inject LoadingService LoadingService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject IAlertService AlertService
 
 @if (postDetails != null)
 {
     @if (postDetails.User.ProfilePicture != null)
     {
-        <div class="d-flex align-items-center" style="padding: 10px 5px 10px 5px;" @onclick ="() => NavigateToUserProfile(postDetails.User.Id)">
-            <img src="@profileImage" alt="Profile picture" style="width: 50px; height: 50px;" class="me-2 rounded-circle" />
-            <p class="mb-0" style="cursor: default;">@postDetails.User.Name</p>
+        <div style="margin-bottom: 10px;">
+            <div class="d-flex justify-content-between align-items-center" style="padding: 0px 5px 10px 5px;">
+                <div class="d-flex align-items-center" style="padding: 10px 5px 10px 5px;" @onclick="() => NavigateToUserProfile(postDetails.User.Id)">
+                    <img src="@profileImage" alt="Profile picture" style="width: 50px; height: 50px;" class="me-2 rounded-circle" />
+                    <p class="mb-0" style="cursor: default;">@postDetails.User.Name</p>
+                </div>
+
+                @if (currentUserId == postDetails.User.Id)
+                {
+                    <div class="d-flex justify-content-end">
+                        <div class="dropdown">
+                            <button class="btn btn-link p-0 m-0 border-0"
+                                    type="button"
+                                    id="iconMenuButton"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                <i class="bi bi-three-dots-vertical fs-4"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="iconMenuButton">
+                                <li><button class="dropdown-item" @onclick="() => DeletePost(postDetails.PostId)">DeletePost</button></li>
+                            </ul>
+                        </div>
+                    </div>
+                }
+            </div>
         </div>
     }
     <img src="@postDetails.PostImageString" alt="Post picture" style="width: 100%;" />
@@ -27,6 +54,7 @@
     public int PostId { get; set; }
     private PostDetailsResponse? postDetails;
     private string? profileImage;
+    private string? currentUserId;
 
     protected override async Task OnInitializedAsync()
     {
@@ -39,11 +67,24 @@
         if (response.User.ProfilePicture != null)
             profileImage = $"data:image;base64,{Convert.ToBase64String(response.User.ProfilePicture)}";
 
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+
+        currentUserId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
         LoadingService.IsLoading = false;
     }
 
     private void NavigateToUserProfile(string userId)
     {
         NavManager.NavigateTo($"/profile/user/{userId}");
+    }
+
+    private async Task DeletePost(int postId)
+    {
+        var response = await PostService.DeletePost(postId);
+        if (response.IsSuccess)
+            NavManager.NavigateTo($"/myprofile");
+        else
+            await AlertService.ShowAlertAsync("Error", $"{response.Message}", "OK");
     }
 }

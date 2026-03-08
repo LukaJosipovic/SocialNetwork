@@ -17,6 +17,10 @@ using System.Net;
 using Microsoft.Maui.LifecycleEvents;
 using MobileClient.Services.Notification;
 using MobileClient.Services.LoadingService;
+using Microsoft.AspNetCore.Components.Authorization;
+using MobileClient.AuthStateProvider;
+
+
 
 
 #if ANDROID
@@ -67,6 +71,8 @@ namespace MobileClient
             builder.Services.AddScoped<INotificationService, NotificationService>();
             builder.Services.AddSingleton<ILocationTracker, LocationTracker>();
             builder.Services.AddSingleton<LoadingService>();
+            builder.Services.AddAuthorizationCore();
+            builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 #if ANDROID
             builder.Services.AddSingleton<ILocationStopper, AndroidLocationStopper>();
 #else

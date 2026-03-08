@@ -34,6 +34,9 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (string.IsNullOrWhiteSpace(await SecureStorage.GetAsync("accessToken")))
+            NavManager.NavigateTo("/login");
+
         UserSessionService.OnUserBanned += HandleUserBannedAsync;
 
         string url = "http://192.168.100.19:4321/socialnetwork/activityhub";

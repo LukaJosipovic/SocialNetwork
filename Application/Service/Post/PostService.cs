@@ -46,6 +46,30 @@ namespace Application.Service.Post
                 return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
         }
+        public async Task<GeneralResponse> DeletePost(string userId, int postId)
+        {
+            try
+            {
+                var post = await _postRepository.GetPostById(postId);
+                if (post.UserId == userId)
+                {
+                    var result = await _postRepository.DeletePostAdmin(postId);
+                    if (result)
+                        return ResponseHelper.CreateGeneralResponse(true, "Post deleted successfully");
+
+                    return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
+                }
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
+            }
+        }
 
         public async Task<List<PostDetailsResponse>> GetAllPosts(string userId)
         {

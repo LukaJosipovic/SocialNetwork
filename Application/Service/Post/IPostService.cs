@@ -14,6 +14,7 @@ namespace Application.Service.Post
         Task<GeneralResponse> ReportPost(int id, string userId);
         Task<List<PostDetailsResponse>?> GetReportedPosts();
         Task<GeneralResponse> DeletePostAdmin(int postId);
+        Task<GeneralResponse> DeletePost(string userId, int postId);
         Task<GeneralResponse> RemoveReport(int postId);
         Task<LikeResponse?> LikePost(int postId, string userId);
         Task<LikeResponse> DislikePost(int postId, string userId);

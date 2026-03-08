@@ -77,7 +77,7 @@ namespace Application.Service.Auth
                     Subject = "Verification email",
                     Body = $"Verify your email by clicking <a href='{url}'>here</a> and then log in to the application"
                 };
-                //_emailService.SendEmail(email);
+                _emailService.SendEmail(email);
 
                 return ResponseHelper.CreateRegisterResponse(true, "Registration is successful", null);
             }

@@ -14,6 +14,7 @@ namespace MobileClient.Services.Post
         Task<GeneralResponse> ReportPost(int id);
         Task<List<PostDetailsResponse>> GetReportedPosts();
         Task<GeneralResponse> DeletePostAdmin(int id);
+        Task<GeneralResponse> DeletePost(int id);
         Task<GeneralResponse> RemoveReport(int id);
         Task<LikeResponse> LikePost(int postId);
         Task<LikeResponse> DislikePost(int postId);

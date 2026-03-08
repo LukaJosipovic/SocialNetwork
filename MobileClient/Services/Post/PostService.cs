@@ -169,7 +169,7 @@ namespace MobileClient.Services.Post
             try
             {
                 var client = _httpClientFactory.CreateClient("BaseApi");
-                var response = await client.DeleteAsync($"DeletePost?postId={postId}");
+                var response = await client.DeleteAsync($"DislikePost?postId={postId}");
                 var responseObject = await response.Content.ReadFromJsonAsync<LikeResponse>();
                 return responseObject;
             }
@@ -189,6 +189,25 @@ namespace MobileClient.Services.Post
                     IsSuccess = false,
                     Message = "Something went wrong"
                 };
+            }
+        }
+
+        public async Task<GeneralResponse> DeletePost(int id)
+        {
+            try
+            {
+                var client = _httpClientFactory.CreateClient("BaseApi");
+                var response = await client.DeleteAsync($"DeletePost?postId={id}");
+                var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
+                return responseObject;
+            }
+            catch (AccountBannedException ex)
+            {
+                return ResponseHelper.CreateGeneralResponse(false, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
         }
     }
