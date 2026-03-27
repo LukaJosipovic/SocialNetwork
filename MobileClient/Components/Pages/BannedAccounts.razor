@@ -1,4 +1,6 @@
 ﻿@page "/bannedaccounts"
+@using Application.DTO
+@using Application.DTO.Request
 @using Application.DTO.Response
 @using MobileClient.Services.Account
 @inject IAccountService AccountService
@@ -7,19 +9,61 @@
 @using MobileClient.Services.LoadingService
 @inject LoadingService LoadingService
 @inject IAlertService AlertService
+@inject IJSRuntime JS
 
-<h3>BannedAccounts</h3>
-
-<div class="input-group mb-3">
+@* <div class="input-group mb-3" style="width: 80%">
     <input type="text" @bind="email" class="form-control" placeholder="email">
     <button class="btn" type="button" @onclick="SearchBannedAccounts" style="background-color: #512bdf; color: white;">Button</button>
 </div>
+ *@
+<div class="pt-4">
+    <div class="input-group mb-3" style="width: 90%; margin: 0 auto;">
+        <input type="text" value="@email" @oninput="OnSearchChange" class="form-control" placeholder="email">
+    </div>
+</div>
 
-<div>
+@* <div>
     @if (account != null)
     {
         <div>
             <p class="mb-0" @onclick="() => NavigateToProfile(account.UserId)">@account.Email</p>
+        </div>
+    }
+</div> *@
+
+<div id="chatContainer" class="container py-2 overflow-auto" style="height: 89vh; margin-top: 20px;">
+    @if (accounts.Any())
+    {
+        @foreach (var account in accounts)
+        {
+            <div class="card mb-2">
+                <div class="card-body py-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center flex-grow-1" @onclick="() => NavigateToProfile(account.UserId)" style="cursor:pointer;">
+                            @if (account.ProfilePictureString != null)
+                            {
+                                <img src="@account.ProfilePictureString" class="rounded-circle me-3" style="width:48px; height:48px; object-fit:cover;" />
+                            }
+                            <div>
+                                <div class="fw-semibold">
+                                    @account.Name
+                                </div>
+                                <small class="text-muted">
+                                    @account.Email
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="text-center text-muted py-5">
+            <i class="bi bi-chat-dots fs-1"></i>
+            <p class="mt-2 mb-0">There are currently no banned accounts</p>
         </div>
     }
 </div>
@@ -27,23 +71,107 @@
 @code {
     private string email;
     private BannedAccountResponse? account = null;
+    private List<BannedAccountDTO> accounts = new List<BannedAccountDTO>();
+    private PageSettingsRequest pageSettings = new();
+    private bool hasMoreData = true;
+    private CancellationTokenSource? _searchCts;
 
-    private async Task SearchBannedAccounts()
+    protected override async Task OnInitializedAsync()
     {
-        LoadingService.IsLoading = true;
-
-        var user = await AccountService.GetBannedUser(email);
-
-        if (user.IsSuccess)
-            account = user;
-        else
-        {
-            account = null;
-            await AlertService.ShowAlertAsync($"Ok", $"{user.Message}", "OK");
-        }
-
-        LoadingService.IsLoading = false;
+        await LoadUsers();
     }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var module = await JS.InvokeAsync<IJSObjectReference>("import", "./infiniteScroll.js");
+            await module.InvokeVoidAsync("checkDivScrollEnd", "chatContainer", "LoadMoreUsers", DotNetObjectReference.Create(this));
+        }
+    }
+
+    private async Task LoadUsers()
+    {
+        try
+        {
+            if (!hasMoreData)
+                return;
+
+            var response = await AccountService.GetBannedAccounts(pageSettings);
+            if (response.IsSuccess && response.BannedAccounts != null && response.BannedAccounts.Any())
+            {
+                accounts.AddRange(response.BannedAccounts);
+                pageSettings.PageNumber++;
+            }
+            else if (response.IsSuccess == false)
+            {
+                await AlertService.ShowAlertAsync($"Error", $"{response.Message}", "OK");
+            }
+            else
+            {
+                hasMoreData = false;
+            }
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            return;
+        }
+    }
+
+    [JSInvokable]
+    public async Task LoadMoreUsers()
+    {
+        await LoadUsers();
+    }
+
+    private async Task OnSearchChange(ChangeEventArgs e)
+    {
+        email = e.Value?.ToString();
+
+        _searchCts?.Cancel();
+        _searchCts = new CancellationTokenSource();
+
+        try
+        {
+            await Task.Delay(500, _searchCts.Token); // 500ms debounce
+            await StartSearch();
+        }
+        catch (TaskCanceledException)
+        {
+            // ignore
+        }
+    }
+
+    private async Task StartSearch()
+    {
+        pageSettings.PageNumber = 1;
+        accounts.Clear();
+        hasMoreData = true;
+
+        pageSettings.SearchTerm = email;
+
+        if (string.IsNullOrWhiteSpace(email))
+            pageSettings.SearchTerm = null;
+
+        await LoadUsers();
+    }
+    // private async Task SearchBannedAccounts()
+    // {
+    //     LoadingService.IsLoading = true;
+
+    //     var user = await AccountService.GetBannedUser(email);
+
+    //     if (user.IsSuccess)
+    //         account = user;
+    //     else
+    //     {
+    //         account = null;
+    //         await AlertService.ShowAlertAsync($"Ok", $"{user.Message}", "OK");
+    //     }
+
+    //     LoadingService.IsLoading = false;
+    // }
 
     private void NavigateToProfile(string userId)
     {

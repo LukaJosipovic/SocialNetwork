@@ -245,24 +245,24 @@ namespace MobileClient.Services.Account
             }
         }
 
-        public async Task<BannedAccountResponse> GetBannedUser(string email)
-        {
-            try
-            {
-                var client = _httpClientFactory.CreateClient("BaseApi");
-                var response = await client.GetAsync($"api/Account/GetBannedUser?email={email}");
-                var responseObject = await response.Content.ReadFromJsonAsync<BannedAccountResponse>();
-                return responseObject;
-            }
-            catch (AccountBannedException ex)
-            {
-                return ResponseHelper.CreateBannedUserResponse(false, ex.Message, null);
-            }
-            catch (Exception)
-            {
-                return ResponseHelper.CreateBannedUserResponse(false, "Something went wrong", null);
-            }
-        }
+        //public async Task<BannedAccountResponse> GetBannedUser(string email)
+        //{
+        //    try
+        //    {
+        //        var client = _httpClientFactory.CreateClient("BaseApi");
+        //        var response = await client.GetAsync($"api/Account/GetBannedUser?email={email}");
+        //        var responseObject = await response.Content.ReadFromJsonAsync<BannedAccountResponse>();
+        //        return responseObject;
+        //    }
+        //    catch (AccountBannedException ex)
+        //    {
+        //        return ResponseHelper.CreateBannedUserResponse(false, ex.Message, null);
+        //    }
+        //    catch (Exception)
+        //    {
+        //        return ResponseHelper.CreateBannedUserResponse(false, "Something went wrong", null);
+        //    }
+        //}
 
         public async Task<GeneralResponse> UnbanUser(string userId)
         {
@@ -339,6 +339,25 @@ namespace MobileClient.Services.Account
             catch (Exception ex)
             {
                 return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
+            }
+        }
+
+        public async Task<BannedAccountResponse> GetBannedAccounts(PageSettingsRequest model)
+        {
+            try
+            {
+                var client = _httpClientFactory.CreateClient("BaseApi");
+                var response = await client.GetAsync($"api/Account/GetBannedAccounts?PageNumber={model.PageNumber}&PageSize={model.PageSize}&SearchTerm={model.SearchTerm}");
+                var responseObject = await response.Content.ReadFromJsonAsync<BannedAccountResponse>();
+                return responseObject;
+            }
+            catch (AccountBannedException ex)
+            {
+                return ResponseHelper.CreateBannedAccountsResponse(false, ex.Message, null);
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.CreateBannedAccountsResponse(false, "Something went wrong", null);
             }
         }
     }

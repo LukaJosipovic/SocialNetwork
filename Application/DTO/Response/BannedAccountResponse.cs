@@ -8,7 +8,6 @@ namespace Application.DTO.Response
 {
     public class BannedAccountResponse : GeneralResponse
     {
-        public string? UserId { get; set; }
-        public string? Email { get; set; }
+        public List<BannedAccountDTO> BannedAccounts { get; set; } = new List<BannedAccountDTO>();
     }
 }

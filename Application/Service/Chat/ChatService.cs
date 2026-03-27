@@ -27,42 +27,46 @@ namespace Application.Service.Chat
 			try
 			{
                 var conversations = await _chatRepository.GetUsersForChat(userId, model);
+                foreach (var conversation in conversations)
+                {
+                    conversation.ProfilePictureString = $"data:image;base64,{Convert.ToBase64String(conversation.ProfilePicture)}";
+                }
                 var skip = (model.PageNumber - 1) * model.PageSize;
 
                 var chatRooms = new ChatRoomResponse();
                 chatRooms.MyId = userId;
-
-                foreach (var conversation in conversations)
-                {
-                    if (conversation.User1Id == userId)
-                    {
-                        //znači da sam ja User1 i pokaži mi User2
-                        ConversationDTO conversationUserDetails = new ConversationDTO
-                        {
-                            ConversationId = conversation.Id,
-                            UserId = conversation.User2Id,
-                            Name = conversation.User2.Name,
-                            ProfilePictureString = $"data:image;base64,{Convert.ToBase64String(conversation.User2.ProfilePicture)}",
-                            HasUnreadMessages = conversation.HasUnreadMessages,
-                            IsBlocked = conversation.IsBlocked
-                        };
-                        chatRooms.ConversationList.Add(conversationUserDetails);
-                    }
-                    else if (conversation.User2Id == userId)
-                    {
-                        //znači da sam ja User2 i prikaži mi User1
-                        ConversationDTO conversationUserDetails = new ConversationDTO
-                        {
-                            ConversationId = conversation.Id,
-                            UserId = conversation.User1Id,
-                            Name = conversation.User1.Name,
-                            ProfilePictureString = $"data:image;base64,{Convert.ToBase64String(conversation.User1.ProfilePicture)}",
-                            HasUnreadMessages = conversation.HasUnreadMessages,
-                            IsBlocked = conversation.IsBlocked
-                        };
-                        chatRooms.ConversationList.Add(conversationUserDetails);
-                    }
-                }
+                chatRooms.ConversationList.AddRange(conversations);
+                //foreach (var conversation in conversations)
+                //{
+                //    if (conversation.User1Id == userId)
+                //    {
+                //        //znači da sam ja User1 i pokaži mi User2
+                //        ConversationDTO conversationUserDetails = new ConversationDTO
+                //        {
+                //            ConversationId = conversation.Id,
+                //            UserId = conversation.User2Id,
+                //            Name = conversation.User2.Name,
+                //            ProfilePictureString = $"data:image;base64,{Convert.ToBase64String(conversation.User2.ProfilePicture)}",
+                //            HasUnreadMessages = conversation.HasUnreadMessages,
+                //            IsBlocked = conversation.IsBlocked
+                //        };
+                //        chatRooms.ConversationList.Add(conversationUserDetails);
+                //    }
+                //    else if (conversation.User2Id == userId)
+                //    {
+                //        //znači da sam ja User2 i prikaži mi User1
+                //        ConversationDTO conversationUserDetails = new ConversationDTO
+                //        {
+                //            ConversationId = conversation.Id,
+                //            UserId = conversation.User1Id,
+                //            Name = conversation.User1.Name,
+                //            ProfilePictureString = $"data:image;base64,{Convert.ToBase64String(conversation.User1.ProfilePicture)}",
+                //            HasUnreadMessages = conversation.HasUnreadMessages,
+                //            IsBlocked = conversation.IsBlocked
+                //        };
+                //        chatRooms.ConversationList.Add(conversationUserDetails);
+                //    }
+                //}
 
                 //mock users
                 for (int i = 1; i <= 25; i++)

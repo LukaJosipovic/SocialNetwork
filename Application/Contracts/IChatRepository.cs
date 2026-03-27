@@ -1,4 +1,5 @@
 ﻿using Application.DTO.Request;
+using Application.DTO.Response;
 using Domain.Model;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ namespace Application.Contracts
 {
     public interface IChatRepository
     {
-        Task<List<Conversation>> GetUsersForChat(string userId, PageSettingsRequest model);
+        Task<List<ConversationDTO>> GetUsersForChat(string userId, PageSettingsRequest model);
         Task<List<ChatMessage>> GetMessages(string userId, int conversationId, PageSettingsRequest model);
         Task<bool> MarkMessagesAsRead(string userId, int conversationId);
         Task<bool> CheckIfUserIsBlocked(string userId, string userToChatId);

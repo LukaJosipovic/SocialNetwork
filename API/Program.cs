@@ -135,6 +135,9 @@ using (var scope = app.Services.CreateScope())
     string email = "admin@admin.com";
     string username = "admin";
     string password = "Pa$$w0rd";
+    var basePath = Path.GetDirectoryName(Environment.CurrentDirectory);
+    var filePath = Path.Combine(basePath, "Img", "unknown.png");
+    var imageByte = await File.ReadAllBytesAsync(filePath);
 
     if (await userManager.FindByEmailAsync(email) == null)
     {
@@ -142,7 +145,8 @@ using (var scope = app.Services.CreateScope())
         {
             Email = email,
             UserName = email,
-            Name = username
+            Name = username,
+            ProfilePicture = imageByte,
         };
         await userManager.CreateAsync(user, password);
         await userManager.AddToRoleAsync(user, "Admin");

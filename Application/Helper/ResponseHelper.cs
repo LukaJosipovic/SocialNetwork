@@ -1,5 +1,6 @@
 ﻿using Application.DTO;
 using Application.DTO.Response;
+using Azure;
 using Domain.Model;
 using System;
 using System.Collections.Generic;
@@ -125,23 +126,50 @@ namespace Application.Helper
             }
         }
 
-        public static BannedAccountResponse CreateBannedUserResponse(bool IsSuccess, string? message, ApplicationUser? user)
+        public static BannedAccountResponse CreateBannedAccountsResponse(bool IsSuccess, string? message, List<ApplicationUser>? users)
         {
             if (IsSuccess)
             {
-                return new BannedAccountResponse
+                BannedAccountResponse bannedAccounts = new BannedAccountResponse();
+                foreach (var user in users)
                 {
-                    UserId = user.Id,
-                    Email = user.Email,
-                    IsSuccess = IsSuccess,
-                    Message = message
-                };
+                    var account = new BannedAccountDTO
+                    {
+                        UserId = user.Id,
+                        Email = user.Email,
+                        Name = user.Name,
+                        ProfilePictureString = $"data:image;base64,{Convert.ToBase64String(user.ProfilePicture)}"
+                    };
+                    bannedAccounts.BannedAccounts.Add(account);
+                }
+                bannedAccounts.IsSuccess = IsSuccess;
+                return bannedAccounts;
             }
+
             return new BannedAccountResponse
             {
                 IsSuccess = IsSuccess,
                 Message = message
             };
         }
+
+        //public static BannedAccountResponse CreateBannedUserResponse(bool IsSuccess, string? message, ApplicationUser? user)
+        //{
+        //    if (IsSuccess)
+        //    {
+        //        return new BannedAccountResponse
+        //        {
+        //            UserId = user.Id,
+        //            Email = user.Email,
+        //            IsSuccess = IsSuccess,
+        //            Message = message
+        //        };
+        //    }
+        //    return new BannedAccountResponse
+        //    {
+        //        IsSuccess = IsSuccess,
+        //        Message = message
+        //    };
+        //}
     }
 }

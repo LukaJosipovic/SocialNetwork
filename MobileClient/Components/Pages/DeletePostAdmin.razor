@@ -6,9 +6,14 @@
 @inject IAlertService AlertService
 @inject NavigationManager NavManager
 
-<h3>DeletePostAdmin</h3>
-
-@if (postsDetails != null)
+@if (postsDetails == null || !postsDetails.Any())
+{
+    <div class="text-center text-muted py-5">
+        <i class="bi bi-calendar-x fs-1"></i>
+        <p class="mt-2">There are currently no posts</p>
+    </div>
+}
+else
 {
     foreach (var post in postsDetails)
     {
@@ -44,10 +49,6 @@
         </div>
         <hr />
     }
-}
-else
-{
-    <h3>There is no reported posts</h3>
 }
 
 @code {

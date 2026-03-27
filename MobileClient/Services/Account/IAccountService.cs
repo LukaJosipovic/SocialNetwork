@@ -26,8 +26,9 @@ namespace MobileClient.Services.Account
         Task<GeneralResponse> UnbanUser(string userId);
         Task<GeneralResponse> BlockUser(string userId);
         Task<GeneralResponse> UnblockUser(string blockedUserId);
-        Task<BannedAccountResponse> GetBannedUser(string email);
+        //Task<BannedAccountDTO> GetBannedUser(string email);
         Task<List<UserBriefDetailsDTO>> GetBlockedUsers(PageSettingsRequest model);
         Task<UserProfileRespons> GetBannedProfile(string userId);
+        Task<BannedAccountResponse> GetBannedAccounts(PageSettingsRequest model);
     }
 }

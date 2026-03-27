@@ -1,13 +1,16 @@
 ﻿using Application.Contracts;
 using Application.DTO.Request;
+using Application.DTO.Response;
 using Domain.Model;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Infrastructure.Repository
 {
@@ -20,23 +23,31 @@ namespace Infrastructure.Repository
             _context = context;
         }
 
-        public async Task<List<Conversation>> GetUsersForChat(string userId, PageSettingsRequest model)
+        public async Task<List<ConversationDTO>> GetUsersForChat(string userId, PageSettingsRequest model)
         {
             var skip = (model.PageNumber - 1) * model.PageSize;
+            var conversations = _context.Conversation.Where(c => c.User1Id == userId || c.User2Id == userId);
 
-            var conversations = await _context.Conversation.Where(c => c.User1Id == userId || c.User2Id == userId)
-                .Include(c => c.Messages)
-                .Include(c => c.User1)
-                .Include(c => c.User2)
+            if (!string.IsNullOrWhiteSpace(model.SearchTerm))
+            {
+                conversations = conversations.Where(c => 
+                    (c.User1Id == userId && c.User2.Name.Contains(model.SearchTerm)) || 
+                    (c.User2Id == userId && c.User1.Name.Contains(model.SearchTerm)));
+            }
+
+            var result = await conversations
                 .Skip(skip)
                 .Take(model.PageSize)
-                .ToListAsync();
+                .Select(c => new ConversationDTO
+                {
+                    ConversationId = c.Id,
+                    UserId = c.User1Id == userId ? c.User2Id : c.User1Id,
+                    Name = c.User1Id == userId ? c.User2.Name : c.User1.Name,
+                    ProfilePicture = c.User1Id == userId ? c.User2.ProfilePicture : c.User1.ProfilePicture,
+                    HasUnreadMessages = _context.Set<ChatMessage>().Any(m => m.ConversationId == c.Id && !m.IsRead && m.UserId != userId),
+                }).ToListAsync();
 
-            foreach (var conversation in conversations)
-            {
-                conversation.HasUnreadMessages = conversation.Messages != null && conversation.Messages.Any(m => !m.IsRead && m.UserId != userId);
-            }
-            return conversations;
+            return result;
         }
 
         public async Task<List<ChatMessage>> GetMessages(string userId, int conversationId, PageSettingsRequest model)

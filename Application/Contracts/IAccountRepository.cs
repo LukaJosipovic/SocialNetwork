@@ -39,5 +39,6 @@ namespace Application.Contracts
         Task<List<string>> GetDeviceTokensByIdRange(List<string> IdRange, string category);
         Task<ApplicationUser> GetBannedProfile(string userId);
         Task<ApplicationUser?> RemoveAllReports(string userId);
+        Task<List<ApplicationUser>> GetBannedAccounts(PageSettingsRequest model);
     }
 }

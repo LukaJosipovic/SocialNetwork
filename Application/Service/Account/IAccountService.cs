@@ -25,11 +25,12 @@ namespace Application.Service.Account
         Task<GeneralResponse> GhostMode(bool ghostMode, string userId);
         Task<GeneralResponse> DoNotDisturb(bool doNotDisturb, string userId);
         Task<GeneralResponse> ReportUser(string userId, string reporterId);
-        Task<BannedAccountResponse> GetBannedUser(string email);
+        //Task<BannedAccountResponse> GetBannedUser(string email);
         Task<GeneralResponse> UnbanUser(string userId);
         Task<GeneralResponse> BlockUser(string blockerId, string userIdToBlock);
         Task<GeneralResponse> UnblockUser(string blockerId, string blockedUserId);
         Task<List<UserBriefDetailsDTO>> GetBlockedUsers(string userId, PageSettingsRequest model);
         Task<UserProfileRespons> GetBannedProfile(string email);
+        Task<BannedAccountResponse> GetBannedAccounts(PageSettingsRequest model);
     }
 }

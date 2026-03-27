@@ -277,10 +277,21 @@ namespace API.Controllers
             return BadRequest(result);
         }
 
-        [HttpGet("GetBannedUser")]
-        public async Task<IActionResult> GetBannedUser(string email)
+        //[HttpGet("GetBannedUser")]
+        //public async Task<IActionResult> GetBannedUser(string email)
+        //{
+        //    var result = await _accountService.GetBannedUser(email);
+
+        //    if (result.IsSuccess)
+        //        return Ok(result);
+
+        //    return BadRequest(result);
+        //}
+
+        [HttpGet("GetBannedProfile")]
+        public async Task<IActionResult> GetBannedProfile(string userId)
         {
-            var result = await _accountService.GetBannedUser(email);
+            var result = await _accountService.GetBannedProfile(userId);
 
             if (result.IsSuccess)
                 return Ok(result);
@@ -288,10 +299,15 @@ namespace API.Controllers
             return BadRequest(result);
         }
 
-        [HttpGet("GetBannedProfile")]
-        public async Task<IActionResult> GetBannedProfile(string userId)
+        [HttpGet("GetBannedAccounts")]
+        public async Task<IActionResult> GetBannedAccounts([FromQuery] PageSettingsRequest model)
         {
-            var result = await _accountService.GetBannedProfile(userId);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId == null)
+                return Unauthorized("User cannot be found");
+
+            var result = await _accountService.GetBannedAccounts(model);
 
             if (result.IsSuccess)
                 return Ok(result);

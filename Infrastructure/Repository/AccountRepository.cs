@@ -107,7 +107,7 @@ namespace Infrastructure.Repository
             user.IsDeleted = true;
             user.ProfilePicture = imageByte;
             user.Name = "Unknown User";
-            user.Email = null;
+            user.Email = "";
             return await _userManager.UpdateAsync(user);
         }
 
@@ -247,6 +247,22 @@ namespace Infrastructure.Repository
             return await _context.Users.IgnoreQueryFilters().Include(u => u.Posts)
                 .ThenInclude(p => p.Likes).Include(u => u.Matches)
                 .FirstOrDefaultAsync(u => u.Id == userId) ?? throw new KeyNotFoundException("User cannot be found");
+        }
+
+        public async Task<List<ApplicationUser>> GetBannedAccounts(PageSettingsRequest model)
+        {
+            //add pagination here
+            //var skip = (model.PageNumber - 1) * model.PageSize;
+
+            //return await _context.Users.IgnoreQueryFilters().Where(u => u.IsBanned).Skip(skip).Take(model.PageSize).ToListAsync();
+            var query = _context.Users.IgnoreQueryFilters().AsQueryable();
+            
+            if (string.IsNullOrWhiteSpace(model.SearchTerm))
+                query = query.Where(u => u.IsBanned);
+            else
+                query = query.Where(u => u.IsBanned && u.Email.Contains(model.SearchTerm));
+
+            return await query.ToListAsync();
         }
     }
 }

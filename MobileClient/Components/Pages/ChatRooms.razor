@@ -44,10 +44,14 @@
         <p>There is no people to chat</p>
     }
 </div> *@
-<div id="chatContainer"
-     class="container py-2 overflow-auto"
-     style="height: 89vh; margin-top: 20px;">
 
+<div class="pt-4">
+    <div class="input-group mb-3" style="width: 90%; margin: 0 auto;">
+        <input type="text" value="@name" @oninput="OnSearchChange" class="form-control" placeholder="email">
+    </div>
+</div>
+
+<div id="chatContainer" class="container py-2 overflow-auto" style="height: 89vh; margin-top: 20px;">
     @if (conversations.Count > 0)
     {
         @foreach (var conversation in conversations)
@@ -114,6 +118,7 @@
     //My Id
     private string? senderId;
     private string? recipientId;
+    private string? name;
     private PageSettingsRequest pageSettings = new();
     private bool hasMoreData = true;
 
@@ -201,5 +206,34 @@
         }
         else
             await AlertService.ShowAlertAsync($"Error", $"{response.Message}", "OK");
+    }
+
+    private async Task OnSearchChange(ChangeEventArgs e)
+    {
+        name = e.Value?.ToString();
+
+        try
+        {
+            await Task.Delay(500); // 500ms debounce
+            await StartSearch();
+        }
+        catch (TaskCanceledException)
+        {
+            // ignore
+        }
+    }
+
+    private async Task StartSearch()
+    {
+        pageSettings.PageNumber = 1;
+        conversations.Clear();
+        hasMoreData = true;
+
+        pageSettings.SearchTerm = name;
+
+        if (string.IsNullOrWhiteSpace(name))
+            pageSettings.SearchTerm = null;
+
+        await LoadUsers();
     }
 }
