@@ -12,6 +12,6 @@ namespace Application.DTO
         public string? Id { get; set; }
         public string? Name { get; set; }
         public byte[]? ProfilePicture { get; set; }
-        public string? ProfilePictureString { get; set; }
+        public string ProfilePictureString { get; set; } = null!;
     }
 }

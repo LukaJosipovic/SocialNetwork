@@ -26,13 +26,6 @@ namespace API.Controllers
             _authService = authService;
         }
 
-        [Authorize]
-        [HttpGet("JwtTest")]
-        public async Task<IActionResult> JwtTest()
-        {
-            return Ok("Jwt Test Api Endpoint");
-        }
-
         [HttpPost("CreateAccount")]
         public async Task<IActionResult> CreateAccount(CreateAccountRequest model)
         {
@@ -83,7 +76,6 @@ namespace API.Controllers
         {
             if (ModelState.IsValid)
             {
-                //var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 var handler = new JwtSecurityTokenHandler();
                 var token = handler.ReadJwtToken(request.JwtToken);
                 var userId = token.Subject;
@@ -101,41 +93,6 @@ namespace API.Controllers
                 return BadRequest(result);
             }
             return BadRequest("Some properties are not valid");
-            //try
-            //{
-            //    if (ModelState.IsValid)
-            //    {
-            //        //var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            //        var handler = new JwtSecurityTokenHandler();
-            //        var token = handler.ReadJwtToken(request.JwtToken);
-            //        var userId = token.Subject;
-
-            //        if (userId == null)
-            //            return BadRequest("User cannot be found");
-
-            //        request.UserId = userId;
-
-            //        var result = await _authService.RefreshToken(request);
-            //        if (result.IsSuccess)
-            //            return Ok(result);
-
-            //        return NotFound();
-            //    }
-            //    return BadRequest("Some properties are not valid");
-            //}
-            //catch (AccountBannedException ex)
-            //{
-            //    return BadRequest(new LoginResponse
-            //    {
-            //        IsSuccess = false,
-            //        IsBanned = true,
-            //        Message = ex.Message
-            //    });
-            //}
-            //catch (UnauthorizedAccessException ex)
-            //{
-            //    return BadRequest(ex.Message);
-            //}
         }
 
         [HttpPost("ForgotPassword")]

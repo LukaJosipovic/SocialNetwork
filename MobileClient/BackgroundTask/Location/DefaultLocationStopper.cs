@@ -10,11 +10,11 @@ namespace MobileClient.BackgroundTask.Location
 #if !ANDROID
 public class DefaultLocationStopper : ILocationStopper
 {
-    private readonly ILocationTracker _locationTracker;
+    private readonly IBackgroundLocationService _locationTracker;
     private readonly ILocationService _locationService;
 
     public DefaultLocationStopper(
-        ILocationTracker locationTracker,
+        IBackgroundLocationService locationTracker,
         ILocationService locationService)
     {
         _locationTracker = locationTracker;

@@ -23,7 +23,7 @@
         </button>
         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="iconMenuButton">
             <li><button class="dropdown-item" @onclick="() => UnbanUser(UserId)">Unbann</button></li>
-            @* <li><button class="dropdown-item" @onclick="() => DeleteUser(UserId)">Delete</button></li> *@
+            <li><button class="dropdown-item" @onclick="() => DeleteUser(UserId)">Delete</button></li>
         </ul>
     </div>
 </div>
@@ -72,9 +72,9 @@
         LoadingService.IsLoading = false;
     }
 
-    // private async Task DeleteUser(string userId)
-    // {
+    private async Task DeleteUser(string userId)
+    {
         
-    // }
+    }
 
 }

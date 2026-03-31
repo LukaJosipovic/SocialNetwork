@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MobileClient.Platforms.Android.BackgroundService
+namespace MobileClient.Services.Location
 {
     public interface IBackgroundLocationService
     {

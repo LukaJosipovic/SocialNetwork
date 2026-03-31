@@ -114,12 +114,6 @@ namespace Application.Service.Activity
                     Latitude = request.Latitude,
                     Longitude = request.Longitude
                 };
-                //var activity = new Domain.Model.Activity
-                //{
-                //    Description = request.Description,
-                //    ActivityCategory = request.Category,
-                //    User = user
-                //};
 
                 var activityCreated = _activityRepository.CreateActivity(activity);
 

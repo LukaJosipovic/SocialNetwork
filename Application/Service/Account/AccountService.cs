@@ -426,7 +426,7 @@ namespace Application.Service.Account
                     {
                         Id = user.BlockedUser.Id,
                         Name = user.BlockedUser.Name,
-                        ProfilePicture = user.BlockedUser.ProfilePicture,
+                        ProfilePictureString = $"data:image;base64,{Convert.ToBase64String(user.BlockedUser.ProfilePicture)}",
                     };
                     blockedUsersList.Add(userDetails);
                 }

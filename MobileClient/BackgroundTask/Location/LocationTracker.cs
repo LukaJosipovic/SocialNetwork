@@ -5,10 +5,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.CodeDom;
 
 namespace MobileClient.BackgroundTask.Location
 {
-    public class LocationTracker : ILocationTracker
+    public class LocationTracker : IBackgroundLocationService
     {
         private readonly ILocationService _locationService;
         private CancellationTokenSource _cts;
@@ -19,13 +20,12 @@ namespace MobileClient.BackgroundTask.Location
             _locationService = locationService;
         }
 
-        public Task StartAsync()
+        public Task Start()
         {
             if (_cts != null && !_cts.IsCancellationRequested)
                 return Task.CompletedTask; // Already running
 
             _cts = new CancellationTokenSource();
-            //_trackingTask = Task.Run(() => TrackLocationAsync(_cts.Token));
             Task trackLocation = new Task(async () =>
             {
                 await TrackLocationAsync(_cts.Token);
@@ -34,14 +34,17 @@ namespace MobileClient.BackgroundTask.Location
             return Task.CompletedTask; // Let the caller continue
         }
 
-        public async Task<bool> Stop()
+        public async Task Stop()
         {
             if (_cts != null)
             {
                 _cts.Cancel();
                 _cts = null;
             }
-            return await _locationService.RemoveLocation();
+            var response = await _locationService.RemoveLocation();
+
+            if (!response)
+                throw new Exception("Location cannot be removed");
         }
 
         private async Task TrackLocationAsync(CancellationToken token)

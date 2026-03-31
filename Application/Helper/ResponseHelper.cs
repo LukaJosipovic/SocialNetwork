@@ -63,7 +63,7 @@ namespace Application.Helper
                 {
                     Name = user.Name,
                     Description = user.Description,
-                    ProfilePicture = user.ProfilePicture,
+                    ProfilePictureString = $"data:image;base64,{Convert.ToBase64String(user.ProfilePicture)}",
                     PostDTO = user.Posts != null ? user.Posts.Select(p => new PostDTO
                     {
                         PostID = p.Id,

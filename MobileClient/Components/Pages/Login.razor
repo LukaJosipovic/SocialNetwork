@@ -8,7 +8,7 @@
 @inject IAuthService AuthService
 @inject NavigationManager NavManager
 @inject IAlertService AlertService
-@inject ILocationTracker LocationTracker
+@* @inject ILocationTracker LocationTracker *@
 @inject INotificationService NotificationService
 @inject IAlertService AlertService
 @layout MobileClient.Components.Layout.EmptyLayout
@@ -35,10 +35,6 @@
                     Forgot password
                 </button>
             </div>
-            @* <button type="submit" class="btn btn-primary" style="background-color: #512bdf; width: 30%">Sign in</button>
-            <button type="button" @onclick="ForgotPasswordClicked" style="float:right; background:none; border:none; color:#0000EE; cursor:pointer; padding:0; font-size:1rem;">
-                Forgot password
-            </button> *@
         </EditForm>
     </div>
 </div>
@@ -61,8 +57,6 @@
             await SecureStorage.SetAsync("accessToken", result.AccessToken);
             await SecureStorage.SetAsync("refreshToken", result.RefreshToken);
             SendNotificationToken();
-            //var test = await AuthService.Test();
-            //await LocationTracker.StartAsync();
             NavManager.NavigateTo("/home");
         }
         else
@@ -73,7 +67,7 @@
         LoadingService.IsLoading = false;
     }
 
-    private async Task ForgotPasswordClicked()
+    private void ForgotPasswordClicked()
     {
         NavManager.NavigateTo("/forgotpassword");
     }
@@ -87,15 +81,7 @@
         var result = await NotificationService.RegisterDevice(token);
 
         if(!result.IsSuccess)
-        {
             await AlertService.ShowAlertAsync("Error", $"{result.Message}", "OK");
-        }
-
-        // await Share.RequestAsync(new ShareTextRequest
-        // {
-        //     Text = token,
-        //     Title = "Share Firebase Token"
-        // });
         #endif
     }
 }

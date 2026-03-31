@@ -11,25 +11,11 @@
 @inject IAlertService AlertService
 @inject IJSRuntime JS
 
-@* <div class="input-group mb-3" style="width: 80%">
-    <input type="text" @bind="email" class="form-control" placeholder="email">
-    <button class="btn" type="button" @onclick="SearchBannedAccounts" style="background-color: #512bdf; color: white;">Button</button>
-</div>
- *@
 <div class="pt-4">
     <div class="input-group mb-3" style="width: 90%; margin: 0 auto;">
         <input type="text" value="@email" @oninput="OnSearchChange" class="form-control" placeholder="email">
     </div>
 </div>
-
-@* <div>
-    @if (account != null)
-    {
-        <div>
-            <p class="mb-0" @onclick="() => NavigateToProfile(account.UserId)">@account.Email</p>
-        </div>
-    }
-</div> *@
 
 <div id="chatContainer" class="container py-2 overflow-auto" style="height: 89vh; margin-top: 20px;">
     @if (accounts.Any())
@@ -74,7 +60,6 @@
     private List<BannedAccountDTO> accounts = new List<BannedAccountDTO>();
     private PageSettingsRequest pageSettings = new();
     private bool hasMoreData = true;
-    private CancellationTokenSource? _searchCts;
 
     protected override async Task OnInitializedAsync()
     {
@@ -128,19 +113,8 @@
     private async Task OnSearchChange(ChangeEventArgs e)
     {
         email = e.Value?.ToString();
-
-        _searchCts?.Cancel();
-        _searchCts = new CancellationTokenSource();
-
-        try
-        {
-            await Task.Delay(500, _searchCts.Token); // 500ms debounce
-            await StartSearch();
-        }
-        catch (TaskCanceledException)
-        {
-            // ignore
-        }
+        await Task.Delay(500); // 500ms debounce
+        await StartSearch();
     }
 
     private async Task StartSearch()
@@ -156,22 +130,6 @@
 
         await LoadUsers();
     }
-    // private async Task SearchBannedAccounts()
-    // {
-    //     LoadingService.IsLoading = true;
-
-    //     var user = await AccountService.GetBannedUser(email);
-
-    //     if (user.IsSuccess)
-    //         account = user;
-    //     else
-    //     {
-    //         account = null;
-    //         await AlertService.ShowAlertAsync($"Ok", $"{user.Message}", "OK");
-    //     }
-
-    //     LoadingService.IsLoading = false;
-    // }
 
     private void NavigateToProfile(string userId)
     {

@@ -80,19 +80,11 @@ else if (postsDetails != null)
         try
         {
             var response = await PostService.GetAllPosts();
+            
             if (response.Count > 0)
-            {
-                foreach (var post in response)
-                {
-                    if (post.User.ProfilePicture != null)
-                        post.User.ProfilePictureString = $"data:image;base64,{Convert.ToBase64String(post.User.ProfilePicture)}";
-                }
                 postsDetails = response;
-            }
             else
-            {
                 postsDetails = null;
-            }
         }
         catch (AccountBannedException ex)
         {
@@ -127,7 +119,6 @@ else if (postsDetails != null)
         {
             await AlertService.ShowAlertAsync("Error", $"{response.Message}", "OK");
         }
-
         StateHasChanged();
     }
 
@@ -144,7 +135,6 @@ else if (postsDetails != null)
         {
             await AlertService.ShowAlertAsync("Error", $"{response.Message}", "OK");
         }
-
         StateHasChanged();
     }
 

@@ -5,55 +5,60 @@
 @using MobileClient.Services.Account
 @using MobileClient.Services.Alert
 @using MobileClient.Services.Chat
+@using MobileClient.Services.LoadingService
 @inject IChatService ChatService
 @inject IAccountService AccountService
 @inject NavigationManager NavManager
 @inject IJSRuntime JS
 @inject IAlertService AlertService
+@inject LoadingService LoadingService
 
-<h3>ChatRooms</h3>
-
-<div id="blockedUsersContainer" style="height: 500px; overflow-y: auto; border: 1px solid">
-    @if (users.Count > 0)
+<div id="blockedUsersContainer" class="container py-2 overflow-auto" style="height: 89vh; margin-top: 20px;">
+    @if (users != null && users.Any())
     {
         @foreach (var user in users)
         {
-            <hr />
-            <div>
-                @if (user.ProfilePictureString != null)
-                {
-                    <div>
-                        <img src="@user.ProfilePictureString" alt="Profile picture" style="width: 50px; height: 50px;" class="me-2 rounded-circle" />
-                        <p class="mb-0">@user.Name</p>
-                    </div>
-                    <div>
-                        <button type="button" class="btn btn-outline-success" @onclick="() => UnblockUser(user.Id)">
-                            <i class="bi bi-check"></i> Unblock
+            <div class="card mb-2">
+                <div class="card-body py-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center flex-grow-1">
+                            @if (user.ProfilePictureString != null)
+                            {
+                                <img src="@user.ProfilePictureString" class="rounded-circle me-3" style="width:48px; height:48px; object-fit:cover;" />
+                            }
+                            <div>
+                                <div class="fw-semibold">
+                                    @user.Name
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-3" @onclick="() => UnblockUser(user.Id)">
+                            Unblock <i class="bi bi-unlock-fill me-1"></i>
                         </button>
                     </div>
-                }
+                </div>
             </div>
-        }
-        @if (isLoading)
-        {
-            <p>Loading more...</p>
         }
     }
     else
     {
-        <p>There is no people to chat</p>
+        <div class="text-center text-muted py-5">
+            <i class="bi bi-chat-dots fs-1"></i>
+            <p class="mt-2 mb-0">There are currently no blocked users</p>
+        </div>
     }
 </div>
 
 @code {
     private List<UserBriefDetailsDTO>? users = new();
     private PageSettingsRequest pageSettings = new();
-    private bool isLoading = false;
     private bool hasMoreData = true;
 
     protected override async Task OnInitializedAsync()
     {
+        LoadingService.IsLoading = true;
         await LoadUsers();
+        LoadingService.IsLoading = false;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -69,30 +74,16 @@
     {
         try
         {
-            if (isLoading || !hasMoreData)
-                return;
-
-            isLoading = true;
-
             var response = await AccountService.GetBlockedUsers(pageSettings);
             if (response != null && response.Any())
             {
-                foreach (var user in response)
-                {
-                    if (user.ProfilePicture != null)
-                    {
-                        user.ProfilePictureString = $"data:image;base64,{Convert.ToBase64String(user.ProfilePicture)}";
-                    }
-                }
                 users.AddRange(response);
                 pageSettings.PageNumber++;
             }
             else
             {
-                //users = null;
                 hasMoreData = false;
             }
-            isLoading = false;
             StateHasChanged();
         }
         catch (AccountBannedException ex)

@@ -69,6 +69,9 @@
         text-decoration: none;
         font-size: 16px;
         border-bottom: 1px solid rgba(255,255,255,.05);
+        position: relative;
+        display: flex;
+        align-items: center;
     }
 
     .nav-item:hover,
@@ -94,23 +97,22 @@
 <div class="side-drawer @(isOpen ? "open" : "")">
     <nav>
         <NavLink href="home" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-house"></i> Home</NavLink>
-        <NavLink href="register" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-person-plus"></i> Register</NavLink>
-        <NavLink href="login" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-key"></i> Login</NavLink>
-        <NavLink href="weather" @onclick="ToggleMenu" class="nav-item"> Weather</NavLink>
-        <NavLink href="map" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-geo-alt"></i> Map</NavLink>
-        <NavLink href="editmyprofile" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-pencil-square"></i> Edit Profile</NavLink>
-        <NavLink href="addpost" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-file-earmark-plus"></i> Add Post</NavLink>
-        <NavLink href="myprofile" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-person"></i> My Profile</NavLink>
-        <NavLink href="chat" @onclick="ToggleMenu" class="nav-item"> Chat</NavLink>
-        <NavLink href="chatrooms" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-chat-dots"></i> Chat Rooms</NavLink>
-        <NavLink href="activities" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-activity"></i> Activities</NavLink>
+        @if (!isAdmin)
+        {
+            <NavLink href="map" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-geo-alt"></i> Map</NavLink>
+            <NavLink href="editmyprofile" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-pencil-square"></i> Edit Profile</NavLink>
+            <NavLink href="addpost" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-file-earmark-plus"></i> Add Post</NavLink>
+            <NavLink href="myprofile" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-person"></i> My Profile</NavLink>
+            <NavLink href="createactivity" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-plus-lg"></i> Create Activity</NavLink>
+            <NavLink href="chatrooms" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-chat-dots"></i> Chat Rooms</NavLink>
+        }
         @if (isAdmin)
         {   
             <NavLink href="admin" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-activity"></i> Admin</NavLink>
         }
-        <a href="createactivity" style="color: #ddd; text-decoration: none;" @onclick="ToggleMenu"
+        <a href="activities" style="color: #ddd; text-decoration: none;" @onclick="OpenActivities"
            class="nav-item highlight @(hasNewActivity ? "has-new-activity" : "")">
-            <i class="bi bi-plus-lg"></i> Create Activity
+            <i class="bi bi-activity"></i> Activities
         </a>
     </nav>
 </div>
@@ -146,5 +148,11 @@
     {
         isOpen = !isOpen;
         await JS.InvokeVoidAsync("lockScroll", isOpen);
+    }
+
+    private async Task OpenActivities()
+    {
+        hasNewActivity = false;
+        await ToggleMenu();
     }
 }

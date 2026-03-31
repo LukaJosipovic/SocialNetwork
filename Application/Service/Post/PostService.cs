@@ -3,6 +3,7 @@ using Application.DTO;
 using Application.DTO.Response;
 using Application.Helper;
 using Application.Service.Email;
+using Azure;
 using Domain.Model;
 using System;
 using System.Collections.Generic;
@@ -94,7 +95,7 @@ namespace Application.Service.Post
                         {
                             Id = post.User.Id,
                             Name = post.User.Name,
-                            ProfilePicture = post.User.ProfilePicture
+                            ProfilePictureString = $"data:image;base64,{Convert.ToBase64String(post.User.ProfilePicture)}"
                         },
                         IsSuccess = true
                     };
@@ -127,7 +128,7 @@ namespace Application.Service.Post
                     {
                         Id = post.User.Id,
                         Name = post.User.Name,
-                        ProfilePicture = post.User.ProfilePicture
+                        ProfilePictureString = $"data:image;base64,{Convert.ToBase64String(post.User.ProfilePicture)}"
                     },
                     IsSuccess = true
                 };
@@ -165,7 +166,7 @@ namespace Application.Service.Post
                         {
                             Id = post.User.Id,
                             Name = post.User.Name,
-                            ProfilePicture = post.User.ProfilePicture
+                            ProfilePictureString = $"data:image;base64,{Convert.ToBase64String(post.User.ProfilePicture)}"
                         },
                         NumberOfReports = post.Reports.Count,
                         IsSuccess = true

@@ -12,14 +12,6 @@
 @using MobileClient.Services.LoadingService
 @inject LoadingService LoadingService
 
-<NavLink href="/activities">
-    Activities
-    @if (hasNewActivity)
-    {
-        <span class="badge bg-danger ms-2">!</span>
-    }
-</NavLink>
-
 <div class="d-flex justify-content-center align-items-center" style="min-height: calc(100vh - 3.5rem);">
     <div style="width: 80%;">
         <EditForm method="post" Model="Request" OnValidSubmit="CreateUserActivity" FormName="register" Enhance>
@@ -50,22 +42,7 @@
 @code {
     [SupplyParameterFromForm]
     private CreateActivityRequest Request { get; set; } = new();
-    private bool hasNewActivity = false;
     private List<string> notifications = new List<string>();
-
-    protected override void OnInitialized()
-    {
-        MainLayout.OnNewActivityReceived += HandleNewActivity;
-    }
-
-    private void HandleNewActivity()
-    {
-        InvokeAsync(() =>
-        {
-            hasNewActivity = true;
-            StateHasChanged();
-        });
-    }
 
     private async Task CreateUserActivity()
     {
@@ -105,11 +82,5 @@
             LoadingService.IsLoading = false;
             await AlertService.ShowAlertAsync("Error", "Unable to get device location", "OK");
         }
-    }
-
-    private async Task<string> GetToken()
-    {
-        var token = await SecureStorage.GetAsync("accessToken");
-        return token;
     }
 }

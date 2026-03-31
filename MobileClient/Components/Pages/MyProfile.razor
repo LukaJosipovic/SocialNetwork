@@ -51,9 +51,6 @@
 
         if (response.IsSuccess)
         {
-            if (response.ProfilePicture != null)
-                profileImage = $"data:image;base64,{Convert.ToBase64String(response.ProfilePicture)}";
-
             IsSuccess = true;
             profile = response;
         }

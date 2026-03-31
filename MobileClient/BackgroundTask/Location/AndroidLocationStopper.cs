@@ -1,6 +1,6 @@
-﻿#if ANDROID
-using MobileClient.Platforms.Android.BackgroundService;
-#endif
+﻿//#if ANDROID
+//using MobileClient.Platforms.Android.BackgroundService;
+//#endif
 using MobileClient.Services.Location;
 using System;
 using System.Collections.Generic;
@@ -13,7 +13,7 @@ namespace MobileClient.BackgroundTask.Location
 #if ANDROID
     public class AndroidLocationStopper : ILocationStopper
     {
-        private readonly IBackgroundLocationService _backgroundLocationService;
+        private readonly MobileClient.Services.Location.IBackgroundLocationService _backgroundLocationService;
         private readonly ILocationService _locationService;
 
         public AndroidLocationStopper(

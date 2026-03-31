@@ -11,18 +11,12 @@ using System.Threading.Tasks;
 using Application.Exceptions;
 using MobileClient.AuthStateProvider;
 using Microsoft.AspNetCore.Components.Authorization;
-
-
-
-#if ANDROID
-using MobileClient.Platforms.Android.BackgroundService;
-#endif
+using MobileClient.Services.Location;
 
 namespace MobileClient.Services.Auth
 {
     public class AuthService : IAuthService
     {
-#if ANDROID
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IBackgroundLocationService _backgroundLocationService;
         private readonly AuthenticationStateProvider _authStateProvider;
@@ -32,48 +26,6 @@ namespace MobileClient.Services.Auth
             _httpClientFactory = httpClientFactory;
             _backgroundLocationService = backgroundLocationService;
             _authStateProvider = authStateProvider;
-        }
-#else
-        private readonly IHttpClientFactory _httpClientFactory;
-        private readonly ILocationTracker _locationTracker;
-        private readonly AuthenticationStateProvider _authStateProvider;
-
-        public AuthService(IHttpClientFactory httpClientFactory, ILocationTracker locationTracker, AuthenticationStateProvider authStateProvider)
-        {
-            _httpClientFactory = httpClientFactory;
-            _locationTracker = locationTracker;
-            _authStateProvider = authStateProvider;
-        }
-#endif
-        private HttpClient CreateClient() => _httpClientFactory.CreateClient("BaseApi");
-
-        //private async Task<TResponse> PostAsync<TRequest, TResponse>(string url, TRequest request, TResponse fallback)
-        //{
-        //    try
-        //    {
-        //        var client = CreateClient();
-        //        var response = await client.PostAsJsonAsync(url, request);
-                
-        //        if (response.IsSuccessStatusCode)
-        //            return await response.Content.ReadFromJsonAsync<TResponse>();
-                
-
-        //        var errorResponse = await response.Content.ReadFromJsonAsync<TResponse>();
-        //        return errorResponse ?? fallback;
-        //    }
-        //    catch
-        //    {
-        //        return fallback;
-        //    }
-        //}
-
-        public async Task<string> Test()
-        {
-            var token = await SecureStorage.GetAsync("accessToken");
-            var client = _httpClientFactory.CreateClient("BaseApi");
-            var resultJwtTest = await client.GetAsync("api/Auth/JwtTest");
-            var responseObject = await resultJwtTest.Content.ReadAsStringAsync();
-            return responseObject;
         }
 
         public async Task<LoginResponse> Login(LoginUserRequest request)
@@ -87,11 +39,7 @@ namespace MobileClient.Services.Auth
                 {
                     var authProvider = (CustomAuthStateProvider)_authStateProvider;
                     authProvider.NotifyUserAuthentication(responseObject.AccessToken);
-#if ANDROID
-                    await _backgroundLocationService.Start();
-#else
-                    await _locationTracker.StartAsync();
-#endif             
+                    await _backgroundLocationService.Start();       
                 }
                 return responseObject;
             }

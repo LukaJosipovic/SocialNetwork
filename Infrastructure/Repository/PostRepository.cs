@@ -48,7 +48,7 @@ namespace Infrastructure.Repository
 
         public async Task<List<Post>> GetAllPosts()
         {
-            return await _context.Post.Include(p => p.User).Include(p => p.Likes).ToListAsync();
+            return await _context.Post.Include(p => p.User).Include(p => p.Likes).OrderByDescending(p => p.DateCreated).ToListAsync();
         }
 
         public async Task<Post> GetPostById(int id)

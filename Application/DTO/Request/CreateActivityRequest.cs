@@ -13,7 +13,6 @@ namespace Application.DTO.Request
         [Required(ErrorMessage = "Description is required")]
         public string Description { get; set; } = null!;
         [Required(ErrorMessage = "Category is required")]
-        //[Range(1, 10, ErrorMessage = "Category is required")]
         [NotSelectCategory]
         public string Category { get; set; } = null!;
         public int Range { get; set; }

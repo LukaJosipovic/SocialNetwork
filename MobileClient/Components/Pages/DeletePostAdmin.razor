@@ -1,10 +1,12 @@
 ﻿@page "/deletepostadmin"
 @using Application.DTO.Response
+@using MobileClient.Services.LoadingService
 @using MobileClient.Services.Post
 @using MobileClient.Services.Alert
 @inject IPostService PostService
 @inject IAlertService AlertService
 @inject NavigationManager NavManager
+@inject LoadingService LoadingService
 
 @if (postsDetails == null || !postsDetails.Any())
 {
@@ -17,37 +19,38 @@ else
 {
     foreach (var post in postsDetails)
     {
-        <hr />
-        <div class="d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center">
-                @if (post.User.ProfilePictureString != null)
-                {
-                    <img src="@post.User.ProfilePictureString" alt="Profile picture"
-                    style="width: 50px; height: 50px;" class="me-2 rounded-circle" />
-                    <p class="mb-0">@post.User.Name</p>
-                }
-            </div>
-
-            <div class="dropdown">
-                <button class="btn btn-link p-0 m-0 border-0" type="button" id="iconMenuButton"
-                data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-three-dots-vertical fs-4"></i>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="iconMenuButton">
-                    <li><button class="dropdown-item" @onclick="() => DeletePost(post.PostId)">Delete</button></li>
-                    <li><button class="dropdown-item" @onclick="() => RemoveReport(post.PostId)">Remove Report</button></li>
-                </ul>
-            </div>
-        </div>
         <div>
-            @if (post.PostImageString != null)
-            {
-                <img src="@post.PostImageString" alt="Post picture" style="width: 100%;" />
-            }
-            <p>@post.DateCreated.ToString("MM.dd.yyyy")</p>
-            <p>@post.Description</p>
+            <div class="d-flex justify-content-between align-items-center" style="padding: 0px 5px 0px 5px;">
+                <div class="d-flex align-items-center" style="padding: 10px 5px 10px 5px;">
+                    <img src="@post.User.ProfilePictureString" alt="Profile picture" style="width: 50px; height: 50px;" class="me-2 rounded-circle" />
+                    <p class="mb-0" style="cursor: default;">@post.User.Name</p>
+                </div>
+
+                
+                    <div class="d-flex justify-content-end">
+                        <div class="dropdown">
+                            <button class="btn btn-link p-0 m-0 border-0"
+                                    type="button"
+                                    id="iconMenuButton"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                <i class="bi bi-three-dots-vertical fs-4"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="iconMenuButton">
+                            <li><button class="dropdown-item" @onclick="() => DeletePost(post.PostId)">Delete</button></li>
+                            <li><button class="dropdown-item" @onclick="() => RemoveReport(post.PostId)">Remove Report</button></li>
+                            </ul>
+                        </div>
+                    </div>
+                
+            </div>
         </div>
-        <hr />
+
+        <img src="@post.PostImageString" alt="Post picture" style="width: 100%;" />
+        <p>@post.Description</p>
+        <div style="padding: 0px 5px 10px 5px; text-align: right;">
+            <p>@post.DateCreated.ToString("MM.dd.yyyy")</p>
+        </div>
     }
 }
 
@@ -58,22 +61,17 @@ else
     {
         try
         {
+            LoadingService.IsLoading = true;
             var response = await PostService.GetReportedPosts();
             if (response.Count > 0)
             {
-                foreach (var post in response)
-                {
-                    //prebaciti u service
-                    if (post.User.ProfilePicture != null)
-                        post.User.ProfilePictureString = $"data:image;base64,{Convert.ToBase64String(post.User.ProfilePicture)}";
-
-                }
                 postsDetails = response;
             }
             else
             {
                 postsDetails = null;
             }
+            LoadingService.IsLoading = false;
         }
         catch (Exception)
         {

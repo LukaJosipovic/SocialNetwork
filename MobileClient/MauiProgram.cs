@@ -69,7 +69,7 @@ namespace MobileClient
             builder.Services.AddScoped<IChatService, ChatService>();
             builder.Services.AddScoped<ILocationService, LocationService>();
             builder.Services.AddScoped<INotificationService, NotificationService>();
-            builder.Services.AddSingleton<ILocationTracker, LocationTracker>();
+            //builder.Services.AddSingleton<ILocationTracker, LocationTracker>();
             builder.Services.AddSingleton<LoadingService>();
             builder.Services.AddAuthorizationCore();
             builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
@@ -79,7 +79,9 @@ namespace MobileClient
             builder.Services.AddSingleton<ILocationStopper, DefaultLocationStopper>();
 #endif
 #if ANDROID
-            builder.Services.AddSingleton<IBackgroundLocationService, BackgroundLocationService>();
+            builder.Services.AddSingleton<MobileClient.Services.Location.IBackgroundLocationService, BackgroundLocationService>();
+#else
+            builder.Services.AddSingleton<MobileClient.Services.Location.IBackgroundLocationService, LocationTracker>();
 #endif
             //builder.Services.Configure<HostOptions>(x =>
             //{

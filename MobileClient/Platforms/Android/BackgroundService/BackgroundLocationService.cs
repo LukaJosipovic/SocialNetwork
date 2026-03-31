@@ -13,35 +13,20 @@ using MobileClient.BackgroundTask.Location;
 
 namespace MobileClient.Platforms.Android.BackgroundService
 {
-    public class BackgroundLocationService : IBackgroundLocationService
+    public class BackgroundLocationService : MobileClient.Services.Location.IBackgroundLocationService
     {
-        private readonly ILocationTracker _locationTracker;
-
-        public BackgroundLocationService(ILocationTracker locationTracker)
-        {
-            _locationTracker = locationTracker;
-        }
-
         public async Task Start()
         {
-            #if ANDROID
-                var context = global::Android.App.Application.Context;
-                var intent = new Intent(context, typeof(LocationTrackerService));
-                context.StartForegroundService(intent);
-            #else
-                await _locationTracker.StartAsync();
-            #endif
+            var context = global::Android.App.Application.Context;
+            var intent = new Intent(context, typeof(LocationTrackerService));
+            context.StartForegroundService(intent);
         }
 
         public async Task Stop()
         {
-            #if ANDROID
-                var context = global::Android.App.Application.Context; ;
-                var intent = new Intent(context, typeof(LocationTrackerService));
-                context.StopService(intent);
-            #else
-                await _locationTracker.Stop();
-            #endif
+            var context = global::Android.App.Application.Context; ;
+            var intent = new Intent(context, typeof(LocationTrackerService));
+            context.StopService(intent);
         }
     }
 }

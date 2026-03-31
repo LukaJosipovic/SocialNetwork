@@ -18,10 +18,6 @@ namespace API.Controllers
         public async Task<IActionResult> GetPostById(int id)
         {
             var result = await _postService.GetPostById(id);
-            //maknuti
-            var request = HttpContext.Request;
-            result.Content = $"{request.Scheme}://{request.Host}/{result.Content}";
-            //result.Content = $"http://10.0.2.2:5209/{result.Content}";
 
             if (result.IsSuccess)
                 return Ok(result);
@@ -39,20 +35,7 @@ namespace API.Controllers
 
             var result = await _postService.GetAllPosts(userId);
 
-            //if (result.Count > 0)
-            //{
-            //    //maknuti
-            //    var request = HttpContext.Request;
-            //    var baseUpl = $"{request.Scheme}://{request.Host}{request.PathBase}";
-            //    foreach (var post in result)
-            //    {
-            //        //post.Content = $"{request.Scheme}://{request.Host}/{post.Content}";
-            //        post.Content = $"{baseUpl}/{post.Content}";
-            //    }
-            //    return Ok(result);
-            //}
             return Ok(result);
-            //return BadRequest(result);
         }
 
         [HttpPost("ReportPost")]
@@ -121,27 +104,15 @@ namespace API.Controllers
             return BadRequest(result);
         }
 
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpGet("GetReportedPosts")]
         public async Task<IActionResult> GetReportedPosts()
         {
             var result = await _postService.GetReportedPosts();
-            if (result != null && result.Count > 0)
-            {
-                //mkanuti
-                //var request = HttpContext.Request;
-                //var baseUpl = $"{request.Scheme}://{request.Host}{request.PathBase}";
-                //foreach (var post in result)
-                //{
-                //    //post.Content = $"{request.Scheme}://{request.Host}/{post.Content}";
-                //    post.Content = $"{baseUpl}/{post.Content}";
-                //}
-                //return Ok(result);
-            }
             return Ok(result);
         }
 
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpDelete("DeletePostAdmin")]
         public async Task<IActionResult> DeletePostAdmin(int postId)
         {
@@ -153,7 +124,7 @@ namespace API.Controllers
             return BadRequest(result);
         }
 
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpDelete("RemoveReport")]
         public async Task<IActionResult> RemoveReport(int postId)
         {
