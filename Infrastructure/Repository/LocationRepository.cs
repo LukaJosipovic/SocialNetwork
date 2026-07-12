@@ -1,6 +1,7 @@
 ﻿using Application.Contracts;
 using Application.DTO;
 using Infrastructure.Repository.Helper;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Concurrent;
@@ -23,8 +24,34 @@ namespace Infrastructure.Repository
 
         public bool AddUserLocation(LocationDTO location)
         {
-            _memoryCache.Set(location.Id, location, TimeSpan.FromHours(1));
+            _memoryCache.Set(location.Id, location);
             _locationKeys.TryAdd(location.Id, true);
+
+            if (_memoryCache.TryGetValue<LocationDTO>(location.Id, out _))
+                return true;
+            else
+                return false;
+        }
+        public bool UpdateGhostModeSettings(string userId, bool ghostMode)
+        {
+            if (_memoryCache.TryGetValue<LocationDTO>(userId, out var location))
+            {
+                location.GhostMode = ghostMode;
+                _memoryCache.Set(location.Id, location);
+            }
+
+            if (_memoryCache.TryGetValue<LocationDTO>(location.Id, out _))
+                return true;
+            else
+                return false;
+        }
+        public bool UpdateDoNotDisturbSettings(string userId, bool doNotDisturb)
+        {
+            if (_memoryCache.TryGetValue<LocationDTO>(userId, out var location))
+            {
+                location.DoNotDisturb = doNotDisturb;
+                _memoryCache.Set(location.Id, location);
+            }
 
             if (_memoryCache.TryGetValue<LocationDTO>(location.Id, out _))
                 return true;
@@ -41,7 +68,6 @@ namespace Infrastructure.Repository
         public List<LocationDTO> GetAllLocations()
         {
             var locations = new List<LocationDTO>();
-            var expiredKeys = new List<string>();
 
             foreach (var key in _locationKeys.Keys)
             {
@@ -50,16 +76,6 @@ namespace Infrastructure.Repository
                     if (location.GhostMode == false)
                         locations.Add(location);
                 }
-                else 
-                    expiredKeys.Add(key);
-
-                if (expiredKeys.Count > 0)
-                {
-                    foreach (var expiredKey in expiredKeys)
-                    {
-                        _locationKeys.TryRemove(expiredKey, out _);
-                    }
-                }
             }
             return locations;
         }
@@ -67,27 +83,30 @@ namespace Infrastructure.Repository
         public List<string> GetUserIdsByLocations(double latitude, double longitude, int range)
         {
             var usersIds = new List<string>();
-            var expiredKeys = new List<string>();
+            //var expiredKeys = new List<string>();
 
             foreach (var key in _locationKeys.Keys)
             {
                 if (_memoryCache.TryGetValue<LocationDTO>(key, out var location))
                 {
+                    if (location.DoNotDisturb)
+                        continue;
+
                     double distance = LocationHelper.GetDistanceInKm(latitude, longitude, location.Latitude, location.Longitude);
 
                     if (distance <= range)
                         usersIds.Add(location.Id);
                 }
-                else
-                    expiredKeys.Add(key);
+                //else
+                //    expiredKeys.Add(key);
 
-                if (expiredKeys.Count > 0)
-                {
-                    foreach (var expiredKey in expiredKeys)
-                    {
-                        _locationKeys.TryRemove(expiredKey, out _);
-                    }
-                }
+                //if (expiredKeys.Count > 0)
+                //{
+                //    foreach (var expiredKey in expiredKeys)
+                //    {
+                //        _locationKeys.TryRemove(expiredKey, out _);
+                //    }
+                //}
             }
             return usersIds;
         }

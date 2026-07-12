@@ -9,7 +9,6 @@
 @using MobileClient.Services.Account
 @using MobileClient.Services.Alert
 @using MobileClient.Services.Location
-@inject ILocationTracker LocationTracker
 @inject ILocationService LocationService
 @using MobileClient.Services.LoadingService
 @inject LoadingService LoadingService
@@ -39,8 +38,17 @@
             <label class="form-label fw-semibold">Username</label>
             <input type="text"
                    class="form-control mb-2"
-                   @bind="username" />
+                   maxlength="255"
+                   @bind="username" 
+                   @bind:event="oninput"
+                   @bind:after="ValidateInput"/>
 
+            @if (!string.IsNullOrEmpty(usernameValidationMessage))
+            {
+                <div class="text-danger mb-2">
+                    @usernameValidationMessage
+                </div>
+            }
             <button type="button"
                     class="btn btn-success w-100"
                     @onclick="UpdateUsername">
@@ -49,9 +57,9 @@
         </div>
     </div>
 
-    <div class="card mb-3">
+    @* <div class="card mb-3">
         <div class="card-body">
-            <label class="form-label fw-semibold">Activities</label>
+            <label class="form-label fw-semibold">Select activity categories</label>
 
             <select multiple
                     class="form-select mb-2"
@@ -71,7 +79,40 @@
                 Change Activities
             </button>
         </div>
+    </div> *@
+    <div class="card mb-3">
+        <div class="card-body">
+            <label class="form-label fw-semibold">Select activity categories</label>
+
+            <div class="border rounded p-2 mb-2" style="max-height: 200px; overflow-y: auto;">
+                @foreach (var category in Enum.GetValues<ActivityCategory>())
+                {
+                    var isSelected = SelectedCategories.Contains(category);
+                    <div class="form-check">
+                        <input class="form-check-input"
+                               type="checkbox"
+                               id="@category"
+                               checked="@isSelected"
+                               @onchange="(e) => ToggleCategory(category, (bool)e.Value!)">
+                        <label class="form-check-label" for="@category">
+                            @EnumHelper.GetEnumDescription(category)
+                        </label>
+                    </div>
+                }
+            </div>
+
+            <button class="btn btn-primary w-100" @onclick="SubmitCategories">
+                Change Activities
+            </button>
+        </div>
     </div>
+
+    @if (!string.IsNullOrEmpty(categoriesValidationMessage))
+    {
+        <div class="text-danger mb-2">
+            @categoriesValidationMessage
+        </div>
+    }
 
     <div class="card">
         <div class="card-body">
@@ -82,8 +123,8 @@
                        type="checkbox"
                        role="switch"
                        id="GhostMode"
-                       @bind="IsGhostMode"
-                       @bind:after="OnGhostModeChanged">
+                       checked="@IsGhostMode"
+                       @onchange="OnGhostModeChanged">
                 <label class="form-check-label" for="GhostMode">
                     Ghost mode
                 </label>
@@ -94,6 +135,7 @@
                        type="checkbox"
                        role="switch"
                        id="DoNotDisturb"
+                       checked="@IsDoNotDisturbMode"
                        @onchange="OnDoNotDisturbModeChanged">
                 <label class="form-check-label" for="DoNotDisturb">
                     Do not disturb
@@ -109,7 +151,10 @@
     private byte[]? buffer;
     private string username;
     private List<ActivityCategory> SelectedCategories { get; set; } = new();
-    private bool IsGhostMode { get; set; }
+    private bool IsGhostMode;
+    private bool IsDoNotDisturbMode;
+    private string? usernameValidationMessage;
+    private string? categoriesValidationMessage;
 
     protected override async Task OnInitializedAsync()
     {
@@ -121,11 +166,13 @@
         if (response.ProfilePicture != null)    
             ImagePreview = $"data:image;base64,{Convert.ToBase64String(response.ProfilePicture)}";
 
-        var ghostModeValue = await SecureStorage.GetAsync("ghostMode");
-        if (!string.IsNullOrEmpty(ghostModeValue) && bool.TryParse(ghostModeValue, out var ghostMode))
-        {
-            IsGhostMode = ghostMode;
-        }
+        // var ghostModeValue = await SecureStorage.GetAsync("ghostMode");
+        // if (!string.IsNullOrEmpty(ghostModeValue) && bool.TryParse(ghostModeValue, out var ghostMode))
+        // {
+        //     IsGhostMode = ghostMode;
+        // }
+        IsGhostMode = response.GhostMode;
+        IsDoNotDisturbMode = response.DoNotDisturbMode;
 
         LoadingService.IsLoading = false;
     }
@@ -157,12 +204,7 @@
             };
             var response = await AccountService.ChangeProfilePicture(request);
 
-            if (response.IsSuccess && !IsGhostMode)
-            {
-                LoadingService.IsLoading = false;
-                await AlertService.ShowAlertAsync($"Ok", $"{response.Message}", "OK");
-            }
-            else if (response.IsSuccess && IsGhostMode)
+            if (response.IsSuccess)
             {
                 LoadingService.IsLoading = false;
                 await AlertService.ShowAlertAsync($"Ok", $"{response.Message}", "OK");
@@ -205,8 +247,35 @@
         SelectedCategories = selectedCategories;
     }
 
+    private void ToggleCategory(ActivityCategory category, bool isChecked)
+    {
+        if (isChecked)
+        {
+            if (!SelectedCategories.Contains(category))
+                SelectedCategories.Add(category);
+        }
+        else
+        {
+            SelectedCategories.Remove(category);
+        }
+    }
+
     private async Task SubmitCategories()
     {
+        // if (SelectedCategories.Contains(ActivityCategory.SelectCategory))
+        // {
+        //     categoriesValidationMessage = "Please select a valid category";
+        //     return;
+        // }
+
+        if (!SelectedCategories.Any())
+        {
+            categoriesValidationMessage = "Please select at least one category";
+            return;
+        }
+
+    categoriesValidationMessage = null;
+
         LoadingService.IsLoading = true;
 
         var response = await AccountService.ChangeActivities(SelectedCategories);
@@ -219,36 +288,45 @@
         LoadingService.IsLoading = false;
     }
 
-    private async Task OnGhostModeChanged()//ChangeEventArgs e)
+    private async Task OnGhostModeChanged(ChangeEventArgs eventArgs)
     {
-        //bool gostMode = (bool)e.Value;
-        bool gostMode = IsGhostMode;
-
-        await SecureStorage.SetAsync("ghostMode", gostMode.ToString());
+        //bool gostMode = IsGhostMode;
+        var gostMode = (bool)eventArgs.Value;
+        // await SecureStorage.SetAsync("ghostMode", gostMode.ToString());
 
         var response = await AccountService.GhostMode(gostMode);
-
-        if (response.IsSuccess && gostMode)
-        {
-            await AlertService.ShowAlertAsync($"Success", response.Message, "OK");
-        }
-        else if (response.IsSuccess && !gostMode)
-        {
-            await AlertService.ShowAlertAsync($"Success", response.Message, "OK");
-        }
-        else
-        {    
-            await AlertService.ShowAlertAsync($"Error", response.Message, "OK");
-        }
-    }
-
-    private async Task OnDoNotDisturbModeChanged(ChangeEventArgs e)
-    {
-        var response = await AccountService.DoNotDisturb((bool)e.Value);
 
         if (response.IsSuccess)
             await AlertService.ShowAlertAsync($"Success", response.Message, "OK");
         else
             await AlertService.ShowAlertAsync($"Error", response.Message, "OK");
+    }
+
+    private async Task OnDoNotDisturbModeChanged(ChangeEventArgs eventArgs)
+    {
+        //bool doNotDisturbMode = IsDoNotDisturbMode;
+        var doNotDisturbMode = (bool)eventArgs.Value;
+        var response = await AccountService.DoNotDisturb(doNotDisturbMode);
+
+        if (response.IsSuccess)
+            await AlertService.ShowAlertAsync($"Success", response.Message, "OK");
+        else
+            await AlertService.ShowAlertAsync($"Error", response.Message, "OK");
+    }
+
+    private void ValidateInput()
+    {
+        if (username.Length > 255)
+        {
+            usernameValidationMessage = "Username cannot exceed 255 characters";
+        }
+        else if (string.IsNullOrWhiteSpace(username))
+        {
+            usernameValidationMessage = "Username is required";
+        }
+        else
+        {
+            usernameValidationMessage = null;
+        }
     }
 }

@@ -25,11 +25,6 @@ namespace Infrastructure.Authentication
             _userManager = userManager;
         }
 
-        public string GenerateRefreshToken()
-        {
-            return Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
-        }
-
         public async Task<string> GenerateToken(string userId, string name, string email)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -58,13 +53,6 @@ namespace Infrastructure.Authentication
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
-        }
-
-        public async Task<IdentityResult> StoreRefreshToken(ApplicationUser user, string refreshToken)
-        {
-            user.RefreshToken = refreshToken;
-            user.RefreshTokenExpiry = DateTime.Now.AddDays(1);
-            return await _userManager.UpdateAsync(user);
         }
     }
 }

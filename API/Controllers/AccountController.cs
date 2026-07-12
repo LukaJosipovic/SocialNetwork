@@ -13,6 +13,7 @@ using System.Security.Claims;
 namespace API.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize]
     [ApiController]
     public class AccountController : ControllerBase
     {
@@ -23,18 +24,17 @@ namespace API.Controllers
             _accountService = accountService;
         }
 
-        [Authorize]
         [HttpGet("GetUserDetails")]
         public async Task<IActionResult> GetUserDetails()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            
+
             if (userId == null)
                 return Unauthorized("User cannot be found");
 
             var userDetails = await _accountService.GetUserById(userId);
-            
-            if (!userDetails.IsSuccess) 
+
+            if (!userDetails.IsSuccess)
                 return NotFound(userDetails.Message);
 
             return Ok(userDetails);
@@ -63,12 +63,12 @@ namespace API.Controllers
         public async Task<IActionResult> UpdateUsername(string username)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            
+
             if (userId == null)
                 return Unauthorized("User cannot be found");
 
             var result = await _accountService.UpdateUsername(username, userId);
-            
+
             if (result.IsSuccess)
                 return Ok(result);
 
@@ -104,7 +104,7 @@ namespace API.Controllers
 
             var result = await _accountService.CreatePost(request, userId);
 
-            if(result.IsSuccess)
+            if (result.IsSuccess)
                 return Ok(result);
 
             return BadRequest(result);
@@ -122,7 +122,7 @@ namespace API.Controllers
 
             if (result.IsSuccess)
                 return Ok(result);
-            
+
             return BadRequest(result);
         }
 
@@ -156,7 +156,7 @@ namespace API.Controllers
                 return Unauthorized("User cannot be found");
 
             var result = await _accountService.ChangeActivities(activities, userId);
-            
+
             if (result.IsSuccess)
                 return Ok(result);
 
@@ -177,7 +177,7 @@ namespace API.Controllers
 
             return BadRequest(result);
         }
-        
+
         [HttpPut("DoNotDisturb")]
         public async Task<IActionResult> DoNotDisturb(bool doNotDisturb)
         {
@@ -226,12 +226,12 @@ namespace API.Controllers
 
             return BadRequest(result);
         }
-        
+
         [HttpPost("BlockUser")]
         public async Task<IActionResult> BlockUser(string userIdToBlock)
         {
             var blockerId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            
+
             if (blockerId == null)
                 return Unauthorized("User cannot be found");
 
@@ -298,7 +298,26 @@ namespace API.Controllers
 
             var blockedUsers = await _accountService.GetBlockedUsers(userId, model);
 
-            return Ok(blockedUsers);
+            if (blockedUsers.IsSuccess)
+                return Ok(blockedUsers);
+
+            return BadRequest(blockedUsers);
+        }
+
+        [HttpPut("Logout")]
+        public async Task<IActionResult> Logout(LogoutRequest model)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null)
+                return Unauthorized("User cannot be found");
+
+            model.UserId = userId;
+            var result = await _accountService.Logout(model);
+
+            if (result.IsSuccess)
+                return Ok(result);
+
+            return BadRequest(result);
         }
     }
 }

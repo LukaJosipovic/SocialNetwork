@@ -1,4 +1,5 @@
-﻿using Application.DTO.Response;
+﻿using Application.DTO.Request;
+using Application.DTO.Response;
 using Application.Exceptions;
 using Application.Helper;
 using System;
@@ -25,60 +26,59 @@ namespace MobileClient.Services.Post
             try
             {
                 var client = _httpClientFactory.CreateClient("BaseApi");
-                var response = await client.DeleteAsync($"DeletePostAdmin?postId={id}");
+                var response = await client.DeleteAsync($"api/Post/DeletePostAdmin?postId={id}");
                 var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
                 return responseObject;
             }
-            catch (AccountBannedException ex)
-            {
-                return ResponseHelper.CreateGeneralResponse(false, ex.Message);
-            }
+            //catch (AccountBannedException ex)
+            //{
+            //    return ResponseHelper.CreateGeneralResponse(false, ex.Message);
+            //}
             catch (Exception ex)
             {
                 return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
         }
 
-        public async Task<List<PostDetailsResponse>> GetAllPosts()
+        public async Task<PostDetailsResponse> GetAllPosts(PageSettingsRequest model)
         {
             try
             {
                 var client = _httpClientFactory.CreateClient("BaseApi");
-                var response = await client.GetAsync("GetAllPosts");
-                var responseObject = await response.Content.ReadFromJsonAsync<List<PostDetailsResponse>>();
-                return responseObject;
-            }
-            catch (AccountBannedException)
-            {
-
-                throw;
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
-        }
-
-        public async Task<PostDetailsResponse> GetPostById(int id)
-        {
-            try
-            {
-                var client = _httpClientFactory.CreateClient("BaseApi");
-                var response = await client.GetAsync($"GetPostById?id={id}");
+                var response = await client.GetAsync($"api/Post/GetAllPosts?PageNumber={model.PageNumber}&PageSize={model.PageSize}");
                 var responseObject = await response.Content.ReadFromJsonAsync<PostDetailsResponse>();
                 return responseObject;
             }
-            catch (AccountBannedException ex)
-            {
-                return new PostDetailsResponse
-                {
-                    IsSuccess = false,
-                    Message = ex.Message
-                };
-            }
+            //catch (AccountBannedException ex)
+            //{
+            //    return ResponseHelper.CreatePostDetailsResponse(false, ex.Message, null);
+            //}
             catch (Exception ex)
             {
-                return new PostDetailsResponse
+                return ResponseHelper.CreatePostDetailsResponse(false, "Something went wrong", null);
+            }
+        }
+
+        public async Task<PostDetailsDTO> GetPostById(int id)
+        {
+            try
+            {
+                var client = _httpClientFactory.CreateClient("BaseApi");
+                var response = await client.GetAsync($"api/Post/GetPostById?id={id}");
+                var responseObject = await response.Content.ReadFromJsonAsync<PostDetailsDTO>();
+                return responseObject;
+            }
+            //catch (AccountBannedException ex)
+            //{
+            //    return new PostDetailsDTO
+            //    {
+            //        IsSuccess = false,
+            //        Message = ex.Message
+            //    };
+            //}
+            catch (Exception ex)
+            {
+                return new PostDetailsDTO
                 {
                     IsSuccess = false,
                     Message = "Something went wrong"
@@ -86,19 +86,18 @@ namespace MobileClient.Services.Post
             }
         }
 
-        public async Task<List<PostDetailsResponse>> GetReportedPosts()
+        public async Task<PostDetailsResponse> GetReportedPosts()
         {
             try
             {
                 var client = _httpClientFactory.CreateClient("BaseApi");
-                var response = await client.GetAsync("GetReportedPosts");
-                var responseObject = await response.Content.ReadFromJsonAsync<List<PostDetailsResponse>>();
+                var response = await client.GetAsync("api/Post/GetReportedPosts");
+                var responseObject = await response.Content.ReadFromJsonAsync<PostDetailsResponse>();
                 return responseObject;
             }
             catch (Exception ex)
             {
-
-                throw;
+                return ResponseHelper.CreatePostDetailsResponse(false, ex.Message, null);
             }
         }
 
@@ -107,7 +106,7 @@ namespace MobileClient.Services.Post
             try
             {
                 var client = _httpClientFactory.CreateClient("BaseApi");
-                var response = await client.DeleteAsync($"RemoveReport?postId={id}");
+                var response = await client.DeleteAsync($"api/Post/RemoveReport?postId={id}");
                 var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
                 return responseObject;
             }
@@ -122,14 +121,14 @@ namespace MobileClient.Services.Post
             try
             {
                 var client = _httpClientFactory.CreateClient("BaseApi");
-                var response = await client.PostAsync($"ReportPost?id={id}", null);
+                var response = await client.PostAsync($"api/Post/ReportPost?id={id}", null);
                 var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
                 return responseObject;
             }
-            catch (AccountBannedException ex)
-            {
-                return ResponseHelper.CreateGeneralResponse(false, ex.Message);
-            }
+            //catch (AccountBannedException ex)
+            //{
+            //    return ResponseHelper.CreateGeneralResponse(false, ex.Message);
+            //}
             catch (Exception)
             {
                 return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
@@ -141,26 +140,17 @@ namespace MobileClient.Services.Post
             try
             {
                 var client = _httpClientFactory.CreateClient("BaseApi");
-                var response = await client.PostAsync($"LikePost?postId={postId}", null);
+                var response = await client.PostAsync($"api/Post/LikePost?postId={postId}", null);
                 var responseObject = await response.Content.ReadFromJsonAsync<LikeResponse>();
                 return responseObject;
             }
-            catch (AccountBannedException ex)
-            {
-                return new LikeResponse
-                {
-                    IsSuccess = false,
-                    Message = ex.Message
-                };
-            }
+            //catch (AccountBannedException ex)
+            //{
+            //    return ResponseHelper.CreateLikeResponse(false, ex.Message, 0, postId);
+            //}
             catch (Exception ex)
             {
-
-                return new LikeResponse
-                {
-                    IsSuccess = false,
-                    Message = "Something went wrong"
-                };
+                return ResponseHelper.CreateLikeResponse(false, "Something went wrong", 0, postId);
             }
         }
 
@@ -169,26 +159,17 @@ namespace MobileClient.Services.Post
             try
             {
                 var client = _httpClientFactory.CreateClient("BaseApi");
-                var response = await client.DeleteAsync($"DislikePost?postId={postId}");
+                var response = await client.DeleteAsync($"api/Post/DislikePost?postId={postId}");
                 var responseObject = await response.Content.ReadFromJsonAsync<LikeResponse>();
                 return responseObject;
             }
-            catch (AccountBannedException ex)
-            {
-                return new LikeResponse
-                {
-                    IsSuccess = false,
-                    Message = ex.Message
-                };
-            }
+            //catch (AccountBannedException ex)
+            //{
+            //    return ResponseHelper.CreateLikeResponse(false, ex.Message, 0, postId);
+            //}
             catch (Exception ex)
             {
-
-                return new LikeResponse
-                {
-                    IsSuccess = false,
-                    Message = "Something went wrong"
-                };
+                return ResponseHelper.CreateLikeResponse(false, "Something went wrong", 0, postId);
             }
         }
 
@@ -197,14 +178,14 @@ namespace MobileClient.Services.Post
             try
             {
                 var client = _httpClientFactory.CreateClient("BaseApi");
-                var response = await client.DeleteAsync($"DeletePost?postId={id}");
+                var response = await client.DeleteAsync($"api/Post/DeletePost?postId={id}");
                 var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
                 return responseObject;
             }
-            catch (AccountBannedException ex)
-            {
-                return ResponseHelper.CreateGeneralResponse(false, ex.Message);
-            }
+            //catch (AccountBannedException ex)
+            //{
+            //    return ResponseHelper.CreateGeneralResponse(false, ex.Message);
+            //}
             catch (Exception ex)
             {
                 return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");

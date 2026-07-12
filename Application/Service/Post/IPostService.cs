@@ -1,4 +1,5 @@
-﻿using Application.DTO.Response;
+﻿using Application.DTO.Request;
+using Application.DTO.Response;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,10 +10,10 @@ namespace Application.Service.Post
 {
     public interface IPostService
     {
-        Task<PostDetailsResponse> GetPostById(int id);
-        Task<List<PostDetailsResponse>> GetAllPosts(string userId);
+        Task<PostDetailsDTO> GetPostById(string userId, int id);
+        Task<PostDetailsResponse> GetAllPosts(string userId, PageSettingsRequest model);
         Task<GeneralResponse> ReportPost(int id, string userId);
-        Task<List<PostDetailsResponse>?> GetReportedPosts();
+        Task<PostDetailsResponse> GetReportedPosts();
         Task<GeneralResponse> DeletePostAdmin(int postId);
         Task<GeneralResponse> DeletePost(string userId, int postId);
         Task<GeneralResponse> RemoveReport(int postId);

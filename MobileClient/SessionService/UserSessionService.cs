@@ -16,19 +16,6 @@ namespace MobileClient.SessionService
             _locationStopper = locationStopper;
         }
 
-        //public event Action<string>? OnUserBanned;
-
-        //public void TriggerBanned(string message)
-        //{
-        //    OnUserBanned?.Invoke(message);
-        //}
-
-        //public event Action? OnUserBanned;
-
-        //public void TriggerBanned()
-        //{
-        //    OnUserBanned?.Invoke();
-        //}
         public event Func<Task>? OnUserBanned;
 
         public async Task TriggerBannedAsync()

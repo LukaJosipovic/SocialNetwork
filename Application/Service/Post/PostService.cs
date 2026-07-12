@@ -1,5 +1,6 @@
 ﻿using Application.Contracts;
 using Application.DTO;
+using Application.DTO.Request;
 using Application.DTO.Response;
 using Application.Helper;
 using Application.Service.Email;
@@ -32,8 +33,28 @@ namespace Application.Service.Post
         {
             try
             {
+                var post = await _postRepository.GetPostById(postId);
                 var result = await _postRepository.DeletePostAdmin(postId);
                 if (result)
+                {
+                    var reportNumber = await _accountRepository.GetReportCount(post.UserId);
+
+                    if (reportNumber < 1)
+                    {
+                        var isUnbanned = await _accountRepository.UnbanUser(post.UserId);
+                        if (isUnbanned.Succeeded)
+                        {
+                            var email = new EmailDTO
+                            {
+                                To = post.User.Email,
+                                Subject = "Your account has been unbanned",
+                                Body = "Your account has been unbanned after an admin reviewed your posts but the post was deleted."
+                            };
+                            _emailService.SendEmail(email);
+                        }
+                    }
+                    return ResponseHelper.CreateGeneralResponse(true, "Reports have been removed from post");
+                }
                     return ResponseHelper.CreateGeneralResponse(true, "Post deleted successfully");
 
                 return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
@@ -72,16 +93,16 @@ namespace Application.Service.Post
             }
         }
 
-        public async Task<List<PostDetailsResponse>> GetAllPosts(string userId)
+        public async Task<PostDetailsResponse> GetAllPosts(string userId, PageSettingsRequest model)
         {
             try
             {
-                var postsDetails = new List<PostDetailsResponse>();
-                var posts = await _postRepository.GetAllPosts();
+                var postsDetails = new List<PostDetailsDTO>();
+                var posts = await _postRepository.GetAllPosts(model);
 
                 foreach (var post in posts)
                 {
-                    var postDetails = new PostDetailsResponse
+                    var postDetails = new PostDetailsDTO
                     {
                         PostId = post.Id,
                         Content = post.Content,
@@ -101,22 +122,21 @@ namespace Application.Service.Post
                     };
                     postsDetails.Add(postDetails);
                 }
-                return postsDetails;
+                return ResponseHelper.CreatePostDetailsResponse(true, null, postsDetails);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return null;//implementirati handler za exceptione
-                throw;
+                return ResponseHelper.CreatePostDetailsResponse(false, "Something went wrong", null);
             }
         }
 
-        public async Task<PostDetailsResponse> GetPostById(int id)
+        public async Task<PostDetailsDTO> GetPostById(string userId, int id)
         {
             try
             {
                 var post = await _postRepository.GetPostById(id);
 
-                var postDetails = new PostDetailsResponse
+                var postDetails = new PostDetailsDTO
                 {
                     PostId = post.Id,
                     Content = post.Content,
@@ -124,6 +144,8 @@ namespace Application.Service.Post
                     DateCreated = post.DateCreated,
                     PostImage= post.PostImage,
                     PostImageString = post.PostImage == null ? null : $"data:image;base64,{Convert.ToBase64String(post.PostImage)}",
+                    LikeCount = post.Likes == null ? 0 : post.Likes.Count(),
+                    IsLiked = post.Likes == null ? false : post.Likes.Any(l => l.UserId == userId),
                     User = new DTO.UserBriefDetailsDTO
                     {
                         Id = post.User.Id,
@@ -137,7 +159,7 @@ namespace Application.Service.Post
             }
             catch (KeyNotFoundException ex)
             {
-                return new PostDetailsResponse
+                return new PostDetailsDTO
                 {
                     IsSuccess = false,
                     Message = ex.Message,
@@ -145,16 +167,16 @@ namespace Application.Service.Post
             }
         }
 
-        public async Task<List<PostDetailsResponse>?> GetReportedPosts()
+        public async Task<PostDetailsResponse> GetReportedPosts()
         {
             try
             {
-                var postsDetails = new List<PostDetailsResponse>();
+                var postsDetails = new List<PostDetailsDTO>();
                 var posts = await _postRepository.GetReportedPosts();
 
                 foreach (var post in posts)
                 {
-                    var postDetails = new PostDetailsResponse
+                    var postDetails = new PostDetailsDTO
                     {
                         PostId = post.Id,
                         Content = post.Content,
@@ -173,11 +195,11 @@ namespace Application.Service.Post
                     };
                     postsDetails.Add(postDetails);
                 }
-                return postsDetails;
+                return ResponseHelper.CreatePostDetailsResponse(true, null, postsDetails);
             }
             catch (Exception ex)
             {
-                return null;
+                return ResponseHelper.CreatePostDetailsResponse(false, "Something went wrong", null);
             }
         }
 
@@ -201,26 +223,15 @@ namespace Application.Service.Post
                 if (result)
                 {
                     var updatedPost = await _postRepository.GetPostById(postId);
-                    
-                    var likeResponse = new LikeResponse
-                    {
-                        IsSuccess = true,
-                        LikeCount = post.Likes == null ? 0 : updatedPost.Likes.Count,
-                        PostId = postId
-                    };
 
-                    return likeResponse;
+                    return ResponseHelper.CreateLikeResponse(true, null, post.Likes == null ? 0 : updatedPost.Likes.Count, postId);
                 }
-                
-                return new LikeResponse
-                {
-                    IsSuccess = false,
-                    Message = "Something went wrong"
-                };
+
+                return ResponseHelper.CreateLikeResponse(false, "Something went wrong", 0, postId);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return null;
+                return ResponseHelper.CreateLikeResponse(false, "Something went wrong", 0, postId);
             }
         }
 
@@ -255,7 +266,11 @@ namespace Application.Service.Post
             }
             catch (Exception ex)
             {
-                return null;
+                return new LikeResponse
+                {
+                    IsSuccess = false,
+                    Message = "Something went wrong"
+                };
             }
         }
 
@@ -283,7 +298,7 @@ namespace Application.Service.Post
                                     Subject = "Your account has been unbanned",
                                     Body = "Your account has been unbanned after an admin reviewed your posts."
                                 };
-                                //_emailService.SendEmail(email);
+                                _emailService.SendEmail(email);
                             }
                         }
                         return ResponseHelper.CreateGeneralResponse(true, "Reports have been removed from post");
@@ -336,7 +351,7 @@ namespace Application.Service.Post
                                 Subject = "Your account has been banned",
                                 Body = "Your account has been banned due to too many reports to your account. If you think this ban is unjustified, contact our admin"
                             };
-                            //_emailService.SendEmail(email);
+                            _emailService.SendEmail(email);
                         }
                     }
                     return ResponseHelper.CreateGeneralResponse(true, $"You reported {post.User.Name}'s post");

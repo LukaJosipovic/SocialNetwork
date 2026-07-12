@@ -33,6 +33,7 @@ namespace MobileClient.AuthStateProvider
         {
             SecureStorage.Remove("accessToken");
             SecureStorage.Remove("refreshToken");
+            SecureStorage.Remove("userLocation");
             NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
         }
 

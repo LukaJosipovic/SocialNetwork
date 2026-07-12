@@ -2,6 +2,7 @@
 using Application.DTO.Request;
 using Application.Service.Activity;
 using Infrastructure.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -11,6 +12,7 @@ using System.Security.Claims;
 namespace API.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize]
     [ApiController]
     public class ActivityController : ControllerBase
     {
@@ -36,18 +38,18 @@ namespace API.Controllers
                 return Unauthorized("User cannot be found");
 
             var result = await _activityService.CreateActivity(request, userId);
+            var targetUserIds = await _activityService.FilterUserIdRange(request, userId);
+            
+            await _hubContext.Clients.Users(targetUserIds).SendAsync("ReceiveActivityNotification");
 
             if (result.IsSuccess)
-            {
-                //await _hubContext.Clients.All.SendAsync("ReceiveActivityNotification");
                 return Ok(result);
-            }
 
             return BadRequest(result);
         }
 
         [HttpGet("GetActivities")]
-        public async Task<IActionResult> GetActivities(double latitude, double longitude)
+        public async Task<IActionResult> GetActivities([FromQuery] double latitude, [FromQuery] double longitude)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
@@ -55,7 +57,11 @@ namespace API.Controllers
                 return Unauthorized("User cannot be found");
 
             var result = await _activityService.GetActivities(latitude, longitude, userId);
-            return Ok(result);
+
+            if (result.IsSuccess)
+                return Ok(result);
+
+            return BadRequest(result);
         }
 
         [HttpPost("AcceptActivity")]
@@ -69,9 +75,7 @@ namespace API.Controllers
             var result = await _activityService.AcceptActivity(cacheKey, userId);
 
             if (result.IsSuccess)
-            {
                 return Ok(result);
-            }
 
             return BadRequest(result);
         }
@@ -80,6 +84,37 @@ namespace API.Controllers
         public async Task<IActionResult> GetMatch()
         {
             return Ok(await _appDbContext.Match.ToListAsync());
+        }
+
+        [HttpGet("MyActivities")]
+        public async Task<IActionResult> MyActivities([FromQuery] PageSettingsRequest model)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId == null)
+                return Unauthorized("User cannot be found");
+
+            var result = await _activityService.GetMyActivities(userId, model);
+
+            if (result.IsSuccess)
+                return Ok(result);
+
+            return BadRequest(result);
+        }
+        [HttpGet("GetMyAcceptedActivities")]
+        public async Task<IActionResult> GetMyAcceptedActivities([FromQuery] PageSettingsRequest model)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId == null)
+                return Unauthorized("User cannot be found");
+
+            var result = await _activityService.GetMyAcceptedActivities(userId, model);
+
+            if (result.IsSuccess)
+                return Ok(result);
+
+            return BadRequest(result);
         }
     }
 }

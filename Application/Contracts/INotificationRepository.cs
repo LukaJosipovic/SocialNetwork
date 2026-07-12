@@ -14,6 +14,6 @@ namespace Application.Contracts
         Task<bool> DeviceExists(string userId, string deviceToken);
         Task<bool> ActivateDevice(string userId, string deviceToken);
         Task<bool> DeactivateDevice(string userId, string deviceToken);
-        Task<UserDevice> GetUserDevice(string userId);
+        Task<List<UserDevice>> GetUserDevice(string userId);
     }
 }

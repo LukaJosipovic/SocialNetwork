@@ -8,7 +8,6 @@ namespace Application.Enum
 {
     public enum ActivityCategory
     {
-        SelectCategory = 0,
         FoodAndDrink = 1,
         SportsAndFitness = 2,
         ArtsAndCulture = 3,

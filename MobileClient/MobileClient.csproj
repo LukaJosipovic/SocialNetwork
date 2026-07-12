@@ -48,6 +48,10 @@
         <PackageCertificateThumbprint>7EA1651385EF3757F46611136AF64E82E2629CBF</PackageCertificateThumbprint>
     </PropertyGroup>
 
+    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-android|AnyCPU'">
+      <EmbedAssembliesIntoApk>False</EmbedAssembliesIntoApk>
+    </PropertyGroup>
+
     <ItemGroup>
         <!-- App Icon -->
         <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
@@ -67,6 +71,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Content Remove="appsettings.json" />
       <Content Remove="Platforms\Android\google-services.json" />
     </ItemGroup>
 
@@ -80,6 +85,10 @@
 
     <ItemGroup>
       <GoogleServicesJson Include="Platforms\Android\google-services.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <MauiAsset Include="appsettings.json" />
     </ItemGroup>
 
     <ItemGroup>

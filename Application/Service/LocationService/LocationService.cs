@@ -35,7 +35,8 @@ namespace Application.Service.LocationService
                     ProfilePicture = user.ProfilePicture,
                     Latitude = latitude,
                     Longitude = longitude,
-                    GhostMode = user.GhostMode
+                    GhostMode = user.GhostMode,
+                    DoNotDisturb = user.DoNotDisturb
                 };
 
                 var result = _locationRepository.AddUserLocation(userLocation);
@@ -49,6 +50,10 @@ namespace Application.Service.LocationService
             {
                 return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
+            catch (Exception ex)
+            {
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
+            }
         }
 
         public bool RemoveUserLocation(string userId)
@@ -59,12 +64,11 @@ namespace Application.Service.LocationService
             }
             catch (KeyNotFoundException ey)
             {
-
-                throw;
+                return false;
             }
             catch (Exception ex)
             {
-                throw;
+                return false;
             }
         }
 
@@ -74,10 +78,7 @@ namespace Application.Service.LocationService
             var userLocation = locations.FirstOrDefault(u => u.Id == userId);
             if (userLocation != null)
                 locations.Remove(userLocation);
-            //var locationToRemove = locations.SingleOrDefault(locations => locations.Id == userId);
 
-            //if (locationToRemove != null) 
-            //    locations.Remove(locationToRemove);
             foreach (var location in locations)
             {
                 if (location.ProfilePicture != null)

@@ -11,5 +11,6 @@ namespace Application.DTO
         public double Latitude { get; set; }
         public double Longitude { get; set; }
         public bool GhostMode { get; set; }
+        public bool DoNotDisturb { get; set; }
     }
 }

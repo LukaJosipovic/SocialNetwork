@@ -21,12 +21,39 @@ namespace Application.Service.Notification
             _accountRepository = accountRepository;
         }
 
-        public async Task<string?> GetDeviceToken(string userId)
+        public async Task<GeneralResponse> DeactivateDevice(string userId, string deviceToken)
         {
             try
             {
-                var device = await _notificationRepository.GetUserDevice(userId);
-                return device.DeviceToken;
+                var user = await _accountRepository.GetUserById(userId);
+                var deactivated = await _notificationRepository.DeactivateDevice(userId, deviceToken);
+                
+                if (deactivated)
+                    return ResponseHelper.CreateGeneralResponse(true, null);
+
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
+            }
+        }
+
+        public async Task<List<string>> GetDeviceToken(string userId)
+        {
+            try
+            {
+                var deviceTokens = new List<string>();
+                var devices = await _notificationRepository.GetUserDevice(userId);
+                foreach (var device in devices)
+                {
+                    deviceTokens.Add(device.DeviceToken);
+                }
+                return deviceTokens;
             }
             catch (KeyNotFoundException ex)
             {
@@ -73,13 +100,11 @@ namespace Application.Service.Notification
             }
             catch (KeyNotFoundException ex)
             {
-
-                throw;
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
             catch (Exception ex)
             {
-
-                throw;
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
         }
     }

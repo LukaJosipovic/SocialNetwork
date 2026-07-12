@@ -11,7 +11,9 @@ namespace MobileClient.Services.Activity
     public interface IActivityService
     {
         Task<GeneralResponse> CreateActivity(CreateActivityRequest request);
-        Task<List<ActivityResponse>> GetActivities();
+        Task<ActivityResponse> GetActivities();
         Task<GeneralResponse> AcceptActivity(string cacheKey);
+        Task<MyActivityResponse> MyActivities();
+        Task<ActivityResponse> GetMyAcceptedActivities(PageSettingsRequest model);
     }
 }

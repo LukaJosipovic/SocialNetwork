@@ -1,0 +1,128 @@
+﻿@page "/acceptedactivities"
+@using Application.DTO.Request
+@using Application.DTO.Response
+@using Application.Exceptions
+@using MobileClient.Services.Activity
+@using MobileClient.Services.Alert
+@using MobileClient.Services.LoadingService
+@inject IActivityService ActivityService
+@inject NavigationManager NavManager
+@inject IAlertService AlertService
+@inject LoadingService LoadingService
+@inject IJSRuntime JS
+
+@if (activities == null || !activities.Any())
+{
+    <div class="text-center text-muted py-5">
+        <i class="bi bi-calendar-x fs-1"></i>
+        <p class="mt-2">No activities available</p>
+    </div>
+}
+
+<div id="activityContainer" class="container py-2 overflow-auto" style="height: 89vh; margin-top: 20px;">
+    @if (activities != null)
+    {
+        @foreach (var activity in activities)
+        {
+            <div class="card mb-3">
+                <div class="card-body pb-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            @if (activity.User.ProfilePictureString != null)
+                            {
+                                <img src="@activity.User.ProfilePictureString"
+                                     class="rounded-circle me-2"
+                                     style="width:48px; height:48px; object-fit:cover;"
+                                     @onclick="() => NavigateToUserProfile(activity.User.Id)" />
+
+                                <span class="fw-semibold">
+                                    @activity.User.Name
+                                </span>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body pt-0">
+                    <p class="mb-2 fs-6">@activity.Description</p>
+                    <span class="badge bg-secondary mb-3">@activity.ActivityCategory</span>
+                </div>
+
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private List<ActivityDTO> activities = new();
+    private bool hasMoreData = true;
+    private PageSettingsRequest pageSettings = new PageSettingsRequest
+    {
+        PageNumber = 1,
+        PageSize = 8
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        LoadingService.IsLoading = true;
+
+        try
+        {
+            await LoadActivities();
+        }
+        catch (AccountBannedException ex)
+        {
+            await AlertService.ShowAlertAsync("Error", $"{ex.Message}", "OK");
+        }
+        catch (Exception ex)
+        {
+            await AlertService.ShowAlertAsync("Error", "Something went wrong", "OK");
+        }
+
+        LoadingService.IsLoading = false;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var module = await JS.InvokeAsync<IJSObjectReference>("import", "./infiniteScroll.js");
+            await module.InvokeVoidAsync("checkDivScrollEnd", "activityContainer", "LoadMoreActivities", DotNetObjectReference.Create(this));
+        }
+    }
+
+    private async Task LoadActivities()
+    {
+        if (!hasMoreData)
+            return;
+
+        var response = await ActivityService.GetMyAcceptedActivities(pageSettings);
+        if (response.IsSuccess && response.Activities.Any())
+        {
+            activities.AddRange(response.Activities);
+            pageSettings.PageNumber++;
+        }
+        else if (response.IsSuccess == false)
+        {
+            activities = null;
+            await AlertService.ShowAlertAsync($"Error", $"{response.Message}", "OK");
+        }
+        else
+        {
+            hasMoreData = false;
+        }
+
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public async Task LoadMoreActivities()
+    {
+        await LoadActivities();
+    }
+
+    private void NavigateToUserProfile(string userId)
+    {
+        NavManager.NavigateTo($"/profile/user/{userId}");
+    }
+}

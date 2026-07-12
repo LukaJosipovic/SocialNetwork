@@ -1,5 +1,6 @@
 ﻿@inject IAccountService AccountService
 @page "/myprofile"
+@using Application.DTO.Request
 @using Application.DTO.Response
 @using Microsoft.AspNetCore.Components.Authorization
 @using MobileClient.AuthStateProvider
@@ -9,7 +10,10 @@
 @inject NavigationManager NavManager
 @inject IAlertService AlertService
 @inject IAccountService AccountService
+@inject INotificationService NotificationService
 @using MobileClient.Services.LoadingService
+@using MobileClient.Services.Notification
+@using Plugin.Firebase.CloudMessaging
 @inject LoadingService LoadingService
 @inject AuthenticationStateProvider AuthStateProvider
 
@@ -24,14 +28,18 @@
         </button>
 
         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="iconMenuButton">
-            <li><button class="dropdown-item" @onclick="NavigateToBlockedUsers">Blocked Users</button></li>
-            <li><button class="dropdown-item" @onclick="DeleteAccount">Delete Profile</button></li>
+            @if (!isAdmin)
+            {
+                
+                <li><button class="dropdown-item" @onclick="NavigateToBlockedUsers">Blocked Users</button></li>
+                <li><button class="dropdown-item" @onclick="DeleteAccount">Delete Profile</button></li>
+            }
             <li><button class="dropdown-item" @onclick="Logout">Logout</button></li>
         </ul>
     </div>
 </div>
 
-@if (IsSuccess)
+@if (isSuccess)
 {
     <div class="d-flex justify-content-center mt-3">
         <_Profile profile="@profile" />
@@ -41,7 +49,8 @@
 @code {
     private UserProfileRespons profile { get; set; } = new();
     private string? profileImage;
-    private bool IsSuccess;
+    private bool isSuccess;
+    private bool isAdmin;
 
     protected override async Task OnInitializedAsync()
     {
@@ -51,8 +60,14 @@
 
         if (response.IsSuccess)
         {
-            IsSuccess = true;
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            isAdmin = authState.User.IsInRole("Admin");
+            isSuccess = true;
             profile = response;
+        }
+        else
+        {
+            await AlertService.ShowAlertAsync($"Error", $"{response.Message}", "OK");
         }
 
         LoadingService.IsLoading = false;
@@ -67,17 +82,21 @@
         if (response.IsSuccess)
         {
             await AlertService.ShowAlertAsync($"Ok", $"{response.Message}", "OK");
-            SecureStorage.Remove("accessToken");
-            SecureStorage.Remove("refreshToken");
-            NavManager.NavigateTo($"/register");
+            // SecureStorage.Remove("accessToken");
+            // SecureStorage.Remove("refreshToken");
+            // SecureStorage.Remove("userLocation");
+            // NavManager.NavigateTo($"/register");
+            LoadingService.IsLoading = false;
+            await Logout();
         }
         else
         {
+            LoadingService.IsLoading = false;
             await AlertService.ShowAlertAsync($"Error", $"{response.Message}", "OK");
         }
 
-        LoadingService.IsLoading = false;
-        NavManager.NavigateTo($"/register");
+        //LoadingService.IsLoading = false;
+        //NavManager.NavigateTo($"/register");
     }
 
     private void NavigateToPostDetails(int postId)
@@ -90,10 +109,28 @@
         NavManager.NavigateTo($"/blockedusers");
     }
 
-    private void Logout()
+    private async Task Logout()
     {
+        var refreshToken = await SecureStorage.GetAsync("refreshToken");
+#if ANDROID
+        await CrossFirebaseCloudMessaging.Current.CheckIfValidAsync();
+        var token = await CrossFirebaseCloudMessaging.Current.GetTokenAsync();
+        var logoutRequest = new LogoutRequest 
+        { 
+            DeviceToken = token,
+            RefreshToken = refreshToken 
+        };
+
+        //var result = await NotificationService.DeactivateDevice(token);
+        var result = await AccountService.Logout(logoutRequest);
+
+        if (!result.IsSuccess)
+            await AlertService.ShowAlertAsync("Error", $"{result.Message}", "OK");
+#endif
+
         var authProvider = (CustomAuthStateProvider)AuthStateProvider;
         authProvider.NotifyUserLogout();
-        NavManager.NavigateTo($"/login");
+        NavManager.NavigateTo($"/register", replace: true);
+
     }
 }

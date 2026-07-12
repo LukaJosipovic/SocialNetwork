@@ -5,9 +5,11 @@
 @using MobileClient.Services.Account
 @using MobileClient.Services.Alert
 @using MobileClient.Services.Chat
+@using MobileClient.Services.LoadingService
 @inject IChatService ChatService
 @inject IAccountService AccountService
 @inject NavigationManager NavManager
+@inject LoadingService LoadingService
 @inject IJSRuntime JS
 @inject IAlertService AlertService
 
@@ -56,11 +58,20 @@
                         }
                         else
                         {
-                            <button type="button"
+                            @* <button type="button"
                                     class="btn btn-outline-danger btn-sm ms-2"
                                     @onclick="() => BlockUser(conversation.UserId)">
                                 <i class="bi bi-ban"></i>
-                            </button>
+                            </button> *@
+                            <div class="dropdown">
+                                <button class="btn btn-link p-0 m-0 border-0" type="button" id="iconMenuButton"
+                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-three-dots-vertical fs-4"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="iconMenuButton">
+                                    <li><button class="dropdown-item" @onclick="() => BlockUser(conversation.UserId)">Block</button></li>
+                                </ul>
+                            </div>
                         }
 
                     </div>
@@ -90,7 +101,9 @@
 
     protected override async Task OnInitializedAsync()
     {
+        LoadingService.IsLoading = true;
         await LoadUsers();
+        LoadingService.IsLoading = false;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

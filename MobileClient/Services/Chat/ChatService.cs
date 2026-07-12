@@ -2,6 +2,7 @@
 using Application.DTO.Request;
 using Application.DTO.Response;
 using Application.Exceptions;
+using Application.Helper;
 using Domain.Model;
 using System;
 using System.Collections.Generic;
@@ -30,21 +31,31 @@ namespace MobileClient.Services.Chat
                 var responseObject = await response.Content.ReadFromJsonAsync<ChatRoomResponse>();
                 return responseObject;
             }
-            catch (AccountBannedException ex)
-            {
-                return new ChatRoomResponse
-                {
-                    IsSuccess = false,
-                    Message = ex.Message
-                };
-            }
+            //catch (AccountBannedException ex)
+            //{
+            //    return ResponseHelper.CreateChatRoomResponse(false, ex.Message);
+            //}
             catch (Exception ex)
             {
-                return new ChatRoomResponse
-                {
-                    IsSuccess = false,
-                    Message = "Something went wrong"
-                };
+                return ResponseHelper.CreateChatRoomResponse(false, "Something went wrong");
+            }
+        }
+        public async Task<ChatRoomResponse> GetActivityChat(int activityId, PageSettingsRequest model)
+        {
+            try
+            {
+                var client = _httpClientFactory.CreateClient("BaseApi");
+                var response = await client.GetAsync($"api/Chat/GetActivityChat?activityId={activityId}&PageNumber={model.PageNumber}&PageSize={model.PageSize}");
+                var responseObject = await response.Content.ReadFromJsonAsync<ChatRoomResponse>();
+                return responseObject;
+            }
+            //catch (AccountBannedException ex)
+            //{
+            //    return ResponseHelper.CreateChatRoomResponse(false, ex.Message);
+            //}
+            catch (Exception ex)
+            {
+                return ResponseHelper.CreateChatRoomResponse(false, "Something went wrong");
             }
         }
 
@@ -58,21 +69,13 @@ namespace MobileClient.Services.Chat
                 var responseObject = await response.Content.ReadFromJsonAsync<MessageResponse>();
                 return responseObject;
             }
-            catch (AccountBannedException ex)
-            {
-                return new MessageResponse
-                {
-                    IsSuccess = false,
-                    Message = ex.Message
-                };
-            }
+            //catch (AccountBannedException ex)
+            //{
+            //    return ResponseHelper.CreateMessageResponse(false, ex.Message);
+            //}
             catch (Exception ex)
             {
-                return new MessageResponse
-                {
-                    IsSuccess = false,
-                    Message = "Something went wrong"
-                };
+                return ResponseHelper.CreateMessageResponse(false, "Something went wrong");
             }
         }
     }

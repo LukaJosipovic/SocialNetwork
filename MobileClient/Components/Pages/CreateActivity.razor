@@ -31,7 +31,7 @@
             </select>
             <ValidationMessage For="() => Request.Category" class="text-danger" />
 
-            <label for="range" class="form-label">Range: <strong>@Request.Range</strong></label>
+            <label for="range" class="form-label">Range: <strong>@Request.Range</strong> km</label>
             <input type="range" @oninput="e => Request.Range = Convert.ToInt32(e.Value)" @bind-value="Request.Range" class="form-range" min="0" max="100" step="1" id="range">
 
             <button type="submit" class="btn btn-primary" style="background-color: #512bdf; width: 100%">Create</button>
@@ -67,7 +67,7 @@
             var response = await ActivityService.CreateActivity(Request);
             if (response.IsSuccess)
             {
-                await MainLayout.hubConnection.InvokeAsync("SendActivityNotification");
+                //await MainLayout.hubConnection.InvokeAsync("SendActivityNotification");
                 LoadingService.IsLoading = false;
                 await AlertService.ShowAlertAsync("Ok", $"{response.Message}", "OK");
             }

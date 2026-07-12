@@ -1,10 +1,14 @@
-﻿using Application.Service.Post;
+﻿using Application.DTO.Request;
+using Application.Service.Post;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
 namespace API.Controllers
 {
+    [Route("api/[controller]")]
+    [Authorize]
+    [ApiController]
     public class PostController : Controller
     {
         private readonly IPostService _postService;
@@ -17,7 +21,12 @@ namespace API.Controllers
         [HttpGet("GetPostById")]
         public async Task<IActionResult> GetPostById(int id)
         {
-            var result = await _postService.GetPostById(id);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId == null)
+                return Unauthorized("User cannot be found");
+
+            var result = await _postService.GetPostById(userId, id);
 
             if (result.IsSuccess)
                 return Ok(result);
@@ -26,16 +35,18 @@ namespace API.Controllers
         }
 
         [HttpGet("GetAllPosts")]
-        public async Task<IActionResult> GetAllPosts()
+        public async Task<IActionResult> GetAllPosts([FromQuery] PageSettingsRequest model)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (userId == null)
                 return Unauthorized("User cannot be found");
 
-            var result = await _postService.GetAllPosts(userId);
+            var result = await _postService.GetAllPosts(userId, model);
+            if (result.IsSuccess)
+                return Ok(result);
 
-            return Ok(result);
+            return BadRequest(result);
         }
 
         [HttpPost("ReportPost")]
@@ -65,9 +76,8 @@ namespace API.Controllers
             var result = await _postService.LikePost(postId, userId);
 
             if (result.IsSuccess)
-            {
                 return Ok(result);
-            }
+
             return BadRequest(result);
         }
 
@@ -109,7 +119,11 @@ namespace API.Controllers
         public async Task<IActionResult> GetReportedPosts()
         {
             var result = await _postService.GetReportedPosts();
-            return Ok(result);
+
+            if (result.IsSuccess)
+                return Ok(result);
+
+            return BadRequest(result);
         }
 
         [Authorize(Roles = "Admin")]

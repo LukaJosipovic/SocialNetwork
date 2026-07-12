@@ -16,5 +16,6 @@ namespace Application.Service.Chat
         Task<ChatRoomResponse> GetChatRooms(string userId, PageSettingsRequest model);
         Task<MessageResponse> GetMessages(string userId, string userToChatId, int conversationId, PageSettingsRequest model);
         Task<bool> SaveMessage(string senderId, string receiverId, string message, int conversationId);
+        Task<ChatRoomResponse> GetActivityChat(string userId, int activityId, PageSettingsRequest model);
     }
 }

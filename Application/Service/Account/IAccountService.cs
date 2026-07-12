@@ -20,7 +20,7 @@ namespace Application.Service.Account
         Task<GeneralResponse> DeleteAccount(string userId);
         Task<GeneralResponse> CreatePost(CreatePostRequest request, string userId);
         Task<UserProfileRespons> GetUserProfile(string userId);
-        Task<List<UserBriefDetailsDTO>> GetUsers();
+        Task<UserBriefDetailsResponse> GetUsers();
         Task<GeneralResponse> ChangeActivities(List<ActivityCategory> activities, string userId);
         Task<GeneralResponse> GhostMode(bool ghostMode, string userId);
         Task<GeneralResponse> DoNotDisturb(bool doNotDisturb, string userId);
@@ -29,8 +29,9 @@ namespace Application.Service.Account
         Task<GeneralResponse> UnbanUser(string userId);
         Task<GeneralResponse> BlockUser(string blockerId, string userIdToBlock);
         Task<GeneralResponse> UnblockUser(string blockerId, string blockedUserId);
-        Task<List<UserBriefDetailsDTO>> GetBlockedUsers(string userId, PageSettingsRequest model);
+        Task<UserBriefDetailsResponse> GetBlockedUsers(string userId, PageSettingsRequest model);
         Task<UserProfileRespons> GetBannedProfile(string email);
         Task<BannedAccountResponse> GetBannedAccounts(PageSettingsRequest model);
+        Task<GeneralResponse> Logout(LogoutRequest model);
     }
 }

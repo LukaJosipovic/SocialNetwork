@@ -1,0 +1,102 @@
+﻿@page "/nointernet"
+@inject NavigationManager NavManager
+@inject ConnectivityService ConnectivityService
+@using MobileClient.Services.Connectivity
+@using Microsoft.Maui.Controls
+
+<style>
+    .no-internet-container {
+        height: 100vh;
+        background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    .no-internet-content {
+        text-align: center;
+        max-width: 320px;
+    }
+
+    .wifi-icon {
+        font-size: 80px;
+        margin-bottom: 24px;
+        opacity: 0.85;
+    }
+
+    .no-internet-content h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1e2937;
+        margin-bottom: 16px;
+    }
+
+    .message {
+        font-size: 17px;
+        color: #64748b;
+        line-height: 1.5;
+        margin-bottom: 40px;
+    }
+
+    .retry-btn {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 16px 32px;
+        font-size: 17px;
+        font-weight: 600;
+        border-radius: 12px;
+        width: 100%;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        transition: all 0.2s ease;
+    }
+
+    .retry-btn:active {
+        transform: scale(0.97);
+        background: #2563eb;
+    }
+
+    .tip {
+        margin-top: 32px;
+        font-size: 14px;
+        color: #94a3b8;
+    }
+</style>
+
+<div class="no-internet-container">
+    <div class="no-internet-content">
+        <div class="wifi-icon">
+            <span>📡</span>
+        </div>
+
+        <h1>No Internet Connection</h1>
+        <p class="message">
+            It looks like you're offline.<br>
+            Please check your connection and try again.
+        </p>
+
+        <button class="retry-btn" @onclick="Retry">
+            <span>Retry Connection</span>
+        </button>
+
+        <p class="tip">Tip: Make sure Wi-Fi or mobile data is enabled</p>
+    </div>
+</div>
+
+@code {
+    private async Task Retry()
+    {
+        if (ConnectivityService.IsConnected)
+        {
+            string returnUrl = ConnectivityService.LastKnownPage ?? "/home";
+            NavManager.NavigateTo(returnUrl, replace: true);
+        }
+        else
+        {
+            await Application.Current.MainPage.DisplayAlert("Still Offline", "Please connect to the internet.", "OK");
+        }
+    }
+}

@@ -1,5 +1,6 @@
 let map;
 let marker;
+let userMarkers = {};
 export function load_map(latitude, longitude) {
 	const mapDiv = document.getElementById('map');
 
@@ -9,14 +10,15 @@ export function load_map(latitude, longitude) {
 		map = null;
 		marker = null;
 	}
-
+    //https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png
+    //&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors
 	if (!map) {
 		map = L.map('map').setView([latitude, longitude], 13);
 		marker = L.marker([latitude, longitude]).addTo(map);
-		var Stadia_AlidadeSmoothDark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-			minZoom: 13,
-			maxZoom: 20,
-			attribution: '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        var Stadia_AlidadeSmoothDark = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+			minZoom: 8,
+			maxZoom: 30,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 			ext: 'png'
 		}).addTo(map);
 	}
@@ -26,36 +28,70 @@ export function load_map(latitude, longitude) {
 	}
 }
 export function add_user_markers(usersJson) {
-	const users = JSON.parse(usersJson);
-	const userMarkers = {};
-	// Clear existing markers if needed
-	for (const id in userMarkers) {
-		map.removeLayer(userMarkers[id]);
-	}
+    const users = JSON.parse(usersJson);
 
-	for (const user of users) {
-		debugger
-		if (user.Latitude && user.Longitude) {
-			let imageHtml = "";
-			if (user.ProfilePicture && user.ProfilePicture.length > 0) {
-				//imageHtml = `<img src="${user.ProfilePictureString}" alt="User picture" style="width:100px;height:auto;display:block;margin-bottom:5px;" />`; 
-				imageHtml = `<img src="${user.ProfilePictureString}" alt="User picture" style="width:100px;height:100px;object-fit:cover;border-radius:50%;display:block;margin:0 auto 10px auto;" />`; 
-			}
+    // Clear existing markers
+    for (const id in userMarkers) {
+        map.removeLayer(userMarkers[id]);
+    }
 
-			const popupContent = `
+    userMarkers = {}; // reset
+    console.log(users);
+    for (const user of users) {
+        if (typeof user.Latitude === "number" && typeof user.Longitude === "number") {
+            console.log(user.Latitude, user.Longitude);
+            let imageHtml = "";
+            if (user.ProfilePictureString && user.ProfilePictureString.length > 0) {
+                imageHtml = `<img src="${user.ProfilePictureString}" 
+                                style="width:100px;height:100px;object-fit:cover;border-radius:50%;display:block;margin:0 auto 10px auto;" />`;
+            }
+
+            const popupContent = `
                 <div style="text-align:center;">
-					${imageHtml}
-					<b>${user.Name}</b>
-				</div>
+                    ${imageHtml}
+                    <b>${user.Name}</b>
+                </div>
             `;
 
-			const marker = L.marker([user.Latitude, user.Longitude])
-				.addTo(map)
-				.bindPopup(popupContent);
-			userMarkers[user.Id] = marker;
-		}
-	}
+            const newMarker = L.marker([user.Latitude, user.Longitude])
+                .addTo(map)
+                .bindPopup(popupContent);
+
+            userMarkers[user.Id] = newMarker;
+        }
+    }
 }
+//export function add_user_markers(usersJson) {
+//	const users = JSON.parse(usersJson);
+//	const userMarkers = {};
+//	// Clear existing markers if needed
+//	for (const id in userMarkers) {
+//		map.removeLayer(userMarkers[id]);
+//	}
+
+//	for (const user of users) {
+//		debugger
+//		if (user.Latitude && user.Longitude) {
+//			let imageHtml = "";
+//			if (user.ProfilePicture && user.ProfilePicture.length > 0) {
+//				//imageHtml = `<img src="${user.ProfilePictureString}" alt="User picture" style="width:100px;height:auto;display:block;margin-bottom:5px;" />`; 
+//				imageHtml = `<img src="${user.ProfilePictureString}" alt="User picture" style="width:100px;height:100px;object-fit:cover;border-radius:50%;display:block;margin:0 auto 10px auto;" />`; 
+//			}
+
+//			const popupContent = `
+//                <div style="text-align:center;">
+//					${imageHtml}
+//					<b>${user.Name}</b>
+//				</div>
+//            `;
+
+//			const marker = L.marker([user.Latitude, user.Longitude])
+//				.addTo(map)
+//				.bindPopup(popupContent);
+//			userMarkers[user.Id] = marker;
+//		}
+//	}
+//}
 
 //export function addOrMoveUserMarker(userId, lat, lng) {
 //	if (!map) return;

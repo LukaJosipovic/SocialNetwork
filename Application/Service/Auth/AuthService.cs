@@ -30,9 +30,10 @@ namespace Application.Service.Auth
         private readonly IConfiguration _configuration;
         private readonly IAccountRepository _accountRepository;
         private readonly IEmailService _emailService;
+        private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public AuthService(IJwtTokenGenerator jwtTokenGenerator, IConfiguration configuration, IAuthRepository authRepository, IAccountRepository accountRepository, IEmailService emailService, UserManager<ApplicationUser> userManager)
+        public AuthService(IJwtTokenGenerator jwtTokenGenerator, IConfiguration configuration, IAuthRepository authRepository, IAccountRepository accountRepository, IEmailService emailService, UserManager<ApplicationUser> userManager, IRefreshTokenRepository refreshTokenRepository)
         {
             _jwtTokenGenerator = jwtTokenGenerator;
             _configuration = configuration;
@@ -40,48 +41,60 @@ namespace Application.Service.Auth
             _accountRepository = accountRepository;
             _emailService = emailService;
             _userManager = userManager;
+            _refreshTokenRepository = refreshTokenRepository;
         }
 
         public async Task<RegisterResponse> CreateAccount(CreateAccountRequest model, string role)
         {
-            var userExists = await _authRepository.GetUserByEmail(model.Email);
-
-            if (userExists)
-                return ResponseHelper.CreateRegisterResponse(false, null, new List<string> { "Email already exists" });
-
-            var basePath = Path.GetDirectoryName(Environment.CurrentDirectory);
-            var filePath = Path.Combine(basePath, "Img", "unknown.png");
-            var imageByte = await File.ReadAllBytesAsync(filePath);
-
-            var user = new ApplicationUser
+            try
             {
-                Email = model.Email,
-                UserName = model.Email,
-                Name = model.Username,
-                ProfilePicture = imageByte
-            };
+                var userExists = await _authRepository.GetUserByEmail(model.Email);
 
-            var result = await _authRepository.CreateAccount(user, model.Password, role);
-            
-            if (result.Succeeded)
-            {
-                var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                var encodedToken = Encoding.UTF8.GetBytes(token);
-                token = WebEncoders.Base64UrlEncode(encodedToken);
+                if (userExists)
+                    return ResponseHelper.CreateRegisterResponse(false, null, new List<string> { "Email already exists" });
 
-                var url = $"https://localhost:7098/api/Auth/ConfirmEmail?userid={user.Id}&token={token}";
+                var basePath = Path.GetDirectoryName(Environment.CurrentDirectory);
+                var filePath = Path.Combine(basePath, "Img", "unknown.png");
+                var imageByte = await File.ReadAllBytesAsync(filePath);
 
-                var email = new EmailDTO
+                var user = new ApplicationUser
                 {
-                    To = user.Email,
-                    Subject = "Verification email",
-                    Body = $"Verify your email by clicking <a href='{url}'>here</a> and then log in to the application"
+                    Email = model.Email,
+                    UserName = model.Email,
+                    Name = model.Username,
+                    ProfilePicture = imageByte,
+                    EmailConfirmed = true,
+                    GhostMode = true,
+                    DoNotDisturb = true,
                 };
-                _emailService.SendEmail(email);
 
-                return ResponseHelper.CreateRegisterResponse(true, "Registration is successful", null);
+                var result = await _authRepository.CreateAccount(user, model.Password, role);
+
+                if (result.Succeeded)
+                {
+                    var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    var encodedToken = Encoding.UTF8.GetBytes(token);
+                    token = WebEncoders.Base64UrlEncode(encodedToken);
+
+                    string ip = await GetPublicIpAddressHelper.GetPublicIpAddress();
+                    var url = $"http://{ip}:4321/socialnetwork/api/Auth/ConfirmEmail?userid={user.Id}&token={token}";
+
+                    var email = new EmailDTO
+                    {
+                        To = user.Email,
+                        Subject = "Verification email",
+                        Body = $"Verify your email by clicking <a href='{url}'>here</a> and then log in to the application"
+                    };
+                    _emailService.SendEmail(email);
+
+                    return ResponseHelper.CreateRegisterResponse(true, "Registration is successful", null);
+                }
+                return ResponseHelper.CreateRegisterResponse(false, "Registration failed", result.Errors.Select(e => e.Description));
             }
-            return ResponseHelper.CreateRegisterResponse(false, "Registration failed", result.Errors.Select(e => e.Description));
+            catch (Exception ex)
+            {
+                return ResponseHelper.CreateRegisterResponse(false, "Something went wrong", null);
+            }
         }
 
         public async Task<LoginResponse> Login(LoginUserRequest model)
@@ -90,8 +103,8 @@ namespace Application.Service.Auth
             {
                 var user = await _authRepository.Login(model);
                 var token = await _jwtTokenGenerator.GenerateToken(user.Id, user.Name, user.Email);
-                var refreshToken = _jwtTokenGenerator.GenerateRefreshToken();
-                var result = await _jwtTokenGenerator.StoreRefreshToken(user, refreshToken);
+                var refreshToken = _refreshTokenRepository.GenerateRefreshToken();
+                await _refreshTokenRepository.StoreRefreshToken(user, refreshToken);
                 return ResponseHelper.CreateLoginResponse(true, null, token, user.Id, refreshToken);
             }
             catch (UnauthorizedAccessException ex)
@@ -108,25 +121,30 @@ namespace Application.Service.Auth
         {
             try
             {
+                var refreshToken = await _refreshTokenRepository.GetByTokenasync(request.RefreshToken);
                 var user = await _accountRepository.GetAnyUserById(request.UserId);
 
-                if (user == null || user.RefreshToken != request.RefreshToken || user.RefreshTokenExpiry < DateTime.Now)
+                if (refreshToken.Token != request.RefreshToken || refreshToken.UserId != request.UserId || refreshToken.IsRevoked)
                     return ResponseHelper.CreateLoginResponse(false, "Something went wrong", null, null, null);
 
                 if (user.IsBanned)
                     throw new AccountBannedException();
 
                 string token = await _jwtTokenGenerator.GenerateToken(user.Id, user.Name, user.Email);
-                var newRefreshToken = _jwtTokenGenerator.GenerateRefreshToken();
-                var result = await _jwtTokenGenerator.StoreRefreshToken(user, newRefreshToken);
 
-                return ResponseHelper.CreateLoginResponse(true, null, token, user.Id, newRefreshToken);
+                if (refreshToken.Expires < DateTime.Now)
+                {
+                    var newRefreshToken = _refreshTokenRepository.GenerateRefreshToken();
+                    await _refreshTokenRepository.RotateTokenAsync(request.RefreshToken, newRefreshToken, user.Id);
+                    return ResponseHelper.CreateLoginResponse(true, null, token, user.Id, newRefreshToken);
+                }
+                return ResponseHelper.CreateLoginResponse(true, null, token, user.Id, refreshToken.Token);
             }
             catch (AccountBannedException ex)
             {
                 return new LoginResponse
                 {
-                    IsSuccess = false,
+                    IsSuccess = true,
                     IsBanned = true,
                     Message = ex.Message
                 };
@@ -137,7 +155,7 @@ namespace Application.Service.Auth
             }
             catch (Exception ex)
             {
-                throw;
+                return ResponseHelper.CreateLoginResponse(false, "Something went wrong", null, null, null);
             }
         }
 
@@ -151,7 +169,8 @@ namespace Application.Service.Auth
                 var encodedToken = Encoding.UTF8.GetBytes(token);
                 token = WebEncoders.Base64UrlEncode(encodedToken);
 
-                var url = $"https://localhost:7098/resetpassword?token={token}&email={user.Email}";
+                string ip = await GetPublicIpAddressHelper.GetPublicIpAddress();
+                var url = $"http://{ip}:4321/socialnetwork/resetpassword?token={token}&email={user.Email}";
 
                 var email = new EmailDTO
                 {

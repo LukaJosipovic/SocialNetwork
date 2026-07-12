@@ -64,8 +64,8 @@ namespace Infrastructure.Repository
             if (user.IsBanned)
                 throw new AccountBannedException();
 
-            if (!await _userManager.CheckPasswordAsync(user, model.Password))
-                throw new UnauthorizedAccessException("Invalid email or password");
+            if ((!await _userManager.CheckPasswordAsync(user, model.Password)) || !user.EmailConfirmed)
+                throw new UnauthorizedAccessException("Invalid email or password or email not confirmed");
 
             return user;
         }

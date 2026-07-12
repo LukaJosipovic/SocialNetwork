@@ -6,11 +6,8 @@ using System.Threading.Tasks;
 
 namespace Application.DTO.Response
 {
-    public class ActivityResponse
+    public class ActivityResponse : GeneralResponse
     {
-        public string CacheKey { get; set; }
-        public string Description { get; set; }
-        public string ActivityCategory { get; set; }
-        public UserBriefDetailsDTO User { get; set; }
+        public List<ActivityDTO> Activities { get; set; } = new List<ActivityDTO>();
     }
 }

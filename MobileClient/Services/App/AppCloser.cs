@@ -1,0 +1,16 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace MobileClient.Services.App
+{
+    public class AppCloser : IAppCloser
+    {
+        public void CloseApp()
+        {
+            Microsoft.Maui.Controls.Application.Current?.Quit();
+        }
+    }
+}

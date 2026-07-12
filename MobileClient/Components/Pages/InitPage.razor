@@ -1,0 +1,220 @@
+﻿@page "/"
+@using MobileClient.Services.App
+@using MobileClient.Services.Connectivity
+@using MobileClient.Services.LoadingService
+@using MobileClient.Helper
+@using MobileClient.Services.Location
+@inject NavigationManager NavManager
+@inject IAppCloser AppCloser
+@inject LoadingService LoadingService
+@inject IBackgroundLocationService BackgroundLocationService
+@layout MobileClient.Components.Layout.EmptyLayout
+
+<style>
+    .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        animation: fadeIn 0.2s ease;
+    }
+
+    .modal-box {
+        background: white;
+        padding: 32px 28px;
+        border-radius: 20px;
+        width: 320px;
+        max-width: 90%;
+        text-align: center;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+        animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .modal-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+    }
+
+    .modal-box h3 {
+        font-size: 1.35rem;
+        margin: 0 0 12px 0;
+        color: #1f2937;
+        font-weight: 600;
+    }
+
+    .modal-box p {
+        color: #4b5563;
+        line-height: 1.5;
+        margin-bottom: 28px;
+    }
+
+    .modal-buttons {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+    }
+
+    .btn-primary, .btn-secondary {
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-weight: 500;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        flex: 1;
+        border: none;
+    }
+
+    .btn-primary {
+        background: #512bdf;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #3b1eb3;
+        transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+        background: #f3f4f6;
+        color: #374151;
+    }
+
+    .btn-secondary:hover {
+        background: #e5e7eb;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    @@keyframes popIn {
+        from {
+            opacity: 0;
+            transform: scale(0.7);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+</style>
+
+@if (ShowLocationPopup)
+{
+    <div class="modal-backdrop">
+        <div class="modal-box">
+            <div class="modal-icon">📍</div>
+            <h3>Location Access Required</h3>
+            <p>
+                This application requires location permission to function properly.<br>
+                Please enable it in your device settings.
+            </p>
+
+            <div class="modal-buttons">
+                    <button class="btn-secondary" @onclick="CheckPermissionAgain">I've Granted Permission</button>
+                <button class="btn-primary" @onclick="OpenSettings">Open Settings</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool ShowLocationPopup;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CheckPermission();
+    }
+
+    private async Task CheckPermission()
+    {
+        LoadingService.IsLoading = true;
+
+        var status = await LocationHelper.GetLocationPermission();
+
+        if (status == false)
+        {
+            ShowLocationPopup = true;
+
+            StateHasChanged();
+        }
+        else if (status == true)
+        {
+            await LocationHelper.RequestIgnoreBatteryOptimizationAsync();
+
+            await NotificationHelper.GetNotificationPermission();
+
+            var token = await SecureStorage.GetAsync("accessToken");
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                var serviceShouldRun = await SecureStorage.GetAsync("ShouldRunLocationService");
+                if (!string.IsNullOrEmpty(serviceShouldRun) && serviceShouldRun == "true")
+                    await BackgroundLocationService.Start();
+
+                NavManager.NavigateTo("/home", replace: true);
+            }
+            else
+            {
+                NavManager.NavigateTo("/register", replace: true);
+            }
+        }
+
+        LoadingService.IsLoading = false;
+    }
+
+    // protected override async Task OnAfterRenderAsync(bool firstRender)
+    // {
+    //     if (!firstRender)
+    //         return; 
+
+    //     LoadingService.IsLoading = true;
+
+    //     var status = await LocationHelper.GetLocationPermission();
+
+    //     if (status == false)
+    //     {
+    //         ShowLocationPopup = true;
+
+    //         StateHasChanged();
+    //     }
+    //     else if (status == true)
+    //     {
+    //         var token = await SecureStorage.GetAsync("accessToken");
+
+    //         if (!string.IsNullOrEmpty(token))
+    //         {
+    //             NavManager.NavigateTo("/home");
+    //         }
+    //         else
+    //         {
+    //             NavManager.NavigateTo("/register");
+    //         }
+    //     }
+
+    //     LoadingService.IsLoading = false;
+    // }
+
+    private void OpenSettings()
+    {
+        AppInfo.ShowSettingsUI();
+    }
+    private async Task CheckPermissionAgain()
+    {
+        ShowLocationPopup = false;
+        StateHasChanged();
+
+        await CheckPermission();
+    }
+}

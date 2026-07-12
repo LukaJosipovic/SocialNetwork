@@ -26,7 +26,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddAuthorization();
-//builder.Services.AddAuthorization();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(x =>
 {
     x.TokenValidationParameters = new TokenValidationParameters
@@ -147,6 +146,9 @@ using (var scope = app.Services.CreateScope())
             UserName = email,
             Name = username,
             ProfilePicture = imageByte,
+            EmailConfirmed = true,
+            GhostMode = true,
+            DoNotDisturb = true,
         };
         await userManager.CreateAsync(user, password);
         await userManager.AddToRoleAsync(user, "Admin");

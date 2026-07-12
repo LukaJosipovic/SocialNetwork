@@ -17,6 +17,7 @@ namespace MobileClient.Handlers
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly UserSessionService _userSessionService;
+        private readonly SemaphoreSlim _refreshSemaphore = new SemaphoreSlim(1, 1);
 
         public TokenHandler(IHttpClientFactory httpClientFactory, UserSessionService userSessionService)
         {
@@ -36,19 +37,35 @@ namespace MobileClient.Handlers
 
             if (response.StatusCode == HttpStatusCode.Unauthorized)
             {
-                var refreshSuccess = await TryRefreshTokenAsync(token, cancellationToken);
+                bool refreshSuccess = false;
+
+                try
+                {
+                    await _refreshSemaphore.WaitAsync(cancellationToken);
+
+                    // Double check - maybe another thread already refreshed
+                    var currentToken = await SecureStorage.GetAsync("accessToken");
+                    if (currentToken != token) // Token was already updated
+                    {
+                        refreshSuccess = true;
+                    }
+                    else
+                    {
+
+                        refreshSuccess = await TryRefreshTokenAsync(token, cancellationToken);
+                    }
+                }
+                finally
+                {
+
+                    _refreshSemaphore.Release();
+                }
                 if (refreshSuccess)
                 {
-                    response.Dispose(); // Dispose the old response
-
-                    //var newRequest = await CloneHttpRequestMessageAsync(request);
-                    
                     // Retry the original request with the new access token
                     token = await SecureStorage.GetAsync("accessToken");
 
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-                    //newRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-                    //response.Dispose(); 
 
                     // Retry the same request
                     response = await base.SendAsync(request, cancellationToken);
@@ -69,58 +86,25 @@ namespace MobileClient.Handlers
                 RefreshToken = refreshToken
             };
 
-            var client = _httpClientFactory.CreateClient("BaseApi");
+            var client = _httpClientFactory.CreateClient("RefreshClient");
 
             var response = await client.PostAsJsonAsync("/api/auth/Refresh", refreshRequest, cancellationToken);
 
-            //if (!response.IsSuccessStatusCode)
-            //    return false;
-
             var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+
+            if (result == null || !result.IsSuccess)
+                return false;
 
             if (result.IsBanned == true)
             {
                 await _userSessionService.TriggerBannedAsync();
-                throw new AccountBannedException();
-                //return false;
             }
 
-            if (result == null)
-                return false;
-
-            //if (result.IsBanned)
-            //{
-            //    _userSessionService.TriggerBanned("Your account has been banned");
-            //    return false;
-            //}
 
             await SecureStorage.SetAsync("accessToken", result.AccessToken);
             await SecureStorage.SetAsync("refreshToken", result.RefreshToken);
 
             return true;
-        }
-
-        private static async Task<HttpRequestMessage> CloneHttpRequestMessageAsync(HttpRequestMessage request)
-        {
-            var clone = new HttpRequestMessage(request.Method, request.RequestUri);
-
-            // Copy headers
-            foreach (var header in request.Headers)
-                clone.Headers.TryAddWithoutValidation(header.Key, header.Value);
-
-            // Copy content
-            if (request.Content != null)
-            {
-                var ms = new MemoryStream();
-                await request.Content.CopyToAsync(ms);
-                ms.Position = 0;
-                clone.Content = new StreamContent(ms);
-
-                foreach (var header in request.Content.Headers)
-                    clone.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
-            }
-
-            return clone;
         }
     }
 }

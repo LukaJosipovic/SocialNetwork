@@ -37,8 +37,10 @@ namespace Application.Contracts
         Task<List<UserBlocks>> GetAllBlockedUsers(string userId, PageSettingsRequest model);
         Task<ApplicationUser> GetAnyUserById(string userId);
         Task<List<string>> GetDeviceTokensByIdRange(List<string> IdRange, string category);
+        Task<List<string>> FilterUserIdRange(List<string> IdRange, string category, string userId);
         Task<ApplicationUser> GetBannedProfile(string userId);
         Task<ApplicationUser?> RemoveAllReports(string userId);
         Task<List<ApplicationUser>> GetBannedAccounts(PageSettingsRequest model);
+        Task<ApplicationUser> GetUserToChatById(string userId);
     }
 }

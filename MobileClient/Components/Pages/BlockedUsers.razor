@@ -32,9 +32,18 @@
                                 </div>
                             </div>
                         </div>
-                        <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-3" @onclick="() => UnblockUser(user.Id)">
+                        @* <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-3" @onclick="() => UnblockUser(user.Id)">
                             Unblock <i class="bi bi-unlock-fill me-1"></i>
-                        </button>
+                        </button> *@
+                        <div class="dropdown">
+                            <button class="btn btn-link p-0 m-0 border-0" type="button" id="iconMenuButton"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-three-dots-vertical fs-4"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="iconMenuButton">
+                                <li><button class="dropdown-item" @onclick="() => UnblockUser(user.Id)">Unblock</button></li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -72,28 +81,17 @@
 
     private async Task LoadUsers()
     {
-        try
+        var response = await AccountService.GetBlockedUsers(pageSettings);
+        if (response != null && response.UserBriefDetails.Any())
         {
-            var response = await AccountService.GetBlockedUsers(pageSettings);
-            if (response != null && response.Any())
-            {
-                users.AddRange(response);
-                pageSettings.PageNumber++;
-            }
-            else
-            {
-                hasMoreData = false;
-            }
-            StateHasChanged();
+            users.AddRange(response.UserBriefDetails);
+            pageSettings.PageNumber++;
         }
-        catch (AccountBannedException ex)
+        else
         {
-            await AlertService.ShowAlertAsync($"Error", $"{ex.Message}", "OK");
+            hasMoreData = false;
         }
-        catch (Exception)
-        {
-            await AlertService.ShowAlertAsync($"Error", "Something went wrong", "OK");
-        }
+        StateHasChanged();
     }
 
     [JSInvokable]
@@ -107,8 +105,13 @@
         var response = await AccountService.UnblockUser(userId);
 
         if (response.IsSuccess)
-            await AlertService.ShowAlertAsync($"Ok", $"{response.Message}", "OK");
+        {
+            users.RemoveAll(u => u.Id == userId);
+            StateHasChanged();
+        }
         else
+        {
             await AlertService.ShowAlertAsync($"Error", $"{response.Message}", "OK");
+        }
     }
 }

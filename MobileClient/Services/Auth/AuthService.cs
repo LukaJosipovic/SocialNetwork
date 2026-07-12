@@ -12,6 +12,10 @@ using Application.Exceptions;
 using MobileClient.AuthStateProvider;
 using Microsoft.AspNetCore.Components.Authorization;
 using MobileClient.Services.Location;
+using Application.Helper;
+#if ANDROID
+using MobileClient.Platforms.Android.LocationTracker;
+#endif
 
 namespace MobileClient.Services.Auth
 {
@@ -39,25 +43,17 @@ namespace MobileClient.Services.Auth
                 {
                     var authProvider = (CustomAuthStateProvider)_authStateProvider;
                     authProvider.NotifyUserAuthentication(responseObject.AccessToken);
-                    await _backgroundLocationService.Start();       
+                    await _backgroundLocationService.Start();
                 }
                 return responseObject;
             }
-            catch (AccountBannedException ex)
-            {
-                return new LoginResponse
-                {
-                    IsSuccess = false,
-                    Message = ex.Message
-                };
-            }
+            //catch (AccountBannedException ex)
+            //{
+            //    return ResponseHelper.CreateLoginResponse(false, ex.Message, null, null, null);
+            //}
             catch (Exception ex)
             {
-                return new LoginResponse
-                {
-                    IsSuccess = false,
-                    Message = "Something went wrong"
-                };
+                return ResponseHelper.CreateLoginResponse(false, "Something went wrong", null, null, null);
             }
         }
 
@@ -67,32 +63,20 @@ namespace MobileClient.Services.Auth
             {
                 var client = _httpClientFactory.CreateClient("BaseApi");
                 var response = await client.PostAsJsonAsync("api/Auth/CreateAccount", request);
+                
                 if (response.IsSuccessStatusCode)
-                {
-                    return new RegisterResponse
-                    {
-                        IsSuccess = true,
-                        Message = "Registration successful"
-                    };
-                }
+                    return ResponseHelper.CreateRegisterResponse(true, "Registration successful", null);
+                
                 var responseObject = await response.Content.ReadFromJsonAsync<RegisterResponse>();
                 return responseObject;
             }
-            catch (AccountBannedException ex)
-            {
-                return new RegisterResponse
-                {
-                    IsSuccess = false,
-                    Message = ex.Message
-                };
-            }
+            //catch (AccountBannedException ex)
+            //{
+            //    return ResponseHelper.CreateRegisterResponse(true, ex.Message, null);
+            //}
             catch(Exception ex)
             {
-                return new RegisterResponse
-                {
-                    IsSuccess = false,
-                    Message = "Something went wrong"
-                };
+                return ResponseHelper.CreateRegisterResponse(true, "Something went wrong", null);
             }
         }
 
@@ -102,24 +86,16 @@ namespace MobileClient.Services.Auth
             {
                 var client = _httpClientFactory.CreateClient("BaseApi");
                 var response = await client.PostAsJsonAsync("api/Auth/AddAdmin", request);
+                
                 if (response.IsSuccessStatusCode)
-                {
-                    return new RegisterResponse
-                    {
-                        IsSuccess = true,
-                        Message = "Registration successful"
-                    };
-                }
+                    return ResponseHelper.CreateRegisterResponse(true, "Registration successful", null);
+
                 var responseObject = await response.Content.ReadFromJsonAsync<RegisterResponse>();
                 return responseObject;
             }
             catch (Exception ex)
             {
-                return new RegisterResponse
-                {
-                    IsSuccess = false,
-                    Message = "Something went wrong"
-                };
+                return ResponseHelper.CreateRegisterResponse(true, "Something went wrong", null);
             }
         }
 
@@ -134,11 +110,7 @@ namespace MobileClient.Services.Auth
             }
             catch (Exception ex)
             {
-                return new GeneralResponse
-                {
-                    IsSuccess = false,
-                    Message = "Something went wrong"
-                };
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
         }
     }

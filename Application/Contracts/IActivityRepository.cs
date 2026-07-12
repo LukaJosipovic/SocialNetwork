@@ -1,4 +1,6 @@
-﻿using Domain.Model;
+﻿using Application.DTO.Request;
+using Application.DTO.Response;
+using Domain.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,5 +17,7 @@ namespace Application.Contracts
         List<ActivityCache> GetActivities(double latitude, double longitude, string userId);
         ActivityCache GetActivityByCacheKey(string cacheKey);
         Task<bool> SaveActivity(Activity activity);
+        Task<List<MyActivityDTO>> GetMyActivities(string userId, PageSettingsRequest model);
+        Task<List<Match>> GetMyAcceptedMatches(string userId, PageSettingsRequest model);
     }
 }

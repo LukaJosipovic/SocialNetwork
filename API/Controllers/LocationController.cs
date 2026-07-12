@@ -1,4 +1,5 @@
-﻿using Application.Service.LocationService;
+﻿using Application.DTO.Request;
+using Application.Service.LocationService;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -17,7 +18,7 @@ namespace API.Controllers
         }
 
         [HttpPost("AddLocation")]
-        public async Task<IActionResult> AddLocation(double latitude, double longitude)
+        public async Task<IActionResult> AddLocation([FromBody] LocationRequest location)
         {
             try
             {
@@ -26,7 +27,7 @@ namespace API.Controllers
                 if (userId == null)
                     return Unauthorized("User cannot be found");
 
-                var result = await _locationService.AddUserLocation(userId, latitude, longitude);
+                var result = await _locationService.AddUserLocation(userId, location.Latitude, location.Longitude);
 
                 return Ok(result);
             }
@@ -58,8 +59,8 @@ namespace API.Controllers
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            //if (userId == null)
-            //    return Unauthorized("User cannot be found");
+            if (userId == null)
+                return Unauthorized("User cannot be found");
 
             var locations = _locationService.GetAllLocations(userId);
 

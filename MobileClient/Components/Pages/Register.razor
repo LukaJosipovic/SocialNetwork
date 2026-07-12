@@ -1,5 +1,4 @@
-﻿@page "/"
-@page "/register"
+﻿@page "/register"
 @using Application.DTO.Request
 @using MobileClient.Services.Alert
 @using MobileClient.Services.Auth
@@ -46,13 +45,7 @@
 
 @code {
     [SupplyParameterFromForm]
-    private CreateAccountRequest Request { get; set; } = new()
-    {
-        Username = "string",
-        Email = "string@string.com",
-        Password = "Pa$$w0rd",
-        ConfirmPassword = "Pa$$w0rd"
-    };
+    private CreateAccountRequest Request { get; set; } = new();
 
     private async Task RegisterUser()
     {
@@ -73,6 +66,6 @@
 
     private async Task NavigateToLogin()
     {
-        NavManager.NavigateTo("/login");
+        NavManager.NavigateTo("/login", replace: true);
     }
 }

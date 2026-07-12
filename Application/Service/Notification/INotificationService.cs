@@ -10,6 +10,7 @@ namespace Application.Service.Notification
     public interface INotificationService
     {
         Task<GeneralResponse> RegisterDevice(string userId, string deviceToken);
-        Task<string?> GetDeviceToken(string userId);
+        Task<List<string>> GetDeviceToken(string userId);
+        Task<GeneralResponse> DeactivateDevice(string userId, string deviceToken);
     }
 }

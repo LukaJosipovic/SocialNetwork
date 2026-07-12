@@ -25,6 +25,7 @@ namespace Infrastructure.Data
         public DbSet<UserBlocks> UserBlocks { get; set; }
         public DbSet<UserDevice> UserDevices { get; set; }
         public DbSet<Conversation> Conversation { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -121,6 +122,12 @@ namespace Infrastructure.Data
             builder.Entity<Conversation>()
             .HasIndex(c => new { c.User1Id, c.User2Id })
             .IsUnique();
+
+            builder.Entity<RefreshToken>()
+            .HasOne(r => r.User)
+            .WithMany(u => u.RefreshTokens)
+            .HasForeignKey(r => r.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<ApplicationUser>().HasQueryFilter(u => !u.IsBanned && !u.IsDeleted);
             builder.Entity<Post>().HasQueryFilter(p => !p.User.IsBanned && !p.User.IsDeleted);

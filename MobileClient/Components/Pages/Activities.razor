@@ -1,6 +1,7 @@
 ﻿@page "/activities"
 @using Application.DTO.Response
 @using Application.Exceptions
+@using Microsoft.AspNetCore.Components.Authorization
 @using MobileClient.Services.Activity
 @using MobileClient.Services.Alert
 @using MobileClient.Services.LoadingService
@@ -8,6 +9,7 @@
 @inject NavigationManager NavManager
 @inject IAlertService AlertService
 @inject LoadingService LoadingService
+@inject AuthenticationStateProvider AuthStateProvider
 
 @if (activities == null || !activities.Any())
 {
@@ -17,12 +19,12 @@
     </div>
 }
 
-@if (activities != null)
+@if (activities != null && activities.Any())
 {
     <div class="container py-2">
         @foreach (var activity in activities)
         {
-            <div class="card mb-3">
+            <div class="card mb-3" @key="activity.CacheKey">
                 <div class="card-body pb-2">
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="d-flex align-items-center">
@@ -45,9 +47,12 @@
                     <p class="mb-2 fs-6">@activity.Description</p>
                     <span class="badge bg-secondary mb-3">@activity.ActivityCategory</span>
                     <div class="d-grid">
-                        <button class="btn btn-primary" style="background-color: #512bdf;" @onclick="() => AcceptActivity(activity.CacheKey)">
-                            Accept Activity
-                        </button>
+                        @if (!isAdmin)
+                        {
+                            <button class="btn btn-primary" style="background-color: #512bdf;" @onclick="() => AcceptActivity(activity)">
+                                Accept Activity
+                            </button>
+                        }
                     </div>
                 </div>
 
@@ -57,40 +62,21 @@
 }
 
 @code {
-    private List<ActivityResponse>? activities;
+    private List<ActivityDTO>? activities;
+    private bool isAdmin;
 
     protected override async Task OnInitializedAsync()
     {
         LoadingService.IsLoading = true;
 
-        try
-        {
-            var response = await ActivityService.GetActivities();
-            if (response.Count > 0)
-            {
-                foreach (var activity in response)
-                {
-                    if (activity.User.ProfilePicture != null)
-                    {
-                        activity.User.ProfilePictureString = $"data:image;base64,{Convert.ToBase64String(activity.User.ProfilePicture)}";
-                    }
-                }
-                activities = response;
-            }
-            else
-            {
-                activities = null;
-            }
-        }
-        catch (AccountBannedException ex)
-        {
-            await AlertService.ShowAlertAsync("Error", $"{ex.Message}", "OK");
-        }
-        catch (Exception ex)
-        {
-            await AlertService.ShowAlertAsync("Error", "Something went wrong", "OK");
-        }
+        var response = await ActivityService.GetActivities();
+        activities = response.Activities;
+        
+        if (response.IsSuccess == false)
+            await AlertService.ShowAlertAsync("Error", $"{response.Message}", "OK");
 
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        isAdmin = authState.User.IsInRole("Admin");
         LoadingService.IsLoading = false;
     }
 
@@ -99,24 +85,21 @@
         NavManager.NavigateTo($"/profile/user/{userId}");
     }
 
-    // private async Task ReportActivity(string cacheKey)
-    // {
-    //     var response = await ActivityService.ReportActivity(cacheKey);
-    //     if (response.IsSuccess)
-    //         await AlertService.ShowAlertAsync("Ok", $"{response.Message}", "OK");
-    //     else
-    //         await AlertService.ShowAlertAsync("Error", $"{response.Message}", "OK");
-    // }
-
-    private async Task AcceptActivity(string cacheKey)
+    private async Task AcceptActivity(ActivityDTO activity)
     {
         LoadingService.IsLoading = true;
 
-        var response = await ActivityService.AcceptActivity(cacheKey);
+        var response = await ActivityService.AcceptActivity(activity.CacheKey);
         if (response.IsSuccess)
+        {
+            activities.Remove(activity);
             await AlertService.ShowAlertAsync("Ok", $"{response.Message}", "OK");
+            StateHasChanged();
+        }
         else
+        {
             await AlertService.ShowAlertAsync("Error", $"{response.Message}", "OK");
+        }
 
         LoadingService.IsLoading = false;
     }

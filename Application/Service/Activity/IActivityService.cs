@@ -12,6 +12,9 @@ namespace Application.Service.Activity
     {
         Task<GeneralResponse> AcceptActivity(string cacheKey, string userId);
         Task<GeneralResponse> CreateActivity(CreateActivityRequest request, string userId);
-        Task<List<ActivityResponse>> GetActivities(double latitude, double longitude, string userId);
+        Task<ActivityResponse> GetActivities(double latitude, double longitude, string userId);
+        Task<MyActivityResponse> GetMyActivities(string userId, PageSettingsRequest model);
+        Task<ActivityResponse> GetMyAcceptedActivities(string userId, PageSettingsRequest model);
+        Task<List<string>> FilterUserIdRange(CreateActivityRequest request, string userId);
     }
 }

@@ -11,23 +11,31 @@ namespace Application.Helper
     {
         public async static Task<bool> SendNotification(string deviceToken, string title, string body)
         {
-            var message = new Message()
+            try
             {
-                Notification = new FirebaseAdmin.Messaging.Notification()
+                var message = new Message()
                 {
-                    Title = title,
-                    Body = body,
-                },
-                Token = deviceToken,
-            };
+                    Notification = new FirebaseAdmin.Messaging.Notification()
+                    {
+                        Title = title,
+                        Body = body,
+                    },
+                    Token = deviceToken,
+                };
 
-            var messaging = FirebaseMessaging.DefaultInstance;
-            var result = await messaging.SendAsync(message);
+                var messaging = FirebaseMessaging.DefaultInstance;
+                var result = await messaging.SendAsync(message);
 
-            if (!string.IsNullOrEmpty(result))
-                return true;
-            else
+                if (!string.IsNullOrEmpty(result))
+                    return true;
+                else
+                    return false;
+            }
+            catch (Exception ex)
+            {
+
                 return false;
+            }
         }
         public async static Task SendNotifications(List<string> deviceTokens, string title, string body)
         {
@@ -38,11 +46,19 @@ namespace Application.Helper
                     Title = title,
                     Body = body,
                 },
+                Android = new AndroidConfig()
+                {
+                    Notification = new AndroidNotification()
+                    {
+                        ChannelId = "general_notifications",
+                        ClickAction = "android.intent.action.MAIN",
+                    }
+                },
                 Tokens = deviceTokens
             };
 
             var messaging = FirebaseMessaging.DefaultInstance;
-            await messaging.SendEachForMulticastAsync(message);
+            var response = await messaging.SendEachForMulticastAsync(message);
         }
     }
 }

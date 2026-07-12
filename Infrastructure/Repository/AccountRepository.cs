@@ -58,6 +58,10 @@ namespace Infrastructure.Repository
         {
             return await _userManager.FindByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
         }
+        public async Task<ApplicationUser> GetUserToChatById(string userId)
+        {
+            return await _context.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Id == userId) ?? throw new KeyNotFoundException("User not found"); ;
+        }
 
         public async Task<ApplicationUser> GetUserProfile(string userId)
         {
@@ -94,7 +98,21 @@ namespace Infrastructure.Repository
         
         public async Task<IdentityResult> DeleteAccount(string userId, byte[] imageByte)
         {
-            var user = await _userManager.Users.Include(u => u.Posts).Include(u => u.Reports).FirstOrDefaultAsync(u => u.Id == userId) ?? throw new KeyNotFoundException("User not found");
+            var user = await _userManager.Users.Include(u => u.Posts).Include(u => u.Reports).Include(u => u.Likes).FirstOrDefaultAsync(u => u.Id == userId) ?? throw new KeyNotFoundException("User not found");
+
+            var postIds = user.Posts.Select(p => p.Id).ToList();
+
+            var likes = await _context.Like
+                .Where(l => postIds.Contains(l.PostId))
+                .ToListAsync();
+
+            _context.Like.RemoveRange(likes);
+
+            var reports = await _context.Report
+                .Where(r => postIds.Contains(r.ReportedPost.Id))
+                .ToListAsync();
+
+            _context.Report.RemoveRange(reports);
 
             if (user.Posts != null)
                 _context.Post.RemoveRange(user.Posts);
@@ -102,12 +120,17 @@ namespace Infrastructure.Repository
             if (user.Reports != null)
                 _context.Report.RemoveRange(user.Reports);
 
+            if (user.Likes != null)
+                _context.Like.RemoveRange(user.Likes);
+
             await _context.SaveChangesAsync();
 
             user.IsDeleted = true;
             user.ProfilePicture = imageByte;
             user.Name = "Unknown User";
-            user.Email = "";
+            user.Email = null;
+            user.UserName = "Unknown_User";
+            user.NormalizedUserName = null;
             return await _userManager.UpdateAsync(user);
         }
 
@@ -226,13 +249,13 @@ namespace Infrastructure.Repository
 
         public async Task<List<UserBlocks>> GetAllBlockedUsers(string userId, PageSettingsRequest model)
         {
-            //var skip = (model.PageNumber - 1) * model.PageSize;
-            return await _context.UserBlocks.Include(u => u.BlockedUser).Where(u => u.BlockerUserId == userId).ToListAsync(); //add paggination here
+            var skip = (model.PageNumber - 1) * model.PageSize;
+            return await _context.UserBlocks.Include(u => u.BlockedUser).Where(u => u.BlockerUserId == userId).Skip(skip).Take(model.PageSize).ToListAsync();
         }
 
         public async Task<ApplicationUser> GetAnyUserById(string userId)
         {
-            return await _userManager.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Id == userId) ?? throw new KeyNotFoundException("User not found");
+            return await _userManager.Users.IgnoreQueryFilters().Include(u => u.RefreshTokens).FirstOrDefaultAsync(u => u.Id == userId) ?? throw new KeyNotFoundException("User not found");
         }
 
         public async Task<List<string>> GetDeviceTokensByIdRange(List<string> IdRange, string category)
@@ -240,6 +263,13 @@ namespace Infrastructure.Repository
             var users = _userManager.Users.Include(u => u.Devices).Where(u => IdRange.Contains(u.Id) && u.DoNotDisturb == false && (u.Activities == null || u.Activities.Contains(category)));
             var deviceTokens = await users.SelectMany(u => u.Devices.Where(d => d.IsActive).Select(d => d.DeviceToken)).ToListAsync();
             return deviceTokens;
+        }
+        public async Task<List<string>> FilterUserIdRange(List<string> IdRange, string category, string userId)
+        {
+            var users = await _userManager.Users
+                .Where(u => IdRange.Contains(u.Id) && u.Id != userId && u.DoNotDisturb == false && (u.Activities == null || u.Activities.Contains(category)))
+                .Select(u => u.Id).ToListAsync(); 
+            return users;
         }
 
         public async Task<ApplicationUser> GetBannedProfile(string userId)

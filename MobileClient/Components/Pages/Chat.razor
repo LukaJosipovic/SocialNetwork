@@ -3,6 +3,7 @@
 @using Application.DTO.Request
 @using Application.DTO.Response
 @using Microsoft.AspNetCore.SignalR.Client
+@using MobileClient.Helper
 @using MobileClient.Services.Alert
 @using MobileClient.Services.Chat
 @using MobileClient.Services.LoadingService
@@ -20,7 +21,7 @@
             <div class="d-flex align-items-center">
                 @if (IsSuccess)
                 {
-                    <span class="bi bi-arrow-left fs-3" @onclick="NavigateToChatRooms"></span>
+                    <span class="bi bi-arrow-left fs-3" onclick="history.back();"></span>
                     <img src="@messageFromUser.ProfilePictureString"
                          style="width:50px;height:50px"
                          class="me-2 rounded-circle" />
@@ -111,13 +112,16 @@
                 }
 
                 //var url1 = "http://192.168.100.19:4321/socialnetwork/chathub";
+                //var url1 = "http://192.168.42.209:4321/socialnetwork/chathub";
+                var config = ConfigHelper.GetAppConfig();
+                string url1 = Path.Combine(config.BaseUrl, "chathub");
                 var url2 = "";
                 if (DeviceInfo.Platform == DevicePlatform.Android)
                     url2 = "http://10.0.2.2:5209/chathub";
                 else
                     url2 = "https://localhost:7098/chathub";
 
-                hubConnection = new HubConnectionBuilder().WithUrl(NavManager.ToAbsoluteUri(url2), async options =>
+                hubConnection = new HubConnectionBuilder().WithUrl(NavManager.ToAbsoluteUri(url1), async options =>
                 {
                     options.AccessTokenProvider = async() => await GetToken();
                 }).WithAutomaticReconnect().Build();
@@ -229,10 +233,5 @@
     private async Task NavigateToUserProfile(string userId)
     {
         NavManager.NavigateTo($"/profile/user/{userId}");
-    }
-
-    private async Task NavigateToChatRooms()
-    {
-        NavManager.NavigateTo("/chatrooms");
     }
 }

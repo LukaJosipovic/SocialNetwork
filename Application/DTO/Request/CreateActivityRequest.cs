@@ -11,9 +11,10 @@ namespace Application.DTO.Request
     public class CreateActivityRequest
     {
         [Required(ErrorMessage = "Description is required")]
+        [StringLength(255, ErrorMessage = "Description cannot exceed 255 characters")]
         public string Description { get; set; } = null!;
         [Required(ErrorMessage = "Category is required")]
-        [NotSelectCategory]
+        //[NotSelectCategory]
         public string Category { get; set; } = null!;
         public int Range { get; set; }
         public double Latitude { get; set; }

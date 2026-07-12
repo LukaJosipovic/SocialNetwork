@@ -12,8 +12,6 @@ namespace Domain.Model
         public string Name { get; set; } = null!;
         public string? Description { get; set; }
         public byte[]? ProfilePicture { get; set; }
-        public string? RefreshToken { get; set; }
-        public DateTime RefreshTokenExpiry { get; set; }
         public List<string>? Activities { get; set; }
         public bool GhostMode { get; set; }
         public bool DoNotDisturb { get; set; }
@@ -21,6 +19,7 @@ namespace Domain.Model
         public bool IsDeleted { get; set; } = false;
 
         // Navigation properties
+        public ICollection<RefreshToken> RefreshTokens { get; set; }
         public ICollection<Report>? Reports { get; set; }
         public ICollection<Post>? Posts { get; set; }
         public ICollection<Match>? Matches { get; set; }

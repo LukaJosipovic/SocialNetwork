@@ -1,8 +1,11 @@
 ﻿using Application.Contracts;
+using Application.DTO.Request;
+using Application.DTO.Response;
 using Application.Service.Activity;
 using Domain.Model;
 using Infrastructure.Data;
 using Infrastructure.Repository.Helper;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Concurrent;
@@ -45,7 +48,7 @@ namespace Infrastructure.Repository
                 {
                     double distance = LocationHelper.GetDistanceInKm(latitude, longitude, activity.Latitude, activity.Longitude);
 
-                    if (distance <= activity.Range && activity.UserId != userId)
+                    if (distance <= activity.Range && activity.UserId != userId && !activity.AcceptorIds.Contains(userId))
                         activities.Add(activity);
                 }
                 else
@@ -101,6 +104,33 @@ namespace Infrastructure.Repository
                 return true;
 
             return false;
+        }
+
+        public async Task<List<MyActivityDTO>> GetMyActivities(string userId, PageSettingsRequest model)
+        {
+            var skip = (model.PageNumber - 1) * model.PageSize;
+
+            return await _context.Match
+                .Where(m => m.CreatorId == userId)
+                .Skip(skip)
+                .Take(model.PageSize)
+                .GroupBy(m => m.Activity)
+                .Select(g => new MyActivityDTO
+                {
+                    Id = g.Key.Id,
+                    Description = g.Key.Description,
+                    ActivityCategory = g.Key.ActivityCategory,
+                    Range = g.Key.Range,
+                    AcceptedCount = g.Count()
+                }).OrderByDescending(x => x.Id)
+                .ToListAsync();
+        }
+
+        public async Task<List<Match>> GetMyAcceptedMatches(string userId, PageSettingsRequest model)
+        {
+            var skip = (model.PageNumber - 1) * model.PageSize;
+
+            return await _context.Match.Include(m => m.Activity).ThenInclude(a => a.User).Where(m => m.AcceptorId == userId).Skip(skip).Take(model.PageSize).OrderByDescending(m => m.DateMatched).ToListAsync();
         }
     }
 }

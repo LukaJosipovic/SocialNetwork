@@ -41,6 +41,7 @@ namespace Application.Helper
                     Email = user.Email,
                     Description = user.Description,
                     GhostMode = user.GhostMode,
+                    DoNotDisturbMode = user.DoNotDisturb,
                     ProfilePicture = user.ProfilePicture,
                     IsSuccess = isSuccess
                 };
@@ -126,6 +127,45 @@ namespace Application.Helper
             }
         }
 
+        public static ChatRoomResponse CreateChatRoomResponse(bool isSuccess, string? message)
+        {
+            if (isSuccess)
+            {
+                return new ChatRoomResponse
+                {
+                    IsSuccess = isSuccess,
+                    Message= message
+                };
+            }
+            else
+            {
+                return new ChatRoomResponse
+                {
+                    IsSuccess = isSuccess,
+                    Message = message
+                };
+            }
+        }
+
+        public static MessageResponse CreateMessageResponse(bool isSuccess, string? message)
+        {
+            if (isSuccess)
+            {
+                return new MessageResponse
+                {
+                    IsSuccess = isSuccess,
+                    Message = message
+                };
+            }
+            else
+            {
+                return new MessageResponse
+                {
+                    IsSuccess = isSuccess,
+                    Message = message
+                };
+            }
+        }
         public static BannedAccountResponse CreateBannedAccountsResponse(bool IsSuccess, string? message, List<ApplicationUser>? users)
         {
             if (IsSuccess)
@@ -147,6 +187,92 @@ namespace Application.Helper
             }
 
             return new BannedAccountResponse
+            {
+                IsSuccess = IsSuccess,
+                Message = message
+            };
+        }
+
+        public static MyActivityResponse CreateMyActivityResponse(bool IsSuccess, string? message, List<MyActivityDTO>? activities)
+        {
+            if (IsSuccess)
+            {
+                return new MyActivityResponse
+                {
+                    IsSuccess = IsSuccess,
+                    MyActivities = activities
+                };
+            }
+            return new MyActivityResponse
+            {
+                IsSuccess = IsSuccess,
+                Message = message
+            };
+        }
+
+        public static ActivityResponse CreateActivityResponse(bool IsSuccess, string? message, List<ActivityDTO>? activities)
+        {
+            if (IsSuccess)
+            {
+                return new ActivityResponse
+                {
+                    IsSuccess = IsSuccess,
+                    Activities = activities
+                };
+            }
+            return new ActivityResponse
+            {
+                IsSuccess = IsSuccess,
+                Message = message
+            };
+        }
+
+        public static UserBriefDetailsResponse CreateUserBriefDetailsResponse(bool IsSuccess, string? message, List<UserBriefDetailsDTO>? users)
+        {
+            if (IsSuccess)
+            {
+                return new UserBriefDetailsResponse
+                {
+                    IsSuccess = IsSuccess,
+                    UserBriefDetails = users
+                };
+            }
+            return new UserBriefDetailsResponse
+            {
+                IsSuccess = IsSuccess,
+                Message = message
+            };
+        }
+
+        public static PostDetailsResponse CreatePostDetailsResponse(bool IsSuccess, string? message, List<PostDetailsDTO>? posts)
+        {
+            if (IsSuccess)
+            {
+                return new PostDetailsResponse
+                {
+                    IsSuccess = IsSuccess,
+                    PostDetails = posts
+                };
+            }
+            return new PostDetailsResponse
+            {
+                IsSuccess = IsSuccess,
+                Message = message
+            };
+        }
+
+        public static LikeResponse CreateLikeResponse(bool IsSuccess, string? message, int likeCount, int postId)
+        {
+            if (IsSuccess)
+            {
+                return new LikeResponse
+                {
+                    IsSuccess = IsSuccess,
+                    LikeCount = likeCount,
+                    PostId = postId
+                };
+            }
+            return new LikeResponse
             {
                 IsSuccess = IsSuccess,
                 Message = message

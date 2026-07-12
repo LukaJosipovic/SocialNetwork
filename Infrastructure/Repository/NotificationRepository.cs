@@ -51,9 +51,10 @@ namespace Infrastructure.Repository
             return await _context.UserDevices.AnyAsync(u => u.UserId == userId && u.DeviceToken == deviceToken);
         }
 
-        public async Task<UserDevice> GetUserDevice(string userId)
+        public async Task<List<UserDevice>> GetUserDevice(string userId)
         {
-            return await _context.UserDevices.FirstOrDefaultAsync(d => d.UserId == userId && d.IsActive == true) ?? throw new KeyNotFoundException("Device not found");
+            //return await _context.UserDevices.FirstOrDefaultAsync(d => d.UserId == userId && d.IsActive == true) ?? throw new KeyNotFoundException("Device not found");
+            return await _context.UserDevices.Where(d => d.UserId == userId && d.IsActive == true).ToListAsync();
         }
 
         public async Task<bool> RegisterDevice(UserDevice userDevice)

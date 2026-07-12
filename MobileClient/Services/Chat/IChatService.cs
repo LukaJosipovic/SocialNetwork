@@ -14,5 +14,6 @@ namespace MobileClient.Services.Chat
     {
         Task<ChatRoomResponse> GetChatRooms(PageSettingsRequest model);
         Task<MessageResponse> GetMessages(string recipientId, int conversationId, PageSettingsRequest model);
+        Task<ChatRoomResponse> GetActivityChat(int activityId, PageSettingsRequest model);
     }
 }

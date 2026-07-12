@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Application.Exceptions;
 using Application.Helper;
+using Application.DTO.Request;
 
 namespace MobileClient.Services.Location
 {
@@ -31,11 +32,11 @@ namespace MobileClient.Services.Location
                 var responseObject = await response.Content.ReadFromJsonAsync<List<LocationDTO>>();
                 return responseObject;
             }
-            catch (AccountBannedException)
-            {
+            //catch (AccountBannedException)
+            //{
 
-                throw;
-            }
+            //    throw;
+            //}
             catch (Exception ex)
             {
 
@@ -48,14 +49,14 @@ namespace MobileClient.Services.Location
             try
             {
                 var client = _httpClientFactory.CreateClient("BaseApi");
-                var response = await client.PostAsync($"api/Location/AddLocation?latitude={latitude}&longitude={longitude}", new StringContent(string.Empty));
+                var response = await client.PostAsJsonAsync($"api/Location/AddLocation", new { latitude, longitude });
                 var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
                 return responseObject;
             }
-            catch (AccountBannedException ex)
-            {
-                return ResponseHelper.CreateGeneralResponse(true, ex.Message);
-            }
+            //catch (AccountBannedException ex)
+            //{
+            //    return ResponseHelper.CreateGeneralResponse(true, ex.Message);
+            //}
             catch (Exception ex)
             {
                 return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");

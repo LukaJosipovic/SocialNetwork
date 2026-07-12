@@ -14,7 +14,8 @@ namespace Infrastructure.Data
         {
             var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
 
-            optionsBuilder.UseSqlServer("Server=.\\SQLEXPRESS;Database=SocialNetworkDb;Trusted_Connection=true;TrustServerCertificate=true");
+            //optionsBuilder.UseSqlServer("Server=.\\SQLEXPRESS;Database=SocialNetworkDb;Trusted_Connection=true;TrustServerCertificate=true");
+            optionsBuilder.UseSqlServer("CONNECTION_STRING");
 
             return new AppDbContext(optionsBuilder.Options);
         }

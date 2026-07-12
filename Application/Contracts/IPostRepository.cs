@@ -1,4 +1,5 @@
-﻿using Application.DTO.Response;
+﻿using Application.DTO.Request;
+using Application.DTO.Response;
 using Domain.Model;
 using Microsoft.AspNetCore.Identity;
 using System;
@@ -12,7 +13,7 @@ namespace Application.Contracts
     public interface IPostRepository
     {
         Task<Post> GetPostById(int id);
-        Task<List<Post>> GetAllPosts();
+        Task<List<Post>> GetAllPosts(PageSettingsRequest model);
         Task<bool> ReportPost(Report report);
         Task<List<Post>> GetReportedPosts();
         Task<bool> DeletePostAdmin(int postId);

@@ -11,8 +11,10 @@ namespace Application.DTO.Request
     {
         [Required]
         [EmailAddress]
+        [StringLength(255, ErrorMessage = "Email cannot exceed 255 characters")]
         public string Email { get; set; } = string.Empty;
         [Required]
+        [StringLength(255, ErrorMessage = "Password cannot exceed 255 characters")]
         public string Password { get; set; } = string.Empty;
     }
 }

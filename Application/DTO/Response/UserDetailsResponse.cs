@@ -14,5 +14,6 @@ namespace Application.DTO.Response
         public string? Description { get; set; }
         public byte[]? ProfilePicture { get; set; }
         public bool GhostMode { get; set; }
+        public bool DoNotDisturbMode { get; set; }
     }
 }

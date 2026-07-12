@@ -12,10 +12,10 @@ namespace Application.Validation
     {
         protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
         {
-            if (value is string s && s == ActivityCategory.SelectCategory.ToString())
-            {
-                return new ValidationResult("Please select a valid category");
-            }
+            //if (value is string s && s == ActivityCategory.SelectCategory.ToString())
+            //{
+            //    return new ValidationResult("Please select a valid category");
+            //}
 
             return ValidationResult.Success;
         }

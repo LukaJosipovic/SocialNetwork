@@ -1,4 +1,5 @@
 ﻿using Application.Contracts;
+using Application.DTO.Request;
 using Application.DTO.Response;
 using Azure.Core;
 using Domain.Model;
@@ -24,8 +25,14 @@ namespace Infrastructure.Repository
 
         public async Task<bool> DeletePostAdmin(int postId)
         {
-            var post = await _context.Post.FindAsync(postId) ?? throw new KeyNotFoundException("Post cannot be found");
+            var post = await _context.Post.IgnoreQueryFilters().Include(p => p.Reports).Include(p => p.Likes).FirstOrDefaultAsync(p => p.Id == postId) ?? throw new KeyNotFoundException("Post cannot be found");
             
+            if (post.Reports != null && post.Reports.Count > 0)
+                _context.Report.RemoveRange(post.Reports);
+
+            if (post.Likes != null && post.Likes.Count > 0)
+                _context.Like.RemoveRange(post.Likes);
+
             _context.Post.Remove(post);
             var result = await _context.SaveChangesAsync();
             
@@ -46,9 +53,10 @@ namespace Infrastructure.Repository
             return false;
         }
 
-        public async Task<List<Post>> GetAllPosts()
+        public async Task<List<Post>> GetAllPosts(PageSettingsRequest model)
         {
-            return await _context.Post.Include(p => p.User).Include(p => p.Likes).OrderByDescending(p => p.DateCreated).ToListAsync();
+            var skip = (model.PageNumber - 1) * model.PageSize;
+            return await _context.Post.Include(p => p.User).Include(p => p.Likes).OrderByDescending(p => p.DateCreated).Skip(skip).Take(model.PageSize).ToListAsync();
         }
 
         public async Task<Post> GetPostById(int id)

@@ -13,6 +13,7 @@ namespace Domain.Model
         public string ActivityCategory { get; set; }
         public string CacheKey { get; set; }
         public string UserId { get; set; }
+        public List<string> AcceptorIds { get; set; } = new List<string>();
         public int Range { get; set; }
         public double Latitude { get; set; }
         public double Longitude { get; set; }

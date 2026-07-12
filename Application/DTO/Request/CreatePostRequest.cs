@@ -16,6 +16,7 @@ namespace Application.DTO.Request
         public PostType Type { get; set; }
         [Required(ErrorMessage = "The image is required")]
         public byte[] ImageData { get; set; }
+        [StringLength(255, ErrorMessage = "Description cannot exceed 255 characters")]
         public string? Description { get; set; }
         [Required]
         public DateTime DateCreated { get; set; }

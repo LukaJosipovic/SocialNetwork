@@ -55,22 +55,20 @@ else
 }
 
 @code {
-    private List<PostDetailsResponse>? postsDetails;
+    private List<PostDetailsDTO>? postsDetails;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
             LoadingService.IsLoading = true;
+
             var response = await PostService.GetReportedPosts();
-            if (response.Count > 0)
-            {
-                postsDetails = response;
-            }
-            else
-            {
-                postsDetails = null;
-            }
+            postsDetails = response.PostDetails;
+
+            if (response.IsSuccess == false)
+                await AlertService.ShowAlertAsync("Error", $"{response.Message}", "OK");
+
             LoadingService.IsLoading = false;
         }
         catch (Exception)

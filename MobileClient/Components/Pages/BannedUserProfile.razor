@@ -23,7 +23,6 @@
         </button>
         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="iconMenuButton">
             <li><button class="dropdown-item" @onclick="() => UnbanUser(UserId)">Unbann</button></li>
-            <li><button class="dropdown-item" @onclick="() => DeleteUser(UserId)">Delete</button></li>
         </ul>
     </div>
 </div>
@@ -70,11 +69,7 @@
             await AlertService.ShowAlertAsync("Error", $"{response.Message}", "OK");
 
         LoadingService.IsLoading = false;
-    }
 
-    private async Task DeleteUser(string userId)
-    {
-        
+        NavManager.NavigateTo("/bannedaccounts");
     }
-
 }

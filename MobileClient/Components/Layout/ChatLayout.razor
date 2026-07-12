@@ -1,5 +1,13 @@
 ﻿@using MobileClient.Components.Pages.Shared
+@using MobileClient.Services.Alert
+@using MobileClient.Services.Connectivity
+@using MobileClient.SessionService
+@inject IAlertService AlertService
+@inject NavigationManager NavManager
+@inject UserSessionService UserSessionService
+@implements IAsyncDisposable
 @inherits LayoutComponentBase
+@inject ConnectivityService ConnectivityService
 
 <div class="page">
 
@@ -13,5 +21,47 @@
 </div>
 
 @code {
+    protected override async Task OnInitializedAsync()
+    {
+        UserSessionService.OnUserBanned += HandleUserBannedAsync;
+        NavManager.LocationChanged += OnLocationChanged;
+        ConnectivityService.ConnectivityChanged += OnConnectivityChanged;
+    }
 
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        ConnectivityService.UpdateLastKnownPage(e.Location);
+    }
+
+    private void OnConnectivityChanged(bool isConnected)
+    {
+        if (!isConnected)
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                NavManager.NavigateTo("/nointernet", replace: true);
+            });
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        UserSessionService.OnUserBanned -= HandleUserBannedAsync;
+        ConnectivityService.ConnectivityChanged -= OnConnectivityChanged;
+        UserSessionService.OnUserBanned -= HandleUserBannedAsync;
+    }
+
+    private async Task HandleUserBannedAsync()
+    {
+        await MainThread.InvokeOnMainThreadAsync(async () =>
+        {
+            await AlertService.ShowAlertAsync("Error", "Your account has been banned due to too many reports to your account. If you think this ban is unjustified, contact our admin", "OK");
+
+            SecureStorage.Remove("accessToken");
+            SecureStorage.Remove("refreshToken");
+            SecureStorage.Remove("userLocation");
+
+            NavManager.NavigateTo("/register", forceLoad: true);
+        });
+    }
 }

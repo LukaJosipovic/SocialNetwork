@@ -19,6 +19,11 @@ using MobileClient.Services.Notification;
 using MobileClient.Services.LoadingService;
 using Microsoft.AspNetCore.Components.Authorization;
 using MobileClient.AuthStateProvider;
+using MobileClient.Services.App;
+using System.Text.Json;
+using Application.DTO;
+using MobileClient.Helper;
+using MobileClient.Services.Connectivity;
 
 
 
@@ -43,19 +48,30 @@ namespace MobileClient
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 });
 
+            var config = ConfigHelper.GetAppConfig();
+
             builder.Services.AddHttpClient("BaseApi", client =>
             {
-                #if ANDROID
-                    client.BaseAddress = new Uri("http://10.0.2.2:5209/");
-                #else
-                    client.BaseAddress = new Uri("https://localhost:7098/");
-                #endif
+                //#if ANDROID
+                //    client.BaseAddress = new Uri("http://10.0.2.2:5209/");
+                //#else
+                //    client.BaseAddress = new Uri("https://localhost:7098/");
+                //#endif
+                //client.BaseAddress = new Uri("http://192.168.42.209:4321/socialnetwork/");
+                client.BaseAddress = new Uri(config.BaseUrl);
+                //client.BaseAddress = new Uri("http://192.168.100.19:4321/socialnetwork/");
                 //client.BaseAddress = new Uri("http://192.168.100.19:4321/socialnetwork/");
                 //client.BaseAddress = new Uri("http://localhost/socialnetwork/");
                 //client.BaseAddress = new Uri("https://localhost/socialnetwork/");
                 //client.BaseAddress = new Uri("https://192.168.100.4/socialnetwork/");
                 client.Timeout = TimeSpan.FromSeconds(30);
             }).AddHttpMessageHandler<TokenHandler>();
+
+            builder.Services.AddHttpClient("RefreshClient", client =>
+            {
+                client.BaseAddress = new Uri(config.BaseUrl);
+                client.Timeout = TimeSpan.FromSeconds(30);
+            });
 
             builder.Services.AddTransient<TokenHandler>();
             builder.Services.AddSingleton<IAlertService, AlertService>();
@@ -73,6 +89,8 @@ namespace MobileClient
             builder.Services.AddSingleton<LoadingService>();
             builder.Services.AddAuthorizationCore();
             builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
+            builder.Services.AddSingleton<IAppCloser, AppCloser>();
+            builder.Services.AddSingleton<ConnectivityService>();
 #if ANDROID
             builder.Services.AddSingleton<ILocationStopper, AndroidLocationStopper>();
 #else

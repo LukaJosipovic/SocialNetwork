@@ -11,7 +11,5 @@ namespace Application.Contracts
     public interface IJwtTokenGenerator
     {
         Task<string> GenerateToken(string userId, string name, string email);
-        string GenerateRefreshToken();
-        Task<IdentityResult> StoreRefreshToken(ApplicationUser user, string refreshToken);
     }
 }

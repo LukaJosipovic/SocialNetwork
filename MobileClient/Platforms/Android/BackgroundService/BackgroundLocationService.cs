@@ -17,15 +17,19 @@ namespace MobileClient.Platforms.Android.BackgroundService
     {
         public async Task Start()
         {
+            await SecureStorage.SetAsync("ShouldRunLocationService", "true");
             var context = global::Android.App.Application.Context;
             var intent = new Intent(context, typeof(LocationTrackerService));
+            intent.SetPackage(context.PackageName);
             context.StartForegroundService(intent);
         }
 
         public async Task Stop()
         {
-            var context = global::Android.App.Application.Context; ;
+            await SecureStorage.SetAsync("ShouldRunLocationService", "false");
+            var context = global::Android.App.Application.Context;
             var intent = new Intent(context, typeof(LocationTrackerService));
+            intent.SetPackage(context.PackageName);
             context.StopService(intent);
         }
     }

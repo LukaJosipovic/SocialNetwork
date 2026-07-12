@@ -39,13 +39,7 @@
 
 @code {
     [SupplyParameterFromForm]
-    private CreateAccountRequest Request { get; set; } = new()
-        {
-            Username = "admin2",
-            Email = "admin2@admin.com",
-            Password = "Pa$$w0rd",
-            ConfirmPassword = "Pa$$w0rd"
-        };
+    private CreateAccountRequest Request { get; set; } = new();
 
     private async Task AddNewAdmin()
     {

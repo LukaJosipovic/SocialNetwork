@@ -50,7 +50,7 @@
         background: #1e1e1e;
         transition: left 0.25s ease;
         box-shadow: 2px 0 10px rgba(0,0,0,.4);
-        z-index: 999;
+        z-index: 2000;
     }
 
     .side-drawer.open {
@@ -97,14 +97,16 @@
 <div class="side-drawer @(isOpen ? "open" : "")">
     <nav>
         <NavLink href="home" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-house"></i> Home</NavLink>
+        <NavLink href="myprofile" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-person"></i> My Profile</NavLink>
         @if (!isAdmin)
         {
             <NavLink href="map" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-geo-alt"></i> Map</NavLink>
             <NavLink href="editmyprofile" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-pencil-square"></i> Edit Profile</NavLink>
             <NavLink href="addpost" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-file-earmark-plus"></i> Add Post</NavLink>
-            <NavLink href="myprofile" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-person"></i> My Profile</NavLink>
-            <NavLink href="createactivity" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-plus-lg"></i> Create Activity</NavLink>
             <NavLink href="chatrooms" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-chat-dots"></i> Chat Rooms</NavLink>
+            <NavLink href="createactivity" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-plus-lg"></i> Create Activity</NavLink>
+            <NavLink href="myactivities" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-calendar-event"></i> My Activities</NavLink>
+            <NavLink href="acceptedactivities" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-check2-circle"></i> Accepted Activities</NavLink>
         }
         @if (isAdmin)
         {   

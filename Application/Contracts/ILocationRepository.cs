@@ -13,5 +13,7 @@ namespace Application.Contracts
         List<LocationDTO> GetAllLocations();
         List<string> GetUserIdsByLocations(double latitude, double longitude, int range);
         bool RemoveUserLocation(string userId);
+        bool UpdateGhostModeSettings(string userId, bool ghostMode);
+        bool UpdateDoNotDisturbSettings(string userId, bool doNotDisturb);
     }
 }

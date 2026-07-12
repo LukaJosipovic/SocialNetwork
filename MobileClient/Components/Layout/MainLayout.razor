@@ -2,6 +2,8 @@
 @using Microsoft.AspNetCore.SignalR.Client
 @using MobileClient.Services.Account
 @using MobileClient.Services.Alert
+@using MobileClient.Services.App
+@using MobileClient.Services.Connectivity
 @using MobileClient.SessionService
 @using MobileClient.Helper
 @using MobileClient.Components.Pages.Shared
@@ -11,6 +13,8 @@
 @inject UserSessionService UserSessionService
 @inject IAlertService AlertService
 @inject IAccountService AccountService
+@inject IAppCloser AppCloser
+@inject ConnectivityService ConnectivityService
 
 <div class="page">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
@@ -34,21 +38,30 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (string.IsNullOrWhiteSpace(await SecureStorage.GetAsync("accessToken")))
-            NavManager.NavigateTo("/login");
+        var hasInternet = await ConnectivityService.CheckInternetWithAlertAsync();
+
+        if (!hasInternet)
+        {
+            NavManager.NavigateTo("/nointernet", replace: true);
+            return;
+        }
 
         UserSessionService.OnUserBanned += HandleUserBannedAsync;
+        NavManager.LocationChanged += OnLocationChanged;
+        ConnectivityService.ConnectivityChanged += OnConnectivityChanged;
 
-        string url = "http://192.168.100.19:4321/socialnetwork/activityhub";
-        string url2 = "https://localhost:7098/activityhub";
-        string url3 = "http://10.0.2.2:5209/activityhub";
+        //string url = "http://192.168.100.19:4321/socialnetwork/activityhub";
+        //string url = "http://192.168.42.209:4321/socialnetwork/activityhub";
+        //string url2 = "https://localhost:7098/activityhub";
+        //string url3 = "http://10.0.2.2:5209/activityhub";
 
-        if (DeviceInfo.Platform == DevicePlatform.Android)
-            url = "http://10.0.2.2:5209/activityhub";
-        else
-            url = "https://localhost:7098/activityhub";
+        // if (DeviceInfo.Platform == DevicePlatform.Android)
+        //     url = "http://10.0.2.2:5209/activityhub";
+        // else
+        //     url = "https://localhost:7098/activityhub";
+        var config = ConfigHelper.GetAppConfig();
+        string url = Path.Combine(config.BaseUrl, "activityhub");
 
-        var test = await GetToken();
         hubConnection = new HubConnectionBuilder().WithUrl(NavManager.ToAbsoluteUri(url), async options =>
         {
             options.AccessTokenProvider = async () => await GetToken();
@@ -59,20 +72,22 @@
             OnNewActivityReceived?.Invoke();
         });
 
-        // hubConnection.On("RequestLocation", async () =>
-        // {
-        //     await SendMyLocationAsync();
-        // });
-
         await hubConnection.StartAsync();
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
-        var status = await LocationHelper.GetLocationPermission();
-        if (status == false)
-        {
+        ConnectivityService.UpdateLastKnownPage(e.Location);
+    }
 
+    private void OnConnectivityChanged(bool isConnected)
+    {
+        if (!isConnected)
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                NavManager.NavigateTo("/nointernet", replace: true);
+            });
         }
     }
 
@@ -82,6 +97,8 @@
         {
             await hubConnection.DisposeAsync();
         }
+        NavManager.LocationChanged -= OnLocationChanged;
+        ConnectivityService.ConnectivityChanged -= OnConnectivityChanged;
         UserSessionService.OnUserBanned -= HandleUserBannedAsync;
     }
 
@@ -99,6 +116,7 @@
 
             SecureStorage.Remove("accessToken");
             SecureStorage.Remove("refreshToken");
+            SecureStorage.Remove("userLocation");
 
             NavManager.NavigateTo("/register", forceLoad: true);
         });

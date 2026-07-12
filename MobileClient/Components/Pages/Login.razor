@@ -57,7 +57,7 @@
             await SecureStorage.SetAsync("accessToken", result.AccessToken);
             await SecureStorage.SetAsync("refreshToken", result.RefreshToken);
             SendNotificationToken();
-            NavManager.NavigateTo("/home");
+            NavManager.NavigateTo("/home", replace: true);
         }
         else
         {

@@ -13,7 +13,6 @@ namespace MobileClient.Helper
         {
             return category switch
             {
-                ActivityCategory.SelectCategory => "Select a category",
                 ActivityCategory.FoodAndDrink => "Food & Drink",
                 ActivityCategory.SportsAndFitness => "Sports & Fitness",
                 ActivityCategory.ArtsAndCulture => "Arts & Culture",

@@ -17,66 +17,58 @@
 
 @code {
     private IJSObjectReference? module;
-    private string? result;
-    private Location? location;
-    private CancellationTokenSource _cancelTokenSource;
-    private bool _isCheckingLocation;
-    //private IDisposable? _updateLocationSub;
-    private readonly HashSet<string> _knownUsers = new();
+    //private string? result;
+    //private Location? location;
+    //private CancellationTokenSource _cancelTokenSource;
+    //private bool _isCheckingLocation;
+    //private readonly HashSet<string> _knownUsers = new();
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
+            var status = await Permissions.CheckStatusAsync<Permissions.LocationAlways>();
 
             if (status != PermissionStatus.Granted)
             {
-                status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+                status = await Permissions.RequestAsync<Permissions.LocationAlways>();
             }
             if (status == PermissionStatus.Granted)
             {
-                await GetCurrentLocation();
+                await LoadMap();
             }
-        }catch (Exception ex)
+        }
+        catch (Exception ex)
         {
             
         }
     }
 
-    public async Task GetCurrentLocation()
+    public async Task LoadMap()
     {
         try
         {
             LoadingService.IsLoading = true;
 
-            _isCheckingLocation = true;
+            //_isCheckingLocation = true;
 
-            GeolocationRequest request = new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromSeconds(10));
+            //GeolocationRequest request = new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromSeconds(10));
 
-            _cancelTokenSource = new CancellationTokenSource();
+            //_cancelTokenSource = new CancellationTokenSource();
 
             var location = await LocationHelper.GetCurrentLocation();
-            if (location == null)
-            {
-                location = new Location
-                {
-                    Latitude = 45.815399,
-                    Longitude = 15.966568
-                };
-            }
 
             var usersLocatoins = await LocationService.GetUsersLocations();
 
-            if (location != null)
+            if (location != null && module == null)
             {
                 module = await JS.InvokeAsync<IJSObjectReference>("import", "./leaflet.js");
-                Console.WriteLine($"Latitude: {location.Latitude}, Longitude: {location.Longitude}, Altitude: {location.Altitude}");
             }
 
             if (module != null && location != null)
             {
-                result = await module.InvokeAsync<string>("load_map", location?.Latitude, location?.Longitude);
+                //result = await module.InvokeAsync<string>("load_map", location?.Latitude, location?.Longitude);
+                await module.InvokeAsync<string>("load_map", location?.Latitude, location?.Longitude);
                 var userLocationsJson = JsonSerializer.Serialize(usersLocatoins);
                 await module.InvokeVoidAsync("add_user_markers", userLocationsJson);
             }
@@ -84,19 +76,19 @@
         }
         catch (Exception ex)
         {
-            // Unable to get location
+            await AlertService.ShowAlertAsync("Error", "Something went wrong", "OK");
         }
-        finally
-        {
-            _isCheckingLocation = false;
-        }
+        // finally
+        // {
+        //     _isCheckingLocation = false;
+        // }
     }
 
-    public void CancelRequest()
-    {
-        if (_isCheckingLocation && _cancelTokenSource != null && _cancelTokenSource.IsCancellationRequested == false)
-            _cancelTokenSource.Cancel();
-    }
+    // public void CancelRequest()
+    // {
+    //     if (_isCheckingLocation && _cancelTokenSource != null && _cancelTokenSource.IsCancellationRequested == false)
+    //         _cancelTokenSource.Cancel();
+    // }
 
     public async ValueTask DisposeAsync()
     {

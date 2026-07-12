@@ -10,5 +10,6 @@ namespace MobileClient.Services.Notification
     public interface INotificationService
     {
         Task<GeneralResponse> RegisterDevice(string deviceToken);
+        Task<GeneralResponse> DeactivateDevice(string deviceToken);
     }
 }

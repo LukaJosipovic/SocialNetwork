@@ -1,4 +1,5 @@
 ﻿using Application.DTO.Response;
+using Application.Helper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,12 +19,34 @@ namespace MobileClient.Services.Notification
             _httpClientFactory = httpClientFactory;
         }
 
+        public async Task<GeneralResponse> DeactivateDevice(string deviceToken)
+        {
+            try
+            {
+                var client = _httpClientFactory.CreateClient("BaseApi");
+                var response = await client.PutAsync($"api/Notification/DeactivateDevice?deviceToken={deviceToken}", null);
+                var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
+                return responseObject;
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
+            }
+        }
+
         public async Task<GeneralResponse> RegisterDevice(string deviceToken)
         {
-            var client = _httpClientFactory.CreateClient("BaseApi");
-            var response = await client.PostAsync($"api/Notification/RegisterDevice?deviceToken={deviceToken}", null);
-            var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
-            return responseObject;
+            try
+            {
+                var client = _httpClientFactory.CreateClient("BaseApi");
+                var response = await client.PostAsync($"api/Notification/RegisterDevice?deviceToken={deviceToken}", null);
+                var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
+                return responseObject;
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
+            }
         }
     }
 }

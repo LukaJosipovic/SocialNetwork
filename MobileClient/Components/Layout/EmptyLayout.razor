@@ -1,7 +1,12 @@
 ﻿@using MobileClient.Helper
 @using MobileClient.Components.Pages.Shared
+@using MobileClient.Services.App
+@using MobileClient.Services.Connectivity
 @inject NavigationManager NavManager
+@inject IAppCloser AppCloser
 @inherits LayoutComponentBase
+@inject ConnectivityService ConnectivityService
+@implements IAsyncDisposable
 
 <div class="page">
 
@@ -15,25 +20,32 @@
 </div>
 
 @code{
-    // protected override async Task OnInitializedAsync()
-    // {
-    //     var status = await LocationHelper.GetLocationPermission();
-    //     if (status == false)
-    //     {
-
-    //     }
-    // }
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnInitializedAsync()
     {
-        var status = await LocationHelper.GetLocationPermission();
-        if (status == false)
+        NavManager.LocationChanged += OnLocationChanged;
+        ConnectivityService.ConnectivityChanged += OnConnectivityChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        ConnectivityService.UpdateLastKnownPage(e.Location);
+    }
+
+
+    private void OnConnectivityChanged(bool isConnected)
+    {
+        if (!isConnected)
         {
-
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                NavManager.NavigateTo("/nointernet", replace: true);
+            });
         }
+    }
 
-        // var token = await SecureStorage.GetAsync("accessToken");
-
-        // if (!string.IsNullOrEmpty(token))
-        //     NavManager.NavigateTo("/home");
+    public async ValueTask DisposeAsync()
+    {
+        NavManager.LocationChanged -= OnLocationChanged;
+        ConnectivityService.ConnectivityChanged -= OnConnectivityChanged;
     }
 }

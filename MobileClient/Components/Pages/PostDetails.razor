@@ -38,19 +38,41 @@
                 </div>
             }
         </div>
+
+        <img src="@postDetails.PostImageString" alt="Post picture" style="width: 100%;" />        
+        <div class="post-container" style="padding: 5px 5px 5px 5px;">
+            <div class="post-header" style="display: flex; align-items: center; justify-content: space-between;">
+                <div class="like-section" style="display: flex; align-items: center;">
+                    @if (postDetails.IsLiked)
+                    {
+                        <i class="bi bi-suit-heart-fill like-icon" style="font-size: 30px; color: red;" @onclick="() => DislikePost(postDetails.PostId)"></i>
+                    }
+                    else
+                    {
+                        <i class="bi bi-suit-heart like-icon" style="font-size: 30px; color: red;" @onclick="() => LikePost(postDetails.PostId)"></i>
+                    }
+                    <span class="like-count" style="margin-left: 10px; font-weight: bold;">@postDetails.LikeCount</span>
+                </div>
+                <span class="post-date" style="white-space: nowrap;">@postDetails.DateCreated.ToString("MM.dd.yyyy")</span>
+            </div>
+
+            <div class="post-description" style="margin-top: 8px;">
+                @postDetails.Description
+            </div>
+        </div>
     </div>
 
-    <img src="@postDetails.PostImageString" alt="Post picture" style="width: 100%;" />
+@*     <img src="@postDetails.PostImageString" alt="Post picture" style="width: 100%;" />
     <p>@postDetails.Description</p>
     <div style="padding: 0px 5px 10px 5px; text-align: right;">
         <p>@postDetails.DateCreated.ToString("MM.dd.yyyy")</p>
-    </div>
+    </div> *@
 }
 
 @code {
     [Parameter]
     public int PostId { get; set; }
-    private PostDetailsResponse? postDetails;
+    private PostDetailsDTO? postDetails;
     private string? profileImage;
     private string? currentUserId;
 
@@ -60,11 +82,12 @@
 
         var response = await PostService.GetPostById(PostId);
         if (response.IsSuccess)
+        {
             postDetails = response;
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            currentUserId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        }
 
-        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-
-        currentUserId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
         LoadingService.IsLoading = false;
     }
@@ -81,5 +104,34 @@
             NavManager.NavigateTo($"/myprofile");
         else
             await AlertService.ShowAlertAsync("Error", $"{response.Message}", "OK");
+    }
+    private async Task LikePost(int postId)
+    {
+        var response = await PostService.LikePost(postId);
+        if (response.IsSuccess)
+        {
+            postDetails.LikeCount = response.LikeCount;
+            postDetails.IsLiked = true;
+        }
+        else
+        {
+            await AlertService.ShowAlertAsync("Error", $"{response.Message}", "OK");
+        }
+        StateHasChanged();
+    }
+
+    private async Task DislikePost(int postId)
+    {
+        var response = await PostService.DislikePost(postId);
+        if (response.IsSuccess)
+        {
+            postDetails.LikeCount = response.LikeCount;
+            postDetails.IsLiked = false;
+        }
+        else
+        {
+            await AlertService.ShowAlertAsync("Error", $"{response.Message}", "OK");
+        }
+        StateHasChanged();
     }
 }
