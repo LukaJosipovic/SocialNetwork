@@ -23,6 +23,7 @@ namespace MobileClient.Helper
                 ActivityCategory.GamesAndActivities => "Games & Activities",
                 ActivityCategory.TravelAndExploration => "Travel & Exploration",
                 ActivityCategory.ChillAndRelaxation => "Chill & Relaxation",
+                ActivityCategory.Other => "Other",
                 _ => category.ToString()
             };
         }

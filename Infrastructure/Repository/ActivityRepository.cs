@@ -132,5 +132,10 @@ namespace Infrastructure.Repository
 
             return await _context.Match.Include(m => m.Activity).ThenInclude(a => a.User).Where(m => m.AcceptorId == userId).Skip(skip).Take(model.PageSize).OrderByDescending(m => m.DateMatched).ToListAsync();
         }
+
+        public async Task<Domain.Model.Activity> GetActivityById(int activityId)
+        {
+            return await _context.Activity.FirstOrDefaultAsync(a => a.Id == activityId) ?? throw new KeyNotFoundException("Activity not found");
+        }
     }
 }

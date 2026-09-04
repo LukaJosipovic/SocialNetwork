@@ -13,5 +13,6 @@ namespace Application.DTO
         public string? Name { get; set; }
         public byte[]? ProfilePicture { get; set; }
         public string ProfilePictureString { get; set; } = null!;
+        public bool IsMe { get; set; }
     }
 }

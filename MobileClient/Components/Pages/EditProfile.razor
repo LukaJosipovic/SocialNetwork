@@ -41,7 +41,7 @@
                    maxlength="255"
                    @bind="username" 
                    @bind:event="oninput"
-                   @bind:after="ValidateInput"/>
+                   @bind:after="ValidateUsernameInput"/>
 
             @if (!string.IsNullOrEmpty(usernameValidationMessage))
             {
@@ -53,6 +53,30 @@
                     class="btn btn-success w-100"
                     @onclick="UpdateUsername">
                 Update Username
+            </button>
+        </div>
+    </div>
+    
+    <div class="card mb-3">
+        <div class="card-body">
+            <label class="form-label fw-semibold">Description</label>
+            <input type="text"
+                   class="form-control mb-2"
+                   maxlength="255"
+                   @bind="description" 
+                   @bind:event="oninput"
+                   @bind:after="ValidateDescriptionInput"/>
+
+            @if (!string.IsNullOrEmpty(descriptionValidationMessage))
+            {
+                <div class="text-danger mb-2">
+                    @descriptionValidationMessage
+                </div>
+            }
+            <button type="button"
+                    class="btn btn-success w-100"
+                    @onclick="UpdateDescription">
+                Update Description
             </button>
         </div>
     </div>
@@ -150,10 +174,12 @@
     private string? ImagePreview;
     private byte[]? buffer;
     private string username;
+    private string? description;
     private List<ActivityCategory> SelectedCategories { get; set; } = new();
     private bool IsGhostMode;
     private bool IsDoNotDisturbMode;
     private string? usernameValidationMessage;
+    private string? descriptionValidationMessage;
     private string? categoriesValidationMessage;
 
     protected override async Task OnInitializedAsync()
@@ -162,6 +188,8 @@
 
         var response = await AccountService.GetUserById();
         username = response.Name;
+        description = response.Description;
+        SelectedCategories = response.Categories == null ? new List<ActivityCategory>() : response.Categories;
 
         if (response.ProfilePicture != null)    
             ImagePreview = $"data:image;base64,{Convert.ToBase64String(response.ProfilePicture)}";
@@ -221,12 +249,36 @@
     {
         LoadingService.IsLoading = true;
 
-        var response = await AccountService.UpdateUsername(username);
+        ValidateUsernameInput();
 
-        if (response.IsSuccess)
-            await AlertService.ShowAlertAsync($"Ok", $"{response.Message}", "OK");
-        else
-            await AlertService.ShowAlertAsync($"Error", $"{response.Message}", "OK");
+        if (!string.IsNullOrEmpty(usernameValidationMessage))
+        {
+            var response = await AccountService.UpdateUsername(username);
+
+            if (response.IsSuccess)
+                await AlertService.ShowAlertAsync($"Ok", $"{response.Message}", "OK");
+            else
+                await AlertService.ShowAlertAsync($"Error", $"{response.Message}", "OK");
+        }
+
+        LoadingService.IsLoading = false;
+    }
+
+    private async Task UpdateDescription()
+    {
+        LoadingService.IsLoading = true;
+
+        ValidateDescriptionInput();
+
+        if (!string.IsNullOrEmpty(descriptionValidationMessage))
+        {
+            var response = await AccountService.UpdateDescription(description);
+
+            if (response.IsSuccess)
+                await AlertService.ShowAlertAsync($"Ok", $"{response.Message}", "OK");
+            else
+                await AlertService.ShowAlertAsync($"Error", $"{response.Message}", "OK");
+        }
 
         LoadingService.IsLoading = false;
     }
@@ -274,7 +326,7 @@
             return;
         }
 
-    categoriesValidationMessage = null;
+        categoriesValidationMessage = null;
 
         LoadingService.IsLoading = true;
 
@@ -314,19 +366,23 @@
             await AlertService.ShowAlertAsync($"Error", response.Message, "OK");
     }
 
-    private void ValidateInput()
+    private void ValidateUsernameInput()
     {
         if (username.Length > 255)
-        {
             usernameValidationMessage = "Username cannot exceed 255 characters";
-        }
         else if (string.IsNullOrWhiteSpace(username))
-        {
             usernameValidationMessage = "Username is required";
-        }
         else
-        {
             usernameValidationMessage = null;
-        }
+    }
+
+    private void ValidateDescriptionInput()
+    {
+        if (description.Length > 255)
+            descriptionValidationMessage = "Description cannot exceed 255 characters";
+        else if (string.IsNullOrWhiteSpace(description))
+            descriptionValidationMessage = "Description is empty";
+        else
+            descriptionValidationMessage = null;
     }
 }

@@ -80,7 +80,6 @@
         color: white;
     }
 
-        /* CTA highlight */
     .nav-item.highlight {
         color: #4da3ff;
         font-weight: 600;
@@ -107,6 +106,7 @@
             <NavLink href="createactivity" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-plus-lg"></i> Create Activity</NavLink>
             <NavLink href="myactivities" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-calendar-event"></i> My Activities</NavLink>
             <NavLink href="acceptedactivities" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-check2-circle"></i> Accepted Activities</NavLink>
+            <NavLink href="friendrequests" @onclick="ToggleMenu" class="nav-item"><i class="bi bi-person-plus"></i> Friend Requests</NavLink>
         }
         @if (isAdmin)
         {   

@@ -19,5 +19,6 @@ namespace Application.Contracts
         Task<bool> SaveActivity(Activity activity);
         Task<List<MyActivityDTO>> GetMyActivities(string userId, PageSettingsRequest model);
         Task<List<Match>> GetMyAcceptedMatches(string userId, PageSettingsRequest model);
+        Task<Activity> GetActivityById(int activityId);
     }
 }

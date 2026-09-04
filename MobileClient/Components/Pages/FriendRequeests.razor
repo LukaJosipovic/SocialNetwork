@@ -1,43 +1,39 @@
-﻿@page "/activities"
+﻿@page "/friendrequests"
 @using Application.DTO.Response
-@using Application.Exceptions
-@using Microsoft.AspNetCore.Components.Authorization
-@using Microsoft.AspNetCore.SignalR.Client
-@using MobileClient.Services.Activity
+@using MobileClient.Services.Account
 @using MobileClient.Services.Alert
 @using MobileClient.Services.LoadingService
-@inject IActivityService ActivityService
+@inject IAccountService AccountService
 @inject NavigationManager NavManager
 @inject IAlertService AlertService
 @inject LoadingService LoadingService
-@inject AuthenticationStateProvider AuthStateProvider
 
-@if (activities == null || !activities.Any())
+@if (friendRequests == null || !friendRequests.Any())
 {
     <div class="text-center text-muted py-5">
-        <i class="bi bi-calendar-x fs-1"></i>
-        <p class="mt-2">No activities available</p>
+        <i class="bi bi-people fs-1"></i>
+        <p class="mt-2">No new friend requests</p>
     </div>
 }
 
-@if (activities != null && activities.Any())
+@if (friendRequests != null && friendRequests.Any())
 {
     <div class="container py-2">
-        @foreach (var activity in activities)
+        @foreach (var friendRequest in friendRequests)
         {
-            <div class="card mb-3" @key="activity.CacheKey">
+            <div class="card mb-3">
                 <div class="card-body pb-2">
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="d-flex align-items-center">
-                            @if (activity.User.ProfilePictureString != null)
+                            @if (friendRequest.ProfilePictureString != null)
                             {
-                                <img src="@activity.User.ProfilePictureString"
+                                <img src="@friendRequest.ProfilePictureString"
                                      class="rounded-circle me-2"
                                      style="width:48px; height:48px; object-fit:cover;"
-                                     @onclick="() => NavigateToUserProfile(activity.User.Id)" />
+                                     @onclick="() => NavigateToUserProfile(friendRequest.Id)" />
 
                                 <span class="fw-semibold">
-                                    @activity.User.Name
+                                    @friendRequest.Name
                                 </span>
                             }
                         </div>
@@ -45,15 +41,11 @@
                 </div>
 
                 <div class="card-body pt-0">
-                    <p class="mb-2 fs-6">@activity.Description</p>
-                    <span class="badge bg-secondary mb-3">@activity.ActivityCategory</span>
+                    <p class="mb-2 fs-6">@friendRequest.Description</p>
                     <div class="d-grid">
-                        @if (!isAdmin)
-                        {
-                            <button class="btn btn-primary" style="background-color: #512bdf;" @onclick="() => AcceptActivity(activity)">
-                                Accept Activity
-                            </button>
-                        }
+                        <button class="btn btn-primary" style="background-color: #512bdf;" @onclick="() => AcceptFriendship(friendRequest)">
+                            Accept Friendship
+                        </button>
                     </div>
                 </div>
 
@@ -63,22 +55,18 @@
 }
 
 @code {
-    private List<ActivityDTO>? activities;
-    private bool isAdmin;
-    private HubConnection? hubConnection;
+    private List<FriendRequestDTO>? friendRequests;
 
     protected override async Task OnInitializedAsync()
     {
         LoadingService.IsLoading = true;
 
-        var response = await ActivityService.GetActivities();
-        activities = response.Activities;
+        var response = await AccountService.GetFriendRequests();
+        friendRequests = response.FriendRequestDTOs;
         
         if (response.IsSuccess == false)
             await AlertService.ShowAlertAsync("Error", $"{response.Message}", "OK");
 
-        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        isAdmin = authState.User.IsInRole("Admin");
         LoadingService.IsLoading = false;
     }
 
@@ -87,14 +75,14 @@
         NavManager.NavigateTo($"/profile/user/{userId}");
     }
 
-    private async Task AcceptActivity(ActivityDTO activity)
+    private async Task AcceptFriendship(FriendRequestDTO friendRequest)
     {
         LoadingService.IsLoading = true;
 
-        var response = await ActivityService.AcceptActivity(activity.CacheKey);
+        var response = await AccountService.AcceptFriendship(friendRequest.Id, friendRequest.FriendRequestId);
         if (response.IsSuccess)
         {
-            activities.Remove(activity);
+            friendRequests.Remove(friendRequest);
             await AlertService.ShowAlertAsync("Ok", $"{response.Message}", "OK");
             StateHasChanged();
         }

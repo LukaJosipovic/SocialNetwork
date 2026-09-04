@@ -234,5 +234,22 @@ namespace Application.Service.Activity
             var filteredIdRange = await _accountRepository.FilterUserIdRange(IdRange, request.Category, userId);
             return filteredIdRange;
         }
+
+        public async Task<string?> GetActivityDescriptionById(int activityId)
+        {
+            try
+            {
+                var activity = await _activityRepository.GetActivityById(activityId);
+                return activity.Description;
+            }
+            catch (KeyNotFoundException ex)
+            {
+                throw new KeyNotFoundException();
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
     }
 }

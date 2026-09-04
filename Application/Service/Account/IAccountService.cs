@@ -17,9 +17,10 @@ namespace Application.Service.Account
         Task<UserDetailsResponse> GetAnyUserById(string userId);
         Task<ProfilePictureResponse> ChangeProfilePicture(ChangeProfilePictureRequest request, string userId);
         Task<GeneralResponse> UpdateUsername(string username, string userId);
+        Task<GeneralResponse> UpdateDescription(string description, string userId);
         Task<GeneralResponse> DeleteAccount(string userId);
         Task<GeneralResponse> CreatePost(CreatePostRequest request, string userId);
-        Task<UserProfileRespons> GetUserProfile(string userId);
+        Task<UserProfileRespons> GetUserProfile(string userId, string? myUserId);
         Task<UserBriefDetailsResponse> GetUsers();
         Task<GeneralResponse> ChangeActivities(List<ActivityCategory> activities, string userId);
         Task<GeneralResponse> GhostMode(bool ghostMode, string userId);
@@ -33,5 +34,10 @@ namespace Application.Service.Account
         Task<UserProfileRespons> GetBannedProfile(string email);
         Task<BannedAccountResponse> GetBannedAccounts(PageSettingsRequest model);
         Task<GeneralResponse> Logout(LogoutRequest model);
+        Task<GeneralResponse> SendFriendRequest(string senderUserId, string receiverUserId);
+        Task<FriendRequestResponse> GetFriendRequest(string userId);
+        Task<GeneralResponse> AcceptFriendship(string senderId, string userId, int friendRequestId);
+        Task<UserBriefDetailsResponse> GetMatches(PageSettingsRequest model, string? UserId, string myUserId);
+        Task<UserBriefDetailsResponse> GetFriends(PageSettingsRequest model, string? UserId, string myUserId);
     }
 }

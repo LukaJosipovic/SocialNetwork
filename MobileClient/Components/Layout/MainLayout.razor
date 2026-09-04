@@ -38,41 +38,49 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var hasInternet = await ConnectivityService.CheckInternetWithAlertAsync();
-
-        if (!hasInternet)
+        try
         {
-            NavManager.NavigateTo("/nointernet", replace: true);
-            return;
+            var hasInternet = await ConnectivityService.CheckInternetWithAlertAsync();
+
+            if (!hasInternet)
+            {
+                NavManager.NavigateTo("/nointernet", replace: true);
+                return;
+            }
+
+            UserSessionService.OnUserBanned += HandleUserBannedAsync;
+            NavManager.LocationChanged += OnLocationChanged;
+            ConnectivityService.ConnectivityChanged += OnConnectivityChanged;
+
+            //string url = "http://192.168.100.19:4321/socialnetwork/activityhub";
+            //string url = "http://192.168.42.209:4321/socialnetwork/activityhub";
+            //string url2 = "https://localhost:7098/activityhub";
+            //string url3 = "http://10.0.2.2:5209/activityhub";
+
+            // if (DeviceInfo.Platform == DevicePlatform.Android)
+            //     url = "http://10.0.2.2:5209/activityhub";
+            // else
+            //     url = "https://localhost:7098/activityhub";
+            var config = ConfigHelper.GetAppConfig();
+            string url = Path.Combine(config.BaseUrl, "activityhub");
+
+            hubConnection = new HubConnectionBuilder().WithUrl(NavManager.ToAbsoluteUri(url), async options =>
+            {
+                options.AccessTokenProvider = async () => await GetToken();
+            }).WithAutomaticReconnect().Build();
+
+            hubConnection.On("ReceiveActivityNotification", () =>
+            {
+                OnNewActivityReceived?.Invoke();
+            });
+
+            await hubConnection.StartAsync();
         }
-
-        UserSessionService.OnUserBanned += HandleUserBannedAsync;
-        NavManager.LocationChanged += OnLocationChanged;
-        ConnectivityService.ConnectivityChanged += OnConnectivityChanged;
-
-        //string url = "http://192.168.100.19:4321/socialnetwork/activityhub";
-        //string url = "http://192.168.42.209:4321/socialnetwork/activityhub";
-        //string url2 = "https://localhost:7098/activityhub";
-        //string url3 = "http://10.0.2.2:5209/activityhub";
-
-        // if (DeviceInfo.Platform == DevicePlatform.Android)
-        //     url = "http://10.0.2.2:5209/activityhub";
-        // else
-        //     url = "https://localhost:7098/activityhub";
-        var config = ConfigHelper.GetAppConfig();
-        string url = Path.Combine(config.BaseUrl, "activityhub");
-
-        hubConnection = new HubConnectionBuilder().WithUrl(NavManager.ToAbsoluteUri(url), async options =>
+        catch (Exception ex)
         {
-            options.AccessTokenProvider = async () => await GetToken();
-        }).WithAutomaticReconnect().Build();
-
-        hubConnection.On("ReceiveActivityNotification", () =>
-        {
-            OnNewActivityReceived?.Invoke();
-        });
-
-        await hubConnection.StartAsync();
+            
+            throw;
+        }
     }
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)

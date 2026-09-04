@@ -13,5 +13,9 @@ namespace Application.DTO.Response
         public byte[]? ProfilePicture { get; set; }
         public string ProfilePictureString { get; set; } = null!;
         public List<PostDTO>? PostDTO { get; set; }
+        public int FriendCount { get; set; }
+        public int MatchCount { get; set; }
+        public bool IsFriend { get; set; }
+        public List<string>? Activities { get; set; }
     }
 }

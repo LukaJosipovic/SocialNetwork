@@ -52,6 +52,12 @@
       <EmbedAssembliesIntoApk>False</EmbedAssembliesIntoApk>
     </PropertyGroup>
 
+    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-android|AnyCPU'">
+      <AndroidPackageFormat>aab</AndroidPackageFormat>
+      <AndroidUseAapt2>True</AndroidUseAapt2>
+      <AndroidCreatePackagePerAbi>False</AndroidCreatePackagePerAbi>
+    </PropertyGroup>
+
     <ItemGroup>
         <!-- App Icon -->
         <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />

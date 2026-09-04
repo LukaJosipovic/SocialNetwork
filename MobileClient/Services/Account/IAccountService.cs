@@ -15,6 +15,7 @@ namespace MobileClient.Services.Account
         Task<UserDetailsResponse> GetUserById();
         Task<ProfilePictureResponse> ChangeProfilePicture(ChangeProfilePictureRequest request);
         Task<GeneralResponse> UpdateUsername(string username);
+        Task<GeneralResponse> UpdateDescription(string description);
         Task<GeneralResponse> DeleteAccount();
         Task<GeneralResponse> CreatePost(CreatePostRequest request);
         Task<UserProfileRespons> MyProfile();
@@ -31,5 +32,10 @@ namespace MobileClient.Services.Account
         Task<UserProfileRespons> GetBannedProfile(string userId);
         Task<BannedAccountResponse> GetBannedAccounts(PageSettingsRequest model);
         Task<GeneralResponse> Logout(LogoutRequest model);
+        Task<GeneralResponse> SendFriendRequest(string userId);
+        Task<FriendRequestResponse> GetFriendRequests();
+        Task<GeneralResponse> AcceptFriendship(string userId, int friendRequestId);
+        Task<UserBriefDetailsResponse> GetMatches(PageSettingsRequest model, string? UserId);
+        Task<UserBriefDetailsResponse> GetFriends(PageSettingsRequest model, string? UserId);
     }
 }

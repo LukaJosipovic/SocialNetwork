@@ -22,7 +22,7 @@
                 @if (IsSuccess)
                 {
                     <span class="bi bi-arrow-left fs-3" onclick="history.back();"></span>
-                    <img src="@messageFromUser.ProfilePictureString"
+                    <img src="@messageFromUser.ProfilePictureString" @onclick="() => NavigateToUserProfile(messageFromUser.Id)"
                          style="width:50px;height:50px"
                          class="me-2 rounded-circle" />
                     <p class="mb-0">@messageFromUser.Name</p>

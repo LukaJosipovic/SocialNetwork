@@ -2,6 +2,7 @@
 using Application.DTO.Request;
 using Application.Enum;
 using Application.Service.Account;
+using Domain.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -75,6 +76,22 @@ namespace API.Controllers
             return BadRequest(result);
         }
 
+        [HttpPut("UpdateDescription")]
+        public async Task<IActionResult> UpdateDescription(string description)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId == null)
+                return Unauthorized("User cannot be found");
+
+            var result = await _accountService.UpdateDescription(description, userId);
+
+            if (result.IsSuccess)
+                return Ok(result);
+
+            return BadRequest(result);
+        }
+
         [HttpPut("DeleteAccount")]
         public async Task<IActionResult> DeleteAccount()
         {
@@ -118,7 +135,7 @@ namespace API.Controllers
             if (userId == null)
                 return Unauthorized("User cannot be found");
 
-            var result = await _accountService.GetUserProfile(userId);
+            var result = await _accountService.GetUserProfile(userId, null);
 
             if (result.IsSuccess)
                 return Ok(result);
@@ -129,10 +146,12 @@ namespace API.Controllers
         [HttpGet("GetUserProfile")]
         public async Task<IActionResult> GetUserProfile(string userId)
         {
-            if (userId == null)
+            var myUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (myUserId == null)
                 return Unauthorized("User cannot be found");
 
-            var result = await _accountService.GetUserProfile(userId);
+            var result = await _accountService.GetUserProfile(userId, myUserId);
 
             if (result.IsSuccess)
                 return Ok(result);
@@ -317,6 +336,69 @@ namespace API.Controllers
             if (result.IsSuccess)
                 return Ok(result);
 
+            return BadRequest(result);
+        }
+
+        [HttpPost("SendFriendRequest")]
+        public async Task<IActionResult> SendFriendRequest(string receiverUserId)
+        {
+            var senderUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (senderUserId == null)
+                return Unauthorized("User cannot be found");
+
+            var result = await _accountService.SendFriendRequest(senderUserId, receiverUserId);
+            if (result.IsSuccess)
+                return Ok(result);
+            return BadRequest(result);
+        }
+
+        [HttpGet("GetFriendRequest")]
+        public async Task<IActionResult> GetFriendRequest()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null)
+                return Unauthorized("User cannot be found");
+
+            var result = await _accountService.GetFriendRequest(userId);
+            if (result.IsSuccess)
+                return Ok(result);
+            return BadRequest(result);
+        }
+        [HttpPost("AcceptFriendship")]
+        public async Task<IActionResult> AcceptFriendship(string senderId, int friendRequestId)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null)
+                return Unauthorized("User cannot be found");
+
+            var result = await _accountService.AcceptFriendship(senderId, userId, friendRequestId);
+            if (result.IsSuccess)
+                return Ok(result);
+            return BadRequest(result);
+        }
+
+        [HttpGet("GetMatches")]
+        public async Task<IActionResult> GetMatches([FromQuery] PageSettingsRequest model, string? UserId)
+        {
+            var myUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (myUserId == null)
+                return Unauthorized("User cannot be found");
+
+            var result = await _accountService.GetMatches(model, UserId, myUserId);
+            if (result.IsSuccess)
+                return Ok(result);
+            return BadRequest(result);
+        }
+        [HttpGet("GetFriends")]
+        public async Task<IActionResult> GetFriends([FromQuery] PageSettingsRequest model, string? UserId)
+        {
+            var myUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (myUserId == null)
+                return Unauthorized("User cannot be found");
+
+            var result = await _accountService.GetFriends(model, UserId, myUserId);
+            if (result.IsSuccess)
+                return Ok(result);
             return BadRequest(result);
         }
     }

@@ -26,6 +26,12 @@
                 <button class="dropdown-item" @onclick="() => ReportUser(UserId)">
                     Report
                 </button>
+                @if (!profile.IsFriend)
+                {
+                    <button class="dropdown-item" @onclick="() => SendFriendRequest(UserId)">
+                        Send Friend Request
+                    </button>
+                }
             </li>
         </ul>
     </div>
@@ -34,7 +40,7 @@
 @if (IsSuccess)
 {
     <div class="d-flex justify-content-center mt-3">
-        <_Profile profile="@profile"/>
+        <_Profile profile="@profile" UserId="@UserId" />
     </div>
 }
 
@@ -76,4 +82,14 @@
         LoadingService.IsLoading = false;
     }
 
+    private async Task SendFriendRequest(string userId)
+    {
+        LoadingService.IsLoading = true;
+        var response = await AccountService.SendFriendRequest(userId);
+        if (response.IsSuccess)
+            await AlertService.ShowAlertAsync("Ok", $"{response.Message}", "OK");
+        else
+            await AlertService.ShowAlertAsync("Error", $"{response.Message}", "OK");
+        LoadingService.IsLoading = false;
+    }
 }

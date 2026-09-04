@@ -43,6 +43,7 @@ export function add_user_markers(usersJson) {
             let imageHtml = "";
             if (user.ProfilePictureString && user.ProfilePictureString.length > 0) {
                 imageHtml = `<img src="${user.ProfilePictureString}" 
+                                onclick="window.location.href='/profile/user/${user.Id}'"
                                 style="width:100px;height:100px;object-fit:cover;border-radius:50%;display:block;margin:0 auto 10px auto;" />`;
             }
 

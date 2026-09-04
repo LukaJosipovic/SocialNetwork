@@ -1,4 +1,5 @@
-﻿using Domain.Model;
+﻿using Application.Enum;
+using Domain.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,5 +16,6 @@ namespace Application.DTO.Response
         public byte[]? ProfilePicture { get; set; }
         public bool GhostMode { get; set; }
         public bool DoNotDisturbMode { get; set; }
+        public List<ActivityCategory>? Categories { get; set; }
     }
 }

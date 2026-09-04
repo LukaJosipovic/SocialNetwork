@@ -65,9 +65,7 @@ namespace Infrastructure.Repository
 
         public async Task<ApplicationUser> GetUserProfile(string userId)
         {
-            return await _context.Users.Include(u => u.Posts)
-                .ThenInclude(p => p.Likes).Include(u => u.Matches)
-                .FirstOrDefaultAsync(u => u.Id == userId) ?? throw new KeyNotFoundException("User cannot be found");
+            return await _context.Users.Include(u => u.Posts).ThenInclude(p => p.Likes).FirstOrDefaultAsync(u => u.Id == userId) ?? throw new KeyNotFoundException("User cannot be found");
         }
 
         public async Task<List<ApplicationUser>> GetUsers()
@@ -95,7 +93,14 @@ namespace Infrastructure.Repository
             user.Name = username;
             return await _userManager.UpdateAsync(user);
         }
-        
+
+        public async Task<IdentityResult> UpdateDescription(string description, string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
+            user.Description = description;
+            return await _userManager.UpdateAsync(user);
+        }
+
         public async Task<IdentityResult> DeleteAccount(string userId, byte[] imageByte)
         {
             var user = await _userManager.Users.Include(u => u.Posts).Include(u => u.Reports).Include(u => u.Likes).FirstOrDefaultAsync(u => u.Id == userId) ?? throw new KeyNotFoundException("User not found");
@@ -293,6 +298,108 @@ namespace Infrastructure.Repository
                 query = query.Where(u => u.IsBanned && u.Email.Contains(model.SearchTerm));
 
             return await query.ToListAsync();
+        }
+
+        public async Task<bool> SendFriendRequest(FriendRequest friendRequest)
+        {
+            await _context.FriendRequests.AddAsync(friendRequest);
+            var result = await _context.SaveChangesAsync();
+
+            if (result > 0)
+                return true;
+
+            return false;
+        }
+
+        public async Task<List<FriendRequest>> GetFriendRequest(string userId)
+        {
+            return await _context.FriendRequests.Include(fr => fr.Sender)
+                .Where(fr => fr.ReceiverId == userId && fr.Accepted == false).OrderByDescending(fr => fr.CreatedAt).ToListAsync();
+        }
+
+        public async Task<int> GetMatchCount(string userId)
+        {
+            return await _context.Match.CountAsync(m => m.CreatorId == userId || m.AcceptorId == userId);
+        }
+
+        public Task<int> GetFriendCount(string userId)
+        {
+            return _context.FriendRequests.CountAsync(fr => (fr.SenderId == userId || fr.ReceiverId == userId) && fr.Accepted == true);
+        }
+
+        public async Task<bool> AcceptFriendship(string userId, int friendRequestId)
+        {
+            var friendRequest = await _context.FriendRequests.FirstOrDefaultAsync(fr => fr.Id == friendRequestId && fr.ReceiverId == userId);
+            friendRequest.Accepted = true;
+            
+            var result = await _context.SaveChangesAsync();
+            
+            if (result > 0)
+                return true;
+            return false;
+        }
+
+        public async Task<List<ApplicationUser>> GetUserMatches(PageSettingsRequest model, string? UserId, string myUserId)
+        {
+            var skip = (model.PageNumber - 1) * model.PageSize;
+
+            var targetUserId = UserId ?? myUserId;
+
+            var query = _context.Match
+                .Where(m => m.CreatorId == targetUserId || m.AcceptorId == targetUserId)
+                .Select(m => new
+                {
+                    OtherUserId = m.CreatorId == targetUserId ? m.AcceptorId : m.CreatorId,m.DateMatched
+                })
+                .GroupBy(x => x.OtherUserId)
+                .Select(g => new
+                {
+                    OtherUserId = g.Key,
+                    DateMatched = g.Max(x => x.DateMatched)
+                })
+                .Join(
+                    _context.Users,
+                    match => match.OtherUserId,
+                    user => user.Id,
+                    (match, user) => new
+                    {
+                        User = user,
+                        match.DateMatched
+                    })
+                .OrderByDescending(x => x.DateMatched)
+                .Skip((model.PageNumber - 1) * model.PageSize)
+                .Take(model.PageSize);
+
+            return await query
+                .Select(x => x.User)
+                .ToListAsync();
+
+            //return users;
+        }
+
+        public async Task<List<ApplicationUser>> GetUserFriends(PageSettingsRequest model, string? UserId, string myUserId)
+        {
+            var skip = (model.PageNumber - 1) * model.PageSize;
+
+            var targetUserId = UserId ?? myUserId;
+
+            return await _context.FriendRequests
+                .Where(fr => (fr.SenderId == targetUserId || fr.ReceiverId == targetUserId) && fr.Accepted)
+                .OrderByDescending(fr => fr.CreatedAt)
+                .Skip(skip)
+                .Take(model.PageSize)
+                .Select(fr => fr.SenderId == targetUserId ? fr.Receiver : fr.Sender)
+                .ToListAsync();
+        }
+
+        public async Task<bool> IsFriend(string userId, string myUserId)
+        {
+            return await _context.FriendRequests.AnyAsync(fr => ((fr.SenderId == userId && fr.ReceiverId == myUserId) || (fr.SenderId == myUserId && fr.ReceiverId == userId)));
+        }
+
+        public async Task<int> GetMutualFriendsCount(string userId, string myUserId)
+        {
+            throw new NotImplementedException();
         }
     }
 }

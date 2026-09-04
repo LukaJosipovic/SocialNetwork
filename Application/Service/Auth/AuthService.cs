@@ -63,7 +63,7 @@ namespace Application.Service.Auth
                     UserName = model.Email,
                     Name = model.Username,
                     ProfilePicture = imageByte,
-                    EmailConfirmed = true,
+                    EmailConfirmed = false,
                     GhostMode = true,
                     DoNotDisturb = true,
                 };

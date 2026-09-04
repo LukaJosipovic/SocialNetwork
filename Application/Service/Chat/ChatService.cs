@@ -143,6 +143,7 @@ namespace Application.Service.Chat
                     UserId = senderId,
                     Content = message,
                     ConversationId = conversationId,
+                    GroupConversationId = null,
                     Timestamp = DateTime.Now
                 };
 

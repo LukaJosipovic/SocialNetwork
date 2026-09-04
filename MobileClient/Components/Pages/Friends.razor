@@ -1,0 +1,119 @@
+﻿@page "/friends"
+@page "/friends/{UserId}"
+@using Application.DTO
+@using Application.DTO.Request
+@using Application.DTO.Response
+@using MobileClient.Services.Account
+@using MobileClient.Services.Alert
+@using MobileClient.Services.LoadingService
+@inject IAccountService AccountService
+@inject NavigationManager NavManager
+@inject LoadingService LoadingService
+@inject IJSRuntime JS
+@inject IAlertService AlertService
+
+<div id="friendContainer" class="container py-2 overflow-auto" style="height: 89vh; margin-top: 20px;">
+    @if (friends.Count > 0)
+    {
+        @foreach (var friend in friends)
+        {
+            <div class="card mb-2">
+                <div class="card-body py-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center flex-grow-1"
+                             @onclick="@(friend.IsMe ? null : () => NavigateToUserProfile(friend.Id))"
+                             style="cursor:@(friend.IsMe ? "default" : "pointer");">
+
+                            <img src="@friend.ProfilePictureString" class="rounded-circle me-3" style="width:48px; height:48px; object-fit:cover;" />
+
+                            <div>
+                                <div class="fw-semibold">
+                                    @friend.Name
+                                </div>
+                                <small class="text-muted">
+                                    @if (!friend.IsMe)
+                                    {
+                                        <text>Tap to see the profile</text>
+                                    } 
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="text-center text-muted py-5">
+            <i class="bi bi-people fs-1"></i>
+            <p class="mt-2 mb-0">There is no any friends</p>
+        </div>
+    }
+</div>
+
+
+@code {
+    private List<UserBriefDetailsDTO> friends = new();
+    private PageSettingsRequest pageSettings = new();
+    private bool hasMoreData = true;
+    [Parameter]
+    public string? UserId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        LoadingService.IsLoading = true;
+        await LoadFriends();
+        LoadingService.IsLoading = false;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var module = await JS.InvokeAsync<IJSObjectReference>("import", "./infiniteScroll.js");
+            await module.InvokeVoidAsync("checkDivScrollEnd", "friendContainer", "LoadMoreFriends", DotNetObjectReference.Create(this));
+        }
+    }
+
+    private async Task LoadFriends()
+    {
+        try
+        {
+            if (!hasMoreData)
+                return;
+
+            var response = await AccountService.GetFriends(pageSettings, UserId);
+            if (response.UserBriefDetails != null && response.UserBriefDetails.Any())
+            {
+                friends.AddRange(response.UserBriefDetails);
+                pageSettings.PageNumber++;
+            }
+            else if (response.IsSuccess == false)
+            {
+                await AlertService.ShowAlertAsync($"Error", $"{response.Message}", "OK");
+            }
+            else
+            {
+                hasMoreData = false;
+            }
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            return;
+        }
+    }
+
+    [JSInvokable]
+    public async Task LoadMoreFriends()
+    {
+        await LoadFriends();
+    }
+
+    private void NavigateToUserProfile(string UserId)
+    {
+        NavManager.NavigateTo($"/profile/user/{UserId}");
+    }
+}
+

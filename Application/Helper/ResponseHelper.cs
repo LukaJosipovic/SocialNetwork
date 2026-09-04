@@ -1,5 +1,6 @@
 ﻿using Application.DTO;
 using Application.DTO.Response;
+using Application.Enum;
 using Azure;
 using Domain.Model;
 using System;
@@ -35,6 +36,8 @@ namespace Application.Helper
         {
             if (isSuccess)
             {
+                var categories = user.Activities?.Select(x => System.Enum.Parse<ActivityCategory>(x)).ToList();
+
                 return new UserDetailsResponse
                 {
                     Name = user.Name,
@@ -43,6 +46,7 @@ namespace Application.Helper
                     GhostMode = user.GhostMode,
                     DoNotDisturbMode = user.DoNotDisturb,
                     ProfilePicture = user.ProfilePicture,
+                    Categories = user.Activities != null ? user.Activities?.Select(x => System.Enum.Parse<ActivityCategory>(x)).ToList() : null,
                     IsSuccess = isSuccess
                 };
             }
@@ -56,7 +60,7 @@ namespace Application.Helper
             }
         }
 
-        public static UserProfileRespons CreateUserProfileRespons(ApplicationUser? user, bool isSuccess, string? message)
+        public static UserProfileRespons CreateUserProfileRespons(ApplicationUser? user, int? matchCount, int? friendCount, bool isSuccess, string? message)
         {
             if (isSuccess)
             {
@@ -71,6 +75,9 @@ namespace Application.Helper
                         ImageUrl = p.PostImage != null ? $"data:image;base64,{Convert.ToBase64String(p.PostImage)}" : null,
                         PostImage = p.PostImage
                     }).ToList() : new List<PostDTO>(),
+                    MatchCount = (int)matchCount,
+                    FriendCount = (int)friendCount,
+                    Activities = user.Activities,
                     IsSuccess = isSuccess,
                     Message = message
                 };
@@ -273,6 +280,53 @@ namespace Application.Helper
                 };
             }
             return new LikeResponse
+            {
+                IsSuccess = IsSuccess,
+                Message = message
+            };
+        }
+
+        public static ActivityDTO CreateActivityDTOResponse(bool IsSuccess, string? message, int? activityId, string? description)
+        {
+            if (IsSuccess)
+            {
+                return new ActivityDTO
+                {
+                    IsSuccess = IsSuccess,
+                    Message = message,
+                    Id = activityId ?? 0,
+                    Description = description
+                };
+            }
+            return new ActivityDTO
+            {
+                IsSuccess = IsSuccess,
+                Message = message
+            };
+        }
+
+        public static FriendRequestResponse CreateFriendRequestResponse(bool IsSuccess, string? message, List<FriendRequest>? friendRequests)
+        {
+            if (IsSuccess)
+            {
+                var friendRequestResponse = new FriendRequestResponse();
+                foreach (var friendRequest in friendRequests)
+                {
+                    var friendRequestDto = new FriendRequestDTO
+                    {
+                        FriendRequestId = friendRequest.Id,
+                        Description = $"{friendRequest.Sender.Name} wants to be a friend",
+                        CreatedAt = friendRequest.CreatedAt,
+                        Id = friendRequest.Sender.Id,
+                        Name = friendRequest.Sender.Name,
+                        ProfilePictureString = $"data:image;base64,{Convert.ToBase64String(friendRequest.Sender.ProfilePicture)}"
+                    };
+                    friendRequestResponse.FriendRequestDTOs.Add(friendRequestDto);
+                }
+                friendRequestResponse.IsSuccess = IsSuccess;
+                return friendRequestResponse;
+            }
+            return new FriendRequestResponse
             {
                 IsSuccess = IsSuccess,
                 Message = message

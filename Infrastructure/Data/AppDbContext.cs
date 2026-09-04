@@ -26,6 +26,7 @@ namespace Infrastructure.Data
         public DbSet<UserDevice> UserDevices { get; set; }
         public DbSet<Conversation> Conversation { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<FriendRequest> FriendRequests { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -128,6 +129,22 @@ namespace Infrastructure.Data
             .WithMany(u => u.RefreshTokens)
             .HasForeignKey(r => r.UserId)
             .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<FriendRequest>()
+            .HasOne(fr => fr.Sender)
+            .WithMany()
+            .HasForeignKey(fr => fr.SenderId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<FriendRequest>()
+            .HasOne(fr => fr.Receiver)
+            .WithMany()
+            .HasForeignKey(fr => fr.ReceiverId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<FriendRequest>()
+            .HasIndex(fr => new { fr.SenderId, fr.ReceiverId })
+            .IsUnique();
 
             builder.Entity<ApplicationUser>().HasQueryFilter(u => !u.IsBanned && !u.IsDeleted);
             builder.Entity<Post>().HasQueryFilter(p => !p.User.IsBanned && !p.User.IsDeleted);

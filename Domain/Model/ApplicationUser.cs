@@ -28,5 +28,6 @@ namespace Domain.Model
         public ICollection<UserBlocks>? BlockedUsers { get; set; }    //I block them
         public ICollection<UserBlocks>? BlockedByUsers { get; set; } //They block me
         public ICollection<UserDevice>? Devices { get; set; }
+        public ICollection<FriendRequest>? FriendRequests { get; set; }
     }
 }

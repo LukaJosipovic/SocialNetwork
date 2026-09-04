@@ -17,6 +17,7 @@ namespace Application.Enum
         VolunteeringAndCauses = 7,
         GamesAndActivities = 8,
         TravelAndExploration = 9,
-        ChillAndRelaxation = 10
+        ChillAndRelaxation = 10,
+        Other = 11
     }
 }

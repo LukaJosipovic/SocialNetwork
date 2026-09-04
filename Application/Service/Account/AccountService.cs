@@ -5,7 +5,10 @@ using Application.DTO.Response;
 using Application.Enum;
 using Application.Helper;
 using Application.Service.Email;
+using Application.Service.Notification;
 using Domain.Model;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,15 +23,19 @@ namespace Application.Service.Account
         private readonly IEmailService _emailService;
         private readonly ILocationRepository _locationRepository;
         private readonly INotificationRepository _notificationRepository;
+        private readonly INotificationService _notificationService;
+        private readonly IActivityRepository _activityRepository;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
 
-        public AccountService(IAccountRepository accountRepository, IEmailService emailService, ILocationRepository locationRepository, INotificationRepository notificationRepository, IRefreshTokenRepository refreshTokenRepository)
+        public AccountService(IAccountRepository accountRepository, IEmailService emailService, ILocationRepository locationRepository, INotificationRepository notificationRepository, IRefreshTokenRepository refreshTokenRepository, INotificationService notificationService, IActivityRepository activityRepository)
         {
             _accountRepository = accountRepository;
             _emailService = emailService;
             _locationRepository = locationRepository;
             _notificationRepository = notificationRepository;
             _refreshTokenRepository = refreshTokenRepository;
+            _notificationService = notificationService;
+            _activityRepository = activityRepository;
         }
 
         public async Task<GeneralResponse> ChangeActivities(List<ActivityCategory> activities, string userId)
@@ -42,7 +49,7 @@ namespace Application.Service.Account
                 if (isUpdated.Succeeded)
                     return ResponseHelper.CreateGeneralResponse(true, "Activities changed successfully");
 
-                return ResponseHelper.CreateGeneralResponse(false, "Failed to change activities");
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
             catch (KeyNotFoundException ex)
             {
@@ -62,7 +69,7 @@ namespace Application.Service.Account
                 if (isUpdated.Succeeded)
                     return ResponseHelper.CreateProfilePictureResponse(true, "Profile picture changed successfully", request.ImageData);
 
-                return ResponseHelper.CreateProfilePictureResponse(false, "Failed to update profile picture", null);
+                return ResponseHelper.CreateProfilePictureResponse(false, "Something went wrong", null);
             }
             catch (KeyNotFoundException ex)
             {
@@ -100,7 +107,7 @@ namespace Application.Service.Account
             }
             catch(Exception)
             {
-                return ResponseHelper.CreateGeneralResponse(false, "Post cannot be created");
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
         }
 
@@ -121,21 +128,35 @@ namespace Application.Service.Account
             }
         }
 
-        public async Task<UserProfileRespons> GetUserProfile(string userId)
+        public async Task<UserProfileRespons> GetUserProfile(string userId, string? myUserId)
         {
             try
             {
                 var user = await _accountRepository.GetUserProfile(userId);
+                var matchCount = await _accountRepository.GetMatchCount(userId);
+                var friendCount = await _accountRepository.GetFriendCount(userId);
+                var userDto = ResponseHelper.CreateUserProfileRespons(user, matchCount, friendCount, true, null);
 
-                return ResponseHelper.CreateUserProfileRespons(user, true, null);
+                if (myUserId != null)
+                {
+                    var isFriend = await _accountRepository.IsFriend(userId, myUserId);
+                    //var mutualFriendsCount = await _accountRepository.GetMutualFriendsCount(userId, myUserId);
+                    userDto.IsFriend = isFriend;
+                }
+                else
+                {
+                    userDto.IsFriend = true;
+                }
+
+                return userDto;
             }
             catch (KeyNotFoundException ex)
             {
-                return ResponseHelper.CreateUserProfileRespons(null, false, ex.Message);
+                return ResponseHelper.CreateUserProfileRespons(null, null, null, false, ex.Message);
             }
             catch (Exception)
             {
-                return ResponseHelper.CreateUserProfileRespons(null, false, "An unexpected error occurred while getting user");
+                return ResponseHelper.CreateUserProfileRespons(null, null, null, false, "Something went wrong");
             }
         }
 
@@ -181,7 +202,7 @@ namespace Application.Service.Account
                 {
                     return ResponseHelper.CreateGeneralResponse(true, "Do not disturb option is deactivated");
                 }
-                return ResponseHelper.CreateGeneralResponse(false, "Error with do not disturb option");
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
             catch (KeyNotFoundException ex)
             {
@@ -203,7 +224,7 @@ namespace Application.Service.Account
                 {
                     return ResponseHelper.CreateGeneralResponse(true, "Ghost mode is deactivated");
                 }
-                return ResponseHelper.CreateGeneralResponse(false, "Error with ghost mode");
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
             catch (KeyNotFoundException ex)
             {
@@ -220,7 +241,28 @@ namespace Application.Service.Account
                 if (isUpdated.Succeeded)
                     return ResponseHelper.CreateGeneralResponse(true, "Username changed succesffully");
 
-                return ResponseHelper.CreateGeneralResponse(false, "Username cannot be updated");
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return ResponseHelper.CreateGeneralResponse(false, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
+            }
+        }
+
+        public async Task<GeneralResponse> UpdateDescription(string description, string userId)
+        {
+            try
+            {
+                var isUpdated = await _accountRepository.UpdateDescription(description, userId);
+
+                if (isUpdated.Succeeded)
+                    return ResponseHelper.CreateGeneralResponse(true, "Description changed succesffully");
+
+                return ResponseHelper.CreateGeneralResponse(false, "Description cannot be updated");
             }
             catch (KeyNotFoundException ex)
             {
@@ -228,7 +270,7 @@ namespace Application.Service.Account
             }
             catch (Exception)
             {
-                return ResponseHelper.CreateGeneralResponse(false, "An unexpected error occurred while updating the username");
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
         }
 
@@ -245,7 +287,7 @@ namespace Application.Service.Account
                 if (isDeleted.Succeeded)
                     return ResponseHelper.CreateGeneralResponse(true, "Account deleted succesffully");
 
-                return ResponseHelper.CreateGeneralResponse(false, "Account cannot be deleted");
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
             catch (KeyNotFoundException ex)
             {
@@ -253,7 +295,7 @@ namespace Application.Service.Account
             }
             catch (Exception ex)
             {
-                return ResponseHelper.CreateGeneralResponse(false, "An unexpected error occurred while deleting account");
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
         }
 
@@ -300,7 +342,7 @@ namespace Application.Service.Account
 
                     return ResponseHelper.CreateGeneralResponse(true, $"You reported user {reportedUser.Name}");
                 }
-                return ResponseHelper.CreateGeneralResponse(false, $"User cannot be reported");
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
             }
             catch (KeyNotFoundException ex)
             {
@@ -487,16 +529,18 @@ namespace Application.Service.Account
             try
             {
                 var user = await _accountRepository.GetBannedProfile(userId);
+                var matchCount = await _accountRepository.GetMatchCount(userId);
+                var friendCount = await _accountRepository.GetFriendCount(userId);
 
-                return ResponseHelper.CreateUserProfileRespons(user, true, null);
+                return ResponseHelper.CreateUserProfileRespons(user, matchCount, friendCount, true, null);
             }
             catch (KeyNotFoundException ex)
             {
-                return ResponseHelper.CreateUserProfileRespons(null, false, ex.Message);
+                return ResponseHelper.CreateUserProfileRespons(null, null, null, false, ex.Message);
             }
             catch (Exception)
             {
-                return ResponseHelper.CreateUserProfileRespons(null, false, "An unexpected error occurred while getting user");
+                return ResponseHelper.CreateUserProfileRespons(null, null, null, false, "Something went wrong");
             }
         }
 
@@ -546,6 +590,150 @@ namespace Application.Service.Account
             catch (Exception ex)
             {
                 return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
+            }
+        }
+        public async Task<GeneralResponse> SendFriendRequest(string senderUserId, string receiverUserId)
+        {
+            try
+            {
+                var sender = await _accountRepository.GetUserById(senderUserId);
+                var receiver = await _accountRepository.GetUserById(receiverUserId);
+
+                var friendRequest = new FriendRequest
+                {
+                    SenderId = senderUserId,
+                    Sender = sender,
+                    ReceiverId = receiverUserId,
+                    Receiver = receiver,
+                    CreatedAt = DateTime.Now,
+                    Accepted = false
+                };
+
+                var result = await _accountRepository.SendFriendRequest(friendRequest);
+                if (result)
+                    return ResponseHelper.CreateGeneralResponse(true, $"You sent a friend request to {receiver.Name}.");
+                else
+                    return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
+            }
+            catch (DbUpdateException ex) when (ex.InnerException is SqlException sqlEx && (sqlEx.Number == 2601 || sqlEx.Number == 2627))
+            {
+                return ResponseHelper.CreateGeneralResponse(true, $"You have already sent a friend request to that user.");
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
+            }
+        }
+        public async Task<FriendRequestResponse> GetFriendRequest(string userId)
+        {
+            try
+            {
+                var friendRequests = await _accountRepository.GetFriendRequest(userId);
+                return ResponseHelper.CreateFriendRequestResponse(true, null, friendRequests);
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.CreateFriendRequestResponse(false, "Something went wrong", null);
+            }
+        }
+
+        public async Task<GeneralResponse> AcceptFriendship(string senderId, string userId, int friendRequestId)
+        {
+            try
+            {
+                var sender = await _accountRepository.GetUserById(senderId);
+                var acceptor = await _accountRepository.GetUserById(userId);
+
+                var user1Id = sender.Id.CompareTo(acceptor.Id) < 0 ? sender.Id : acceptor.Id;
+                var user2Id = sender.Id.CompareTo(acceptor.Id) < 0 ? acceptor.Id : sender.Id;
+
+                var conversation = new Conversation
+                {
+                    User1Id = user1Id,
+                    User2Id = user2Id,
+                    LastMessageAt = DateTime.Now,
+                };
+                var conversationCreated = await _activityRepository.CreateConversation(conversation);
+                if (conversationCreated == true)
+                {
+                    var friendshipAccepted = await _accountRepository.AcceptFriendship(userId, friendRequestId);
+                    var deviceTokens = await _notificationService.GetDeviceToken(senderId);
+                    if (deviceTokens != null && deviceTokens.Any() && friendshipAccepted)
+                    {
+                        await NotificationHelper.SendNotifications(deviceTokens, "The friend request has been accepted.", $"{acceptor.Name} accepted your friend request");
+                    }
+                    return ResponseHelper.CreateGeneralResponse(true, "You accepted the friend request.");
+                }
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
+            }
+            catch (DbUpdateException ex) when (ex.InnerException is SqlException sqlEx && (sqlEx.Number == 2601 || sqlEx.Number == 2627))
+            {
+                return ResponseHelper.CreateGeneralResponse(true, "You are already friends");
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
+            }
+        }
+
+        public async Task<UserBriefDetailsResponse> GetMatches(PageSettingsRequest model, string? UserId, string myUserId)
+        {
+            try
+            {
+                var usersBriefDetailsList = new List<UserBriefDetailsDTO>();
+                var users = await _accountRepository.GetUserMatches(model, UserId, myUserId);
+
+                foreach (var user in users)
+                {
+                    var userBriefDetails = new UserBriefDetailsDTO
+                    {
+                        Id = user.Id,
+                        Name = user.Name,
+                        ProfilePictureString = $"data:image;base64,{Convert.ToBase64String(user.ProfilePicture)}",
+                    };
+                    usersBriefDetailsList.Add(userBriefDetails);
+                }
+
+                return ResponseHelper.CreateUserBriefDetailsResponse(true, null, usersBriefDetailsList);
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.CreateUserBriefDetailsResponse(false, "Something went wrong", null);
+            }
+        }
+
+        public async Task<UserBriefDetailsResponse> GetFriends(PageSettingsRequest model, string? UserId, string myUserId)
+        {
+            try
+            {
+                var usersBriefDetailsList = new List<UserBriefDetailsDTO>();
+                var users = await _accountRepository.GetUserFriends(model, UserId, myUserId);
+
+                foreach (var user in users)
+                {
+                    var userBriefDetails = new UserBriefDetailsDTO
+                    {
+                        Id = user.Id,
+                        Name = user.Name,
+                        ProfilePictureString = $"data:image;base64,{Convert.ToBase64String(user.ProfilePicture)}",
+                        IsMe = myUserId == user.Id ? true : false
+                    };
+                    usersBriefDetailsList.Add(userBriefDetails);
+                }
+
+                return ResponseHelper.CreateUserBriefDetailsResponse(true, null, usersBriefDetailsList);
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.CreateUserBriefDetailsResponse(false, "Something went wrong", null);
             }
         }
     }

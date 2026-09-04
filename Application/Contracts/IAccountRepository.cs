@@ -16,6 +16,7 @@ namespace Application.Contracts
         Task<ApplicationUser> GetUserById(string userId);
         Task<IdentityResult> ChangeProfilePicture(ChangeProfilePictureRequest request, string userId);
         Task<IdentityResult> UpdateUsername(string username, string userId);
+        Task<IdentityResult> UpdateDescription(string description, string userId);
         Task<IdentityResult> DeleteAccount(string userId, byte[] imageByte);
         Task<bool> CreatePost(Post request, byte[]? imageData);
         Task<ApplicationUser> GetUserProfile(string userId);
@@ -42,5 +43,14 @@ namespace Application.Contracts
         Task<ApplicationUser?> RemoveAllReports(string userId);
         Task<List<ApplicationUser>> GetBannedAccounts(PageSettingsRequest model);
         Task<ApplicationUser> GetUserToChatById(string userId);
+        Task<bool> SendFriendRequest(FriendRequest friendRequest);
+        Task<List<FriendRequest>> GetFriendRequest(string userId);
+        Task<int> GetMatchCount(string userId);
+        Task<int> GetFriendCount(string userId);
+        Task<bool> AcceptFriendship(string userId, int friendRequestId);
+        Task<List<ApplicationUser>> GetUserMatches(PageSettingsRequest model, string? UserId, string myUserId);
+        Task<List<ApplicationUser>> GetUserFriends(PageSettingsRequest model, string? UserId, string myUserId);
+        Task<bool> IsFriend(string userId, string myUserId);
+        Task<int> GetMutualFriendsCount(string userId, string myUserId);
     }
 }

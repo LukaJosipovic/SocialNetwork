@@ -16,5 +16,6 @@ namespace Application.Service.Activity
         Task<MyActivityResponse> GetMyActivities(string userId, PageSettingsRequest model);
         Task<ActivityResponse> GetMyAcceptedActivities(string userId, PageSettingsRequest model);
         Task<List<string>> FilterUserIdRange(CreateActivityRequest request, string userId);
+        Task<string> GetActivityDescriptionById(int activityId);
     }
 }

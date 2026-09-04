@@ -1,0 +1,144 @@
+﻿@page "/matches"
+@page "/matches/{UserId}"
+@using Application.DTO
+@using Application.DTO.Request
+@using Application.DTO.Response
+@using MobileClient.Services.Account
+@using MobileClient.Services.Alert
+@using MobileClient.Services.LoadingService
+@inject IAccountService AccountService
+@inject NavigationManager NavManager
+@inject LoadingService LoadingService
+@inject IJSRuntime JS
+@inject IAlertService AlertService
+
+@* <div class="pt-4">
+    <div class="input-group mb-3" style="width: 90%; margin: 0 auto;">
+        <input type="text" value="@name" @oninput="OnSearchChange" class="form-control" placeholder="email">
+    </div>
+</div> *@
+
+<div id="matchContainer" class="container py-2 overflow-auto" style="height: 89vh; margin-top: 20px;">
+    @if (matches.Count > 0)
+    {
+        @foreach (var match in matches)
+        {
+            <div class="card mb-2">
+            <div class="card-body py-2">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center flex-grow-1"
+                        @onclick="() => NavigateToUserProfile(match.Id)"
+                        style="cursor:pointer;">
+
+                        <img src="@match.ProfilePictureString" class="rounded-circle me-3" style="width:48px; height:48px; object-fit:cover;" />
+                        
+                       <div>
+                           <div class="fw-semibold">
+                               @match.Name
+                           </div>
+                           <small class="text-muted">
+                               Tap to see the profile
+                           </small>
+                       </div>
+                   </div>
+                </div>
+            </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="text-center text-muted py-5">
+            <i class="bi bi-people fs-1"></i>
+            <p class="mt-2 mb-0">There is no any matches</p>
+        </div>
+    }
+</div>
+
+
+@code {
+    private List<UserBriefDetailsDTO> matches = new();
+    //private string? name;
+    private PageSettingsRequest pageSettings = new();
+    private bool hasMoreData = true;
+    [Parameter]
+    public string? UserId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        LoadingService.IsLoading = true;
+        await LoadMatches();
+        LoadingService.IsLoading = false;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var module = await JS.InvokeAsync<IJSObjectReference>("import", "./infiniteScroll.js");
+            await module.InvokeVoidAsync("checkDivScrollEnd", "matchContainer", "LoadMoreMatches", DotNetObjectReference.Create(this));
+        }
+    }
+
+    private async Task LoadMatches()
+    {
+        try
+        {
+            if (!hasMoreData)
+                return;
+
+            var response = await AccountService.GetMatches(pageSettings, UserId);
+            if (response.UserBriefDetails != null && response.UserBriefDetails.Any())
+            {
+                matches.AddRange(response.UserBriefDetails);
+                pageSettings.PageNumber++;
+            }
+            else if (response.IsSuccess == false)
+            {
+                await AlertService.ShowAlertAsync($"Error", $"{response.Message}", "OK");
+            }
+            else
+            {
+                hasMoreData = false;
+            }
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            return;
+        }
+    }
+
+    [JSInvokable]
+    public async Task LoadMoreMatches()
+    {
+        await LoadMatches();
+    }
+
+    private void NavigateToUserProfile(string userId)
+    {
+        NavManager.NavigateTo($"/profile/user/{userId}");
+    }
+
+    // private async Task OnSearchChange(ChangeEventArgs e)
+    // {
+    //     name = e.Value?.ToString();
+    //     await Task.Delay(500); // 500ms debounce
+    //     await StartSearch();
+    // }
+
+    // private async Task StartSearch()
+    // {
+    //     pageSettings.PageNumber = 1;
+    //     conversations.Clear();
+    //     hasMoreData = true;
+
+    //     pageSettings.SearchTerm = name;
+
+    //     if (string.IsNullOrWhiteSpace(name))
+    //         pageSettings.SearchTerm = null;
+
+    //     await LoadUsers();
+    // }
+}
+
