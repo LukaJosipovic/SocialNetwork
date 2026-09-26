@@ -101,6 +101,14 @@ namespace Infrastructure.Repository
             return await _userManager.UpdateAsync(user);
         }
 
+        public async Task<IdentityResult> UpdateUserDetails(UpdateUserDetailsRequest request, string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
+            user.Name = request.Username;
+            user.Description = request.Description;
+            return await _userManager.UpdateAsync(user);
+        }
+
         public async Task<IdentityResult> DeleteAccount(string userId, byte[] imageByte)
         {
             var user = await _userManager.Users.Include(u => u.Posts).Include(u => u.Reports).Include(u => u.Likes).FirstOrDefaultAsync(u => u.Id == userId) ?? throw new KeyNotFoundException("User not found");
@@ -134,7 +142,7 @@ namespace Infrastructure.Repository
             user.ProfilePicture = imageByte;
             user.Name = "Unknown User";
             user.Email = null;
-            user.UserName = "Unknown_User";
+            user.UserName = $"DeletedUser_{user.Id}";
             user.NormalizedUserName = null;
             return await _userManager.UpdateAsync(user);
         }
@@ -394,7 +402,12 @@ namespace Infrastructure.Repository
 
         public async Task<bool> IsFriend(string userId, string myUserId)
         {
-            return await _context.FriendRequests.AnyAsync(fr => ((fr.SenderId == userId && fr.ReceiverId == myUserId) || (fr.SenderId == myUserId && fr.ReceiverId == userId)));
+            var isFriedn = await _context.FriendRequests.AnyAsync(fr => ((fr.SenderId == userId && fr.ReceiverId == myUserId) || (fr.SenderId == myUserId && fr.ReceiverId == userId)));
+            var hasMatch = await _context.Match.AnyAsync(m => ((m.CreatorId == userId && m.AcceptorId == myUserId) || (m.CreatorId == myUserId && m.AcceptorId == userId)));
+
+            if (isFriedn || hasMatch)
+                return true;
+            return false;
         }
 
         public async Task<int> GetMutualFriendsCount(string userId, string myUserId)

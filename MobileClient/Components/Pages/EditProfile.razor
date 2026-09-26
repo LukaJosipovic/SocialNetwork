@@ -33,7 +33,7 @@
         </div>
     </div>
 
-    <div class="card mb-3">
+    @* <div class="card mb-3">
         <div class="card-body">
             <label class="form-label fw-semibold">Username</label>
             <input type="text"
@@ -79,7 +79,29 @@
                 Update Description
             </button>
         </div>
+    </div> *@
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <EditForm method="post" Model="updateUserDetailsRequest" OnValidSubmit="UpdateUserDetails" FormName="updateUser" Enhance>
+                <DataAnnotationsValidator />
+                <div data-mdb-input-init class="form-outline mb-4">
+                    <input type="text" @bind-value="updateUserDetailsRequest.Username" id="usernameInput" placeholder="Username" class="form-control" />
+                    <ValidationMessage For="() => updateUserDetailsRequest.Username" class="text-danger" />
+                </div>
+
+                <div data-mdb-input-init class="form-outline mb-4">
+                    <input type="text" @bind-value="updateUserDetailsRequest.Description" id="descriptionInput" placeholder="Description" class="form-control" />
+                    <ValidationMessage For="() => updateUserDetailsRequest.Description" class="text-danger" />
+                </div>
+
+                <div class="d-flex align-items-center justify-content-between">
+                    <button type="submit" class="btn btn-primary w-100">Update Username/Descriptio</button>
+                </div>
+            </EditForm>
+        </div>
     </div>
+
 
     @* <div class="card mb-3">
         <div class="card-body">
@@ -175,6 +197,8 @@
     private byte[]? buffer;
     private string username;
     private string? description;
+    [SupplyParameterFromForm]
+    private UpdateUserDetailsRequest updateUserDetailsRequest { get; set; } = new();
     private List<ActivityCategory> SelectedCategories { get; set; } = new();
     private bool IsGhostMode;
     private bool IsDoNotDisturbMode;
@@ -187,8 +211,8 @@
         LoadingService.IsLoading = true;
 
         var response = await AccountService.GetUserById();
-        username = response.Name;
-        description = response.Description;
+        updateUserDetailsRequest.Username = response.Name;
+        updateUserDetailsRequest.Description = response.Description;
         SelectedCategories = response.Categories == null ? new List<ActivityCategory>() : response.Categories;
 
         if (response.ProfilePicture != null)    
@@ -260,6 +284,20 @@
             else
                 await AlertService.ShowAlertAsync($"Error", $"{response.Message}", "OK");
         }
+
+        LoadingService.IsLoading = false;
+    }
+
+    private async Task UpdateUserDetails()
+    {
+        LoadingService.IsLoading = true;
+
+        var response = await AccountService.UpdateUserDetails(updateUserDetailsRequest);
+
+        if (response.IsSuccess)
+            await AlertService.ShowAlertAsync($"Ok", $"{response.Message}", "OK");
+        else
+            await AlertService.ShowAlertAsync($"Error", $"{response.Message}", "OK");
 
         LoadingService.IsLoading = false;
     }

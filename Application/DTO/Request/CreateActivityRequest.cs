@@ -1,4 +1,5 @@
-﻿using Application.Validation;
+﻿using Application.Enum;
+using Application.Validation;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -15,7 +16,7 @@ namespace Application.DTO.Request
         public string Description { get; set; } = null!;
         [Required(ErrorMessage = "Category is required")]
         //[NotSelectCategory]
-        public string Category { get; set; } = null!;
+        public string Category { get; set; } = ActivityCategory.FoodAndDrink.ToString();
         public int Range { get; set; }
         public double Latitude { get; set; }
         public double Longitude { get; set; }

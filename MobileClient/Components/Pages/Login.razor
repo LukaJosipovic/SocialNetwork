@@ -41,11 +41,7 @@
 
 @code {
     [SupplyParameterFromForm]
-    private LoginUserRequest Request { get; set; } = new()
-    {
-        Email = "string@string.com",
-        Password = "Pa$$w0rd"
-    };
+    private LoginUserRequest Request { get; set; } = new();
 
     private async Task LoginUser()
     {

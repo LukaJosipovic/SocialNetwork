@@ -15,7 +15,7 @@
 
 <div class="pt-4">
     <div class="input-group mb-3" style="width: 90%; margin: 0 auto;">
-        <input type="text" value="@name" @oninput="OnSearchChange" class="form-control" placeholder="email">
+        <input type="text" value="@name" @oninput="OnSearchChange" class="form-control" placeholder="Username">
     </div>
 </div>
 
@@ -58,11 +58,6 @@
                         }
                         else
                         {
-                            @* <button type="button"
-                                    class="btn btn-outline-danger btn-sm ms-2"
-                                    @onclick="() => BlockUser(conversation.UserId)">
-                                <i class="bi bi-ban"></i>
-                            </button> *@
                             <div class="dropdown">
                                 <button class="btn btn-link p-0 m-0 border-0" type="button" id="iconMenuButton"
                                         data-bs-toggle="dropdown" aria-expanded="false">
@@ -98,6 +93,7 @@
     private string? name;
     private PageSettingsRequest pageSettings = new();
     private bool hasMoreData = true;
+    private CancellationTokenSource? searchCancellationTokenSource;
 
     protected override async Task OnInitializedAsync()
     {
@@ -182,8 +178,22 @@
     private async Task OnSearchChange(ChangeEventArgs e)
     {
         name = e.Value?.ToString();
-        await Task.Delay(500); // 500ms debounce
-        await StartSearch();
+
+        searchCancellationTokenSource?.Cancel();
+        searchCancellationTokenSource?.Dispose();
+
+        searchCancellationTokenSource = new CancellationTokenSource();
+
+        try
+        {
+            await Task.Delay(500, searchCancellationTokenSource.Token);
+
+            await StartSearch();
+        }
+        catch (TaskCanceledException)
+        {
+            // Ignore cancelled searches
+        }
     }
 
     private async Task StartSearch()
@@ -192,10 +202,11 @@
         conversations.Clear();
         hasMoreData = true;
 
-        pageSettings.SearchTerm = name;
-
         if (string.IsNullOrWhiteSpace(name))
             pageSettings.SearchTerm = null;
+        else
+            pageSettings.SearchTerm = name;
+
 
         await LoadUsers();
     }

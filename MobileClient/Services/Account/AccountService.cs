@@ -97,6 +97,21 @@ namespace MobileClient.Services.Account
             }
         }
 
+        public async Task<GeneralResponse> UpdateUserDetails(UpdateUserDetailsRequest request)
+        {
+            try
+            {
+                var client = _httpClientFactory.CreateClient("BaseApi");
+                var response = await client.PostAsJsonAsync($"api/Account/UpdateUserDetails", request);
+                var responseObject = await response.Content.ReadFromJsonAsync<GeneralResponse>();
+                return responseObject;
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
+            }
+        }
+
         public async Task<GeneralResponse> DeleteAccount()
         {
             try

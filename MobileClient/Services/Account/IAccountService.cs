@@ -16,6 +16,7 @@ namespace MobileClient.Services.Account
         Task<ProfilePictureResponse> ChangeProfilePicture(ChangeProfilePictureRequest request);
         Task<GeneralResponse> UpdateUsername(string username);
         Task<GeneralResponse> UpdateDescription(string description);
+        Task<GeneralResponse> UpdateUserDetails(UpdateUserDetailsRequest request);
         Task<GeneralResponse> DeleteAccount();
         Task<GeneralResponse> CreatePost(CreatePostRequest request);
         Task<UserProfileRespons> MyProfile();

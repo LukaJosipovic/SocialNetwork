@@ -86,6 +86,11 @@ namespace Infrastructure.Repository
 
         public async Task<bool> CreateConversation(Conversation conversation)
         {
+            var coinversationExists = await _context.Conversation.AnyAsync(c => c.User1Id == conversation.User1Id && c.User2Id == conversation.User2Id);
+            
+            if (coinversationExists)
+                return true;
+
             await _context.Conversation.AddAsync(conversation);
             var result = await _context.SaveChangesAsync();
             
@@ -110,11 +115,23 @@ namespace Infrastructure.Repository
         {
             var skip = (model.PageNumber - 1) * model.PageSize;
 
+            //return await _context.Match
+            //    .Where(m => m.CreatorId == userId)
+            //    //.Skip(skip)
+            //    //.Take(model.PageSize)
+            //    .GroupBy(m => m.Activity)
+            //    .Select(g => new MyActivityDTO
+            //    {
+            //        Id = g.Key.Id,
+            //        Description = g.Key.Description,
+            //        ActivityCategory = g.Key.ActivityCategory,
+            //        Range = g.Key.Range,
+            //        AcceptedCount = g.Count()
+            //    }).ToListAsync();
             return await _context.Match
                 .Where(m => m.CreatorId == userId)
-                .Skip(skip)
-                .Take(model.PageSize)
                 .GroupBy(m => m.Activity)
+                .OrderByDescending(g => g.Max(m => m.DateMatched))
                 .Select(g => new MyActivityDTO
                 {
                     Id = g.Key.Id,
@@ -122,7 +139,9 @@ namespace Infrastructure.Repository
                     ActivityCategory = g.Key.ActivityCategory,
                     Range = g.Key.Range,
                     AcceptedCount = g.Count()
-                }).OrderByDescending(x => x.Id)
+                })
+                //.Skip(skip)
+                //.Take(model.PageSize)
                 .ToListAsync();
         }
 

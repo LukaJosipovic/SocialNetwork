@@ -185,8 +185,6 @@ namespace Application.Service.Activity
         {
             try
             {
-                var myActivityResponse = new MyActivityResponse();
-
                 var result = await _activityRepository.GetMyActivities(userId, model);
 
                 return ResponseHelper.CreateMyActivityResponse(true, null, result);

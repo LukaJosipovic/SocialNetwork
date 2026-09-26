@@ -60,6 +60,7 @@
     private List<BannedAccountDTO> accounts = new List<BannedAccountDTO>();
     private PageSettingsRequest pageSettings = new();
     private bool hasMoreData = true;
+    private CancellationTokenSource? searchCancellationTokenSource;
 
     protected override async Task OnInitializedAsync()
     {
@@ -113,8 +114,22 @@
     private async Task OnSearchChange(ChangeEventArgs e)
     {
         email = e.Value?.ToString();
-        await Task.Delay(500); // 500ms debounce
-        await StartSearch();
+
+        searchCancellationTokenSource?.Cancel();
+        searchCancellationTokenSource?.Dispose();
+
+        searchCancellationTokenSource = new CancellationTokenSource();
+
+        try
+        {
+            await Task.Delay(500, searchCancellationTokenSource.Token);
+
+            await StartSearch();
+        }
+        catch (TaskCanceledException)
+        {
+            // Ignore cancelled searches
+        }
     }
 
     private async Task StartSearch()

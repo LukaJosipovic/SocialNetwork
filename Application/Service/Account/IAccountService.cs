@@ -18,6 +18,7 @@ namespace Application.Service.Account
         Task<ProfilePictureResponse> ChangeProfilePicture(ChangeProfilePictureRequest request, string userId);
         Task<GeneralResponse> UpdateUsername(string username, string userId);
         Task<GeneralResponse> UpdateDescription(string description, string userId);
+        Task<GeneralResponse> UpdateUserDetails(UpdateUserDetailsRequest request, string userId);
         Task<GeneralResponse> DeleteAccount(string userId);
         Task<GeneralResponse> CreatePost(CreatePostRequest request, string userId);
         Task<UserProfileRespons> GetUserProfile(string userId, string? myUserId);

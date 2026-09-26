@@ -274,6 +274,27 @@ namespace Application.Service.Account
             }
         }
 
+        public async Task<GeneralResponse> UpdateUserDetails(UpdateUserDetailsRequest request, string userId)
+        {
+            try
+            {
+                var isUpdated = await _accountRepository.UpdateUserDetails(request, userId);
+
+                if (isUpdated.Succeeded)
+                    return ResponseHelper.CreateGeneralResponse(true, "Description changed succesffully");
+
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return ResponseHelper.CreateGeneralResponse(false, ex.Message);
+            }
+            catch (Exception)
+            {
+                return ResponseHelper.CreateGeneralResponse(false, "Something went wrong");
+            }
+        }
+
         public async Task<GeneralResponse> DeleteAccount(string userId)
         {
             try

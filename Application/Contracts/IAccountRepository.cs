@@ -17,6 +17,7 @@ namespace Application.Contracts
         Task<IdentityResult> ChangeProfilePicture(ChangeProfilePictureRequest request, string userId);
         Task<IdentityResult> UpdateUsername(string username, string userId);
         Task<IdentityResult> UpdateDescription(string description, string userId);
+        Task<IdentityResult> UpdateUserDetails(UpdateUserDetailsRequest request, string userId);
         Task<IdentityResult> DeleteAccount(string userId, byte[] imageByte);
         Task<bool> CreatePost(Post request, byte[]? imageData);
         Task<ApplicationUser> GetUserProfile(string userId);

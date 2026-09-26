@@ -91,6 +91,25 @@ namespace API.Controllers
 
             return BadRequest(result);
         }
+        [HttpPost("UpdateUserDetails")]
+        public async Task<IActionResult> UpdateUserDetails(UpdateUserDetailsRequest request)
+        {
+            if (ModelState.IsValid)
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                if (userId == null)
+                    return Unauthorized("User cannot be found");
+
+                var result = await _accountService.UpdateUserDetails(request, userId);
+
+                if (result.IsSuccess)
+                    return Ok(result);
+
+                return BadRequest(result);
+            }
+            return BadRequest("Some properties are not valid");
+        }
 
         [HttpPut("DeleteAccount")]
         public async Task<IActionResult> DeleteAccount()

@@ -64,8 +64,8 @@ namespace Application.Service.Auth
                     Name = model.Username,
                     ProfilePicture = imageByte,
                     EmailConfirmed = false,
-                    GhostMode = true,
-                    DoNotDisturb = true,
+                    GhostMode = false,
+                    DoNotDisturb = false,
                 };
 
                 var result = await _authRepository.CreateAccount(user, model.Password, role);
@@ -76,8 +76,8 @@ namespace Application.Service.Auth
                     var encodedToken = Encoding.UTF8.GetBytes(token);
                     token = WebEncoders.Base64UrlEncode(encodedToken);
 
-                    string ip = await GetPublicIpAddressHelper.GetPublicIpAddress();
-                    var url = $"http://{ip}:4321/socialnetwork/api/Auth/ConfirmEmail?userid={user.Id}&token={token}";
+                    string ip = GetPublicIpAddressHelper.GetLocalIpAddress();
+                    var url = $"http://{ip}/api/Auth/ConfirmEmail?userid={user.Id}&token={token}";
 
                     var email = new EmailDTO
                     {
@@ -169,8 +169,8 @@ namespace Application.Service.Auth
                 var encodedToken = Encoding.UTF8.GetBytes(token);
                 token = WebEncoders.Base64UrlEncode(encodedToken);
 
-                string ip = await GetPublicIpAddressHelper.GetPublicIpAddress();
-                var url = $"http://{ip}:4321/socialnetwork/resetpassword?token={token}&email={user.Email}";
+                string ip = GetPublicIpAddressHelper.GetLocalIpAddress();
+                var url = $"http://{ip}/resetpassword?token={token}&email={user.Email}";
 
                 var email = new EmailDTO
                 {

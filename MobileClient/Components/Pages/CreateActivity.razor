@@ -44,6 +44,11 @@
     private CreateActivityRequest Request { get; set; } = new();
     private List<string> notifications = new List<string>();
 
+    // protected override async Task OnInitializedAsync()
+    // {
+    //     Request.Category = EnumHelper.GetEnumDescription(ActivityCategory.FoodAndDrink);
+    // }
+
     private async Task CreateUserActivity()
     {
         LoadingService.IsLoading = true;
