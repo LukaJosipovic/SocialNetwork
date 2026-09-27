@@ -23,7 +23,7 @@
  - Slanje obavjesti
 
 ## Korištene tehnologija
-###Backend
+### Backend
 - C#
 - ASP.NET Web Api
 - Entity Framework
