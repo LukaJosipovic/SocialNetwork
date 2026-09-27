@@ -21,6 +21,10 @@
  - Funkcionalnost zaboravljene lozinke
  - prikaz lokacije ostalih korisnika na karti
  - Slanje obavjesti
+ - Prijava korisnika
+ - Blokiranje korisničkog računa
+ - Brisanje objava kako administrator
+ - Micanje blokade korisničkog računa kao administrator
 
 ## Korištene tehnologija
 ### Backend
