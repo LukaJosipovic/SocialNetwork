@@ -65,7 +65,7 @@ Za autentifikaciju i upravljanje korisnicima koristi se ASP.NET Core Identity, d
 Nakon isteka JWT token kreira se novi pomoću tokena osvježavanja a isti token osvježavanja ne može biti korišten više puta.
 
 ## Svrha projekta
-Projekt je razvijen kao praktičan projekt iz područja razvoja programske podrške te predstavlja implementaciju društvene mreže usmjerene te kao koncept ideje o povezivanju korisnika putem zajedničkih interesa i aktivnosti i samim time nije u potpunosti završen.
+Projekt je razvijen kao praktičan projekt iz područja razvoja programske podrške te predstavlja implementaciju društvene mreže kao koncept ideje o povezivanju korisnika putem zajedničkih interesa i aktivnosti i samim time nije u potpunosti završen.
 
 Tijekom razvoja primijenjeni su različiti principi razvoja softvera, uključujući slojevitu arhitekturu, rad s relacijskom bazom podataka, autentifikaciju i autorizaciju korisnika, razvoj API-ja, asinkrono programiranje, prijenos podataka u realnom vremenu te odvajanje odgovornosti između pojedinih dijelova sustava.
 
